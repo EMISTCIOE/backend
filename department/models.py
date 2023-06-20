@@ -1,6 +1,6 @@
 from django.db import models
 import uuid
-from home.models import SocialMedia
+
 # Create your models here.
 
 class Department(models.Model):
@@ -15,21 +15,19 @@ class Department(models.Model):
     description = models.TextField(null=False, blank=False)
     image = models.ImageField(upload_to='images/', null=True, blank=True)
     # programs = models.TextField(null=False, blank=False) # I guess we will be having a separate program model so that this will be a foreign key (one to many relation) to that model/table
-    social_media = models.ManyToManyField(SocialMedia, blank=True, related_name='department_social_media')
 
     def __str__(self):
         return self.name
 
 
 
-class StaffMembers(models.Model):
+class StaffMember(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
     photo = models.ImageField(upload_to='images/', null=True, blank=True)
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     email = models.EmailField()
     message = models.TextField(null=False, blank=False)
-    social_media = models.ManyToManyField(SocialMedia, blank=True, related_name='staff_social_media')
     department_id = models.ForeignKey(Department, blank=False, null=False, on_delete=models.CASCADE)
     designation_id = models.ForeignKey('Designation', blank=False, null=False, on_delete=models.CASCADE)
     started_at = models.DateField(null=False, blank=False)
@@ -63,7 +61,6 @@ class Society(models.Model):
     description = models.TextField(null=False, blank=False)
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     email = models.EmailField() 
-    social_media = models.ManyToManyField(SocialMedia, blank=True, related_name='society_social_media')
     department_id = models.ForeignKey(Department, blank=False, null=False, on_delete=models.CASCADE)
     founded_at = models.DateField(null=False, blank=False)
 

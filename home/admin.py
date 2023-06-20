@@ -1,12 +1,10 @@
 from django.contrib import admin
-from .models import Home, SocialMedia
+from .models import HomePage, DepartmentSocialMedia, StaffMemberSocialMedia, SocietySocialMedia
 # Register your models here.
 
-class SocialMediaAdmin(admin.ModelAdmin):
-    list_display = ('type', 'link')
-    list_filter = ('type', 'link')
-    search_fields = ('type', 'link')
-    ordering = ('type', 'link')
 
-admin.site.register(Home)
-admin.site.register(SocialMedia)
+
+admin.site.register(HomePage)
+admin.site.register(DepartmentSocialMedia)
+admin.site.register(StaffMemberSocialMedia)
+admin.site.register(SocietySocialMedia)

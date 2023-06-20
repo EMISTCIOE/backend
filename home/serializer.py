@@ -1,13 +1,23 @@
-from .models import Home, SocialMedia
+from .models import HomePage, DepartmentSocialMedia, StaffMemberSocialMedia, SocietySocialMedia
 from rest_framework import serializers
 # from rest_framework.relations import PrimaryKeyRelatedField
 
-class HomeSerializer(serializers.ModelSerializer):
+class HomePageSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Home
+        model = HomePage
         fields = '__all__'
     
-class SocialMediaSerializer(serializers.ModelSerializer):
+class DepartmentSocialMediaSerializer(serializers.ModelSerializer):
     class Meta:
-        model = SocialMedia
+        model = DepartmentSocialMedia
+        fields = '__all__'
+
+class StaffMemberSocialMediaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StaffMemberSocialMedia
+        fields = '__all__'
+
+class SocietySocialMediaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SocietySocialMedia
         fields = '__all__'
