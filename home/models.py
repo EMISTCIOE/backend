@@ -4,9 +4,15 @@ from department.models import Department, StaffMember, Society
 
 # Create your models here.
 
+sections_enum = (
+        ('TCIOE_HOME', "Thapathali Campus"),
+        ('TCIOE_ADMINISTRATION', "Campus Administration"),
+        ('TCIOE_LIBRARY', 'Campus Library'),
+    )
 class HomePage(models.Model):
     # multiple images
-    name = models.CharField(max_length=100, default='TCIOE', unique=True, editable=False)
+    id = models.UUIDField(primary_key=True ,default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100, default='TCIOE', choices=(sections_enum), unique=True, )
     slider_image1 = models.ImageField(upload_to='images/', null=True, blank=True)
     slider_image2 = models.ImageField(upload_to='images/', null=True, blank=True)
     slider_image3 = models.ImageField(upload_to='images/', null=True, blank=True)

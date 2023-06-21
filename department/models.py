@@ -3,14 +3,28 @@ import uuid
 
 # Create your models here.
 
-class Department(models.Model):
-    department_enum = (
+departments_enum = (
         ('DOECE', "Department of Electronics and Communication Engineering"),
         ('DOCE', "Department of Civil and Industrial Engineering"),
         ('DOAME', "Department of AutoMobile and Mechanical Engineering"),
+        ('DOARCH', "Department of Architecture"),
     )
+
+designations_enum = (
+        ('CHIEF', "Campus Chief"),
+        ('ASSIST_CHIEF', "Assistant Campus Chief"),
+        ('HOD', "Head of Department"),
+        ('DHOD', "Deputy Head of Department"),
+        ('PROF', "Professor"),
+        ('ASSO_PROF', "Associate Professor"),
+        ('ASSIST_PROF', "Assistant Professor"),
+        ('LECT', "Lecturer"),
+        ('HELPING_STAFF', "Helping Staff")
+    )
+
+class Department(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=100, choices=(department_enum), default='DOECE', unique=True)
+    name = models.CharField(max_length=100, choices=(departments_enum), default='DOECE', unique=True)
     introduction = models.TextField(null=False, blank=False)
     description = models.TextField(null=False, blank=False)
     image = models.ImageField(upload_to='images/', null=True, blank=True)
@@ -38,16 +52,8 @@ class StaffMember(models.Model):
 
 
 class Designation(models.Model):
-    designation_enum = (
-        ('HOD', "Head of Department"),
-        ('DHOD', "Deputy Head of Department"),
-        ('PROF', "Professor"),
-        ('ASSO_PROF', "Associate Professor"),
-        ('ASSIST_PROF', "Assistant Professor"),
-        ('LECT', "Lecturer"),
-    )
     id = models.UUIDField(primary_key=True, default=uuid.uuid4,  editable=False)
-    designation = models.CharField(max_length=100, choices=(designation_enum), null=False, blank=False)
+    designation = models.CharField(max_length=100, choices=(designations_enum), null=False, blank=False)
     started_at = models.DateField(null=False, blank=False)
     ended_at = models.DateField(null=True, blank=True)
 

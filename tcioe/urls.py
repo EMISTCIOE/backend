@@ -15,10 +15,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.shortcuts import redirect
+
+
+def redirectAPIhome(request):
+    return redirect('api/')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('home.urls')),
     path('api/notice/', include('notice.urls')),
     path('api/department/', include('department.urls')),
+    path('', redirectAPIhome)
 ]
