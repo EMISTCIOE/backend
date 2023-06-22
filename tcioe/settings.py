@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-e77*)tnppp(8j-5v8!rf2sqddq*bm5mv#1s1kfytc#&sz=&@$x'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
@@ -79,15 +79,7 @@ WSGI_APPLICATION = 'tcioe.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-if DEBUG:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
-else:
-    DATABASES = {
+DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': config("DB_NAME"),
@@ -95,14 +87,14 @@ else:
         'PASSWORD': config("DB_PASSWORD"),
         'HOST': config("DB_HOST"), 
         'PORT': config("DB_PORT"),
-        }
     }
-
-STORAGES = {
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    },
 }
+
+#STORAGES = {
+#    "staticfiles": {
+#        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+#    },
+#}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -146,9 +138,7 @@ if not DEBUG:
     MEDIA_ROOT = 'media/'
 
 else:
-    STATICFILES_DIRS = [
-        BASE_DIR / "static",
-    ]
+    STATIC_ROOT='static/'
 
 
 # Default primary key field type

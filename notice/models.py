@@ -32,14 +32,14 @@ class NoticeCategory(models.Model):
 
 class Notice(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    slug = models.SlugField(max_length=100, null=False, blank=False, unique=True, editable=False)
-    title = models.CharField(max_length=100, null=False, blank=False)
+    slug = models.SlugField(max_length=250, null=False, blank=False, unique=True, editable=False)
+    title = models.CharField(max_length=200, null=False, blank=False)
     description = models.TextField(null=False, blank=False)
     thumbnail = models.ImageField(upload_to='images/', null=True, blank=True)
     download_file = models.FileField(upload_to='files/', null=True, blank=True)
     notice_type = models.ForeignKey(NoticeType, blank=False, null=False, on_delete=models.CASCADE)
     notice_category = models.ForeignKey(NoticeCategory, blank=False, null=False, on_delete=models.CASCADE)
-    department_id = models.ForeignKey(Department, blank=False, null=False, on_delete=models.CASCADE)
+    department_id = models.ForeignKey(Department,blank=True, null=True, on_delete=models.CASCADE)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
