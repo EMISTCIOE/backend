@@ -29,7 +29,7 @@ class Department(models.Model):
     introduction = models.TextField(null=False, blank=False)
     description = models.TextField(null=False, blank=False)
     image = models.ImageField(upload_to='images/', null=True, blank=True)
-    social_media = models.ForeignKey(SocialMedia, on_delete=models.CASCADE, related_name='department_social_media')
+    social_media = models.ForeignKey(SocialMedia, on_delete=models.CASCADE, related_name='department_social_media', null=True, blank=True)
     # programs = models.TextField(null=False, blank=False) # I guess we will be having a separate program model so that this will be a foreign key (one to many relation) to that model/table
 
     def __str__(self):
