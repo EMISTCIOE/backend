@@ -1,3 +1,4 @@
 env/
 tests/
 .env
+db.sqlite3
