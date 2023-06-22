@@ -7,6 +7,7 @@ from .serializer import NoticeSerializer, NoticeTypeSerializer, NoticeCategorySe
 class NoticeViewSet(ModelViewSet):
     queryset = Notice.objects.all()
     serializer_class = NoticeSerializer
+    paginate_by = 10
 
 class NoticeTypeViewSet(ModelViewSet):
     queryset = NoticeType.objects.all()

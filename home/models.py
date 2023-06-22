@@ -1,6 +1,6 @@
 from django.db import models
 import uuid
-from department.models import Department, StaffMember, Society
+
 
 # Create your models here.
 
@@ -29,42 +29,57 @@ class HomePage(models.Model):
         return self.name
 
 
-social_enum = (
-        ('Facebook', 'Facebook'),
-        ('Twitter', 'Twitter'),
-        ('Instagram', 'Instagram'),
-        ('LinkedIn', 'LinkedIn'),
-        ('YouTube', 'YouTube'),
-        ('GitHub', 'GitHub'),
-        ('Website', 'Website'),
-    )
+# social_enum = (
+#         ('Facebook', 'Facebook'),
+#         ('Twitter', 'Twitter'),
+#         ('Instagram', 'Instagram'),
+#         ('LinkedIn', 'LinkedIn'),
+#         ('YouTube', 'YouTube'),
+#         ('GitHub', 'GitHub'),
+#         ('Website', 'Website'),
+#     )
+# class SocialMedia(models.Model):
+#     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+#     name =  models.CharField(max_length=100, default="doece-facebook", unique=True, blank=False, null=False)
+#     type = models.CharField(max_length=100, choices=(social_enum), default='Facebook', unique=True)
+#     link = models.URLField(null=False, blank=False)
+
+#     class Meta:
+#         unique_together = ('type', 'link')
+#         abstract = True
+
+
+# class DepartmentSocialMedia(SocialMedia):
+#     department_id = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='department_social_media')
+
+#     def __str__(self):
+#         return self.department_id.name + " " + self.type
+
+
+# class StaffMemberSocialMedia(SocialMedia):
+#     staff_member_id = models.ForeignKey(StaffMember, on_delete=models.CASCADE, related_name='staff_members_social_media')
+
+#     def __str__(self):
+#         return self.department_id.name + " " + self.type
+
+
+# class SocietySocialMedia(SocialMedia):
+#     society_id = models.ForeignKey(Society, on_delete=models.CASCADE, related_name='society_social_media')
+
+#     def __str__(self):
+#         return self.department_id.name + " " + self.type
+
+
 class SocialMedia(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name =  models.CharField(max_length=100, default="doece-facebook", unique=True, blank=False, null=False)
-    type = models.CharField(max_length=100, choices=(social_enum), default='Facebook', unique=True)
-    link = models.URLField(null=False, blank=False)
-
-    class Meta:
-        unique_together = ('type', 'link')
-        abstract = True
-
-
-class DepartmentSocialMedia(SocialMedia):
-    department_id = models.ForeignKey(Department, on_delete=models.CASCADE, related_name='department_social_media')
+    name = models.CharField(max_length=100, default="doece-social", unique=True, blank=False, null=False)
+    facebook = models.URLField(null=True, blank=True)
+    twitter = models.URLField(null=True, blank=True)
+    instagram = models.URLField(null=True, blank=True)
+    linkedin = models.URLField(null=True, blank=True)
+    youtube = models.URLField(null=True, blank=True)
+    github = models.URLField(null=True, blank=True)
+    website = models.URLField(null=True, blank=True)
 
     def __str__(self):
-        return self.department_id.name + " " + self.type
-
-
-class StaffMemberSocialMedia(SocialMedia):
-    staff_member_id = models.ForeignKey(StaffMember, on_delete=models.CASCADE, related_name='staff_members_social_media')
-
-    def __str__(self):
-        return self.department_id.name + " " + self.type
-
-
-class SocietySocialMedia(SocialMedia):
-    society_id = models.ForeignKey(Society, on_delete=models.CASCADE, related_name='society_social_media')
-
-    def __str__(self):
-        return self.department_id.name + " " + self.type
+        return self.name

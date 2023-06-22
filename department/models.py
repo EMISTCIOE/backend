@@ -1,5 +1,6 @@
 from django.db import models
 import uuid
+from home.models import SocialMedia
 
 # Create your models here.
 
@@ -28,11 +29,11 @@ class Department(models.Model):
     introduction = models.TextField(null=False, blank=False)
     description = models.TextField(null=False, blank=False)
     image = models.ImageField(upload_to='images/', null=True, blank=True)
+    social_media = models.ForeignKey(SocialMedia, on_delete=models.CASCADE, related_name='department_social_media')
     # programs = models.TextField(null=False, blank=False) # I guess we will be having a separate program model so that this will be a foreign key (one to many relation) to that model/table
 
     def __str__(self):
         return self.name
-
 
 
 class StaffMember(models.Model):
@@ -44,6 +45,7 @@ class StaffMember(models.Model):
     message = models.TextField(null=False, blank=False)
     department_id = models.ForeignKey(Department, blank=False, null=False, on_delete=models.CASCADE)
     designation_id = models.ForeignKey('Designation', blank=False, null=False, on_delete=models.CASCADE)
+    social_media = models.ForeignKey(SocialMedia, on_delete=models.CASCADE, related_name='staff_social_media')
     started_at = models.DateField(null=False, blank=False)
     ended_at = models.DateField(null=True, blank=True)
 
@@ -67,6 +69,7 @@ class Society(models.Model):
     description = models.TextField(null=False, blank=False)
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     email = models.EmailField() 
+    social_media = models.ForeignKey(SocialMedia, on_delete=models.CASCADE, related_name='society_social_media')
     department_id = models.ForeignKey(Department, blank=False, null=False, on_delete=models.CASCADE)
     founded_at = models.DateField(null=False, blank=False)
 

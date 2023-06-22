@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-e77*)tnppp(8j-5v8!rf2sqddq*bm5mv#1s1kfytc#&sz=&@$x
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -77,12 +77,25 @@ WSGI_APPLICATION = 'tcioe.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if DEBUG:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'test',
+        'USER': 'bibek',
+        'PASSWORD': 'bibek.pre',
+        'HOST': '127.0.0.1', 
+        'PORT': '5432',
+    }
+    }
+
 
 
 # Password validation
@@ -124,6 +137,8 @@ MEDIA_URL = 'media/'
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+MEDIA_ROOT = 'media/'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
