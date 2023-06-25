@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
-from decouple import config
+# from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'home.apps.HomeConfig',
     'notice.apps.NoticeConfig',
     'department.apps.DepartmentConfig',
+    'alldepartment.apps.AlldepartmentConfig',
+    'ckeditor'
 ]
 
 MIDDLEWARE = [
@@ -79,22 +81,30 @@ WSGI_APPLICATION = 'tcioe.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': config("DB_NAME"),
+#         'USER': config("DB_USER"),
+#         'PASSWORD': config("DB_PASSWORD"),
+#         'HOST': config("DB_HOST"),
+#         'PORT': config("DB_PORT"),
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': config("DB_NAME"),
-        'USER': config("DB_USER"),
-        'PASSWORD': config("DB_PASSWORD"),
-        'HOST': config("DB_HOST"), 
-        'PORT': config("DB_PORT"),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
-#STORAGES = {
+
+# STORAGES = {
 #    "staticfiles": {
 #        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
 #    },
-#}
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -138,7 +148,7 @@ if not DEBUG:
     MEDIA_ROOT = 'media/'
 
 else:
-    STATIC_ROOT='static/'
+    STATIC_ROOT = 'static/'
 
 
 # Default primary key field type

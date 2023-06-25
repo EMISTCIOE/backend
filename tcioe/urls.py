@@ -26,8 +26,9 @@ def redirectAPIhome(request):
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('home.urls')),
-    path('api/notice/', include('notice.urls')),
+    # path('api/notice/', include('notice.urls')),
     path('api/department/', include('department.urls')),
+    path('api/dep/', include('alldepartment.urls')),
     path('', redirectAPIhome)
 ]
 urlpatterns+=static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
