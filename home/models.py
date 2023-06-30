@@ -83,3 +83,32 @@ class SocialMedia(models.Model):
 
     def __str__(self):
         return self.name
+    
+
+
+class Unit(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=200, blank=False, null=False, unique=True)
+    description = models.TextField(null=True, blank=True)
+    image = models.ImageField(upload_to='images/', null=True, blank=True)
+    social_media = models.ForeignKey(SocialMedia, on_delete=models.CASCADE, related_name='unit_social_media', null=True, blank=True)
+    # social_media = models.ManyToManyField(SocialMedia, related_name='unit_social_media', null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+    
+class Resource(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=200, blank=False, null=False, unique=True)
+    description = models.TextField(null=True, blank=True)
+    image = models.ImageField(upload_to='images/', null=True, blank=True)
+    file = models.FileField(upload_to='files/', null=True, blank=True)
+    is_featured = models.BooleanField(default=False)
+    upload_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+
+
+class ImageGallery(models.Model):
+    pass
