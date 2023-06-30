@@ -3,6 +3,7 @@ from rest_framework.generics import ListAPIView
 from .models import Notice
 from rest_framework.response import Response
 from .serializer import NoticeSerializer
+from django.db.models import Q
 
 
 
@@ -14,8 +15,11 @@ class NoticeSearchView(ListAPIView):
     # get a query and search for it in the title and description of the notice
     def get_queryset(self):
         query = self.request.GET.get('query', '')
+        print(query)
         queryset = Notice.objects.all()
         if query:
-            queryset = Notice.objects.filter(title__icontains=query) | Notice.objects.filter(description__icontains=query)
+            queryset = Notice.objects.filter(
+                Q(title__icontains=query) | Q(description__icontains=query) | Q(slug__icontains=query)
+            )
         return queryset
     
