@@ -59,3 +59,6 @@ class Notice(models.Model):
         if not self.slug:
             self.slug = self.slugify()
         super(Notice, self).save(*args, **kwargs)
+
+    class Meta:
+        ordering = ['-published_date']
