@@ -9,7 +9,8 @@ class DepartmentViewSet(viewsets.ModelViewSet):
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
-    queryset = Project.objects.all()
+    queryset = Project.objects.all().order_by('-created_at')
+    paginate_by = 10
     serializer_class = ProjectSerializer
 
 
