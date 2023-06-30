@@ -93,7 +93,6 @@ WSGI_APPLICATION = 'tcioe.wsgi.application'
 #     }
 # }
 
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -101,11 +100,12 @@ DATABASES = {
     }
 }
 
-#STORAGES = {
+
+# STORAGES = {
 #    "staticfiles": {
 #        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
 #    },
-#}
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
