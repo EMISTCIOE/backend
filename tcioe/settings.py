@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'home.apps.HomeConfig',
     'notice.apps.NoticeConfig',
     'department.apps.DepartmentConfig',
+    'ckeditor'
 ]
 
 MIDDLEWARE = [
@@ -92,7 +93,6 @@ WSGI_APPLICATION = 'tcioe.wsgi.application'
 #     }
 # }
 
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -100,11 +100,12 @@ DATABASES = {
     }
 }
 
-#STORAGES = {
+
+# STORAGES = {
 #    "staticfiles": {
 #        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
 #    },
-#}
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -130,7 +131,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kathmandu'
 
 USE_I18N = True
 

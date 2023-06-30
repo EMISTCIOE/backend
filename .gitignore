@@ -10,3 +10,6 @@ media/
 static/
 files/
 images/
+mmr.sh
+push.sh
+
