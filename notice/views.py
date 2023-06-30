@@ -15,7 +15,7 @@ class NoticeSearchView(ListAPIView):
     # get a query and search for it in the title and description of the notice
     def get_queryset(self):
         query = self.request.GET.get('query', '')
-        print(query)
+        # print(query)
         queryset = Notice.objects.all()
         if query:
             queryset = Notice.objects.filter(
