@@ -6,4 +6,9 @@ nohup.out
 **/__pycache__/
 **/migrations/*
 !**/migrations/__init__.py
+<<<<<<< HEAD
 static/
+=======
+static/
+media/
+>>>>>>> f425e3c815effaa8240b43b25af6043d38f2d7a4
