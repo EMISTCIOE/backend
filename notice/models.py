@@ -1,6 +1,7 @@
 from django.db import models
 import uuid
 from department.models import Department
+from django.utils import timezone
 
 # Create your models here.
 class NoticeType(models.Model):
@@ -8,6 +9,7 @@ class NoticeType(models.Model):
         ('Department', "Department"),
         ('Administration', "Administration"),
         ('Admission', "Admission"),
+        ('Event', "Event"),
         ('Society', "Society"),
         ('Club', "Club"),
         ('Other', "Other"),
@@ -37,10 +39,10 @@ class Notice(models.Model):
     description = models.TextField(null=False, blank=False)
     thumbnail = models.ImageField(upload_to='images/', null=True, blank=True)
     download_file = models.FileField(upload_to='files/', null=True, blank=True)
-    notice_type = models.ForeignKey(NoticeType, blank=False, null=False, on_delete=models.CASCADE)
     notice_category = models.ForeignKey(NoticeCategory, blank=False, null=False, on_delete=models.CASCADE)
     department_id = models.ForeignKey(Department,blank=True, null=True, on_delete=models.CASCADE)
-    created = models.DateTimeField(auto_now_add=True)
+    is_featured = models.BooleanField(default=False)
+    published_date = models.DateField(default=timezone.now)
     modified = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
 
