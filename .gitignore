@@ -3,4 +3,7 @@ tests/
 .env
 db.sqlite3
 nohup.out
+__pycache__
+*.pyc
+**/migrations/
 

@@ -1,28 +1,10 @@
 from rest_framework import serializers
-from .models import *
+from .models import Department, Project, QuestionBank, PlansPolicy, Student, FAQ, Blog, Programs, Semester, Subject, StaffMember, Designation, Society, Routine
 
 
-class DepartmentInfoSerializer(serializers.ModelSerializer):
+class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
-        model = DepartmentInfo
-        fields = '__all__'
-
-
-class SocialSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Social
-        fields = '__all__'
-
-
-class NoticeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Notice
-        fields = '__all__'
-
-
-class NoticeTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = NoticeType
+        model = Department
         fields = '__all__'
 
 
@@ -35,12 +17,6 @@ class ProjectSerializer(serializers.ModelSerializer):
 class QuestionBankSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuestionBank
-        fields = '__all__'
-
-
-class ImageGallerySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ImageGallery
         fields = '__all__'
 
 
@@ -86,11 +62,25 @@ class SubjectSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class DepartmentLoginSerializer(serializers.ModelSerializer):
-    social = SocialSerializer()
-    plans = serializers.PrimaryKeyRelatedField(
-        queryset=PlansPolicy.objects.all())
-
+class StaffMemberSerializer(serializers.ModelSerializer):
     class Meta:
-        model = DepartmentLogin
+        model = StaffMember
+        fields = '__all__'
+
+
+class DesignationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Designation
+        fields = '__all__'
+
+
+class SocietySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Society
+        fields = '__all__'
+
+
+class RoutineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Routine
         fields = '__all__'

@@ -11,7 +11,9 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
-# from decouple import config
+from decouple import config
+import os
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -42,7 +44,6 @@ INSTALLED_APPS = [
     'home.apps.HomeConfig',
     'notice.apps.NoticeConfig',
     'department.apps.DepartmentConfig',
-    'alldepartment.apps.AlldepartmentConfig',
     'ckeditor'
 ]
 
@@ -87,7 +88,7 @@ WSGI_APPLICATION = 'tcioe.wsgi.application'
 #         'NAME': config("DB_NAME"),
 #         'USER': config("DB_USER"),
 #         'PASSWORD': config("DB_PASSWORD"),
-#         'HOST': config("DB_HOST"),
+#         'HOST': config("DB_HOST"), 
 #         'PORT': config("DB_PORT"),
 #     }
 # }
@@ -130,7 +131,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kathmandu'
 
 USE_I18N = True
 
@@ -148,7 +149,9 @@ if not DEBUG:
     MEDIA_ROOT = 'media/'
 
 else:
-    STATIC_ROOT = 'static/'
+    STATICFILES_DIRS = [
+        os.path.join(BASE_DIR, 'static')
+    ]
 
 
 # Default primary key field type
