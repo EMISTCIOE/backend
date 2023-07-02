@@ -36,16 +36,10 @@ class Department(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100, choices=(
         departments_enum), default='DOECE', unique=True)
-    # name = models.CharField(max_length=100, null=False,
-    # blank=False, unique=True)
-    # introduction = models.TextField(null=False, blank=False)
-    # description = models.TextField(null=False, blank=False)
     introduction = RichTextField()
     description = RichTextField()
-    # image = models.ImageField(upload_to='images/', null=True, blank=True)
     social_media = models.ForeignKey(
         SocialMedia, on_delete=models.CASCADE, related_name='department_social_media', null=True, blank=True)
-    # programs = models.TextField(null=False, blank=False) # I guess we will be having a separate program model so that this will be a foreign key (one to many relation) to that model/table
     phone = models.CharField(max_length=15)
     email = models.EmailField()
     routine = models.ImageField(
@@ -124,7 +118,8 @@ class Student(models.Model):
         primary_key=True, default=uuid.uuid4,  editable=False)
     name = models.CharField(max_length=255)
     roll = models.CharField(max_length=255)
-    photo = models.FileField(upload_to='media/students/')
+    photo = models.FileField(
+        upload_to='media/students/', null=True, blank=True)
     is_cr = models.BooleanField()
     is_topper = models.BooleanField()
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
@@ -137,6 +132,9 @@ class Student(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_department(self):
+        return self.department_id.name
 
 
 class FAQ(models.Model):
@@ -209,8 +207,8 @@ class Subject(models.Model):
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
     code = models.CharField(max_length=20)
     name = models.CharField(max_length=200)
-    course_objective = models.TextField(blank=True, null=True)
-    topics_covered = models.TextField(blank=True, null=True)
+    course_objective = RichTextField()
+    topics_covered = RichTextField()
     slug = models.SlugField(max_length=255, null=True, blank=True)
 
     def save(self, *args, **kwargs):
@@ -220,10 +218,14 @@ class Subject(models.Model):
     def __str__(self):
         return f"{self.name} [{self.code}]"
 
+    def get_semester(self):
+        return self.semester.name
+
 
 class StaffMember(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
+    responsibility = models.CharField(max_length=100, null=True, blank=True)
     photo = models.ImageField(upload_to='images/', null=True, blank=True)
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     email = models.EmailField()
@@ -234,8 +236,6 @@ class StaffMember(models.Model):
         'Designation', blank=False, null=False, on_delete=models.CASCADE)
     social_media = models.ForeignKey(
         SocialMedia, on_delete=models.CASCADE, related_name='staff_social_media')
-    # started_at = models.DateField(null=False, blank=False)
-    # ended_at = models.DateField(null=True, blank=True)
     slug = models.SlugField(max_length=255, null=True, blank=True)
 
     def save(self, *args, **kwargs):
@@ -245,14 +245,18 @@ class StaffMember(models.Model):
     def __str__(self):
         return self.name
 
+    def get_degisnation(self):
+        return self.designation_id.designation
+
+    def get_department(self):
+        return self.department_id.name
+
 
 class Designation(models.Model):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4,  editable=False)
     designation = models.CharField(max_length=100, choices=(
         designations_enum), null=False, blank=False)
-    # started_at = models.DateField(null=False, blank=False)
-    # ended_at = models.DateField(null=True, blank=True)
 
     def __str__(self):
         return self.designation
@@ -277,6 +281,9 @@ class Society(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_department(self):
+        return self.department_id.name
 
 
 class Routine(models.Model):

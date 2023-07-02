@@ -13,6 +13,7 @@ class StaffMemberAdmin(admin.ModelAdmin):
     list_display = ['name', 'designation_id',
                     'department_id', 'phone_number', 'email', 'id']
     search_fields = ['name', 'designation_id', 'email']
+    
 
 
 admin.site.register(Designation)
