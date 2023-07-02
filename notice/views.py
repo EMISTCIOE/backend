@@ -20,7 +20,7 @@ class NoticeSearchView(ListAPIView):
         queryset = Notice.objects.all()
         if query:
             queryset = Notice.objects.filter(
-                Q(title__icontains=query) | Q(description__icontains=query) | Q(slug__icontains=query)
+                Q(title__icontains=query) | Q(description__icontains=query)
             )
         return queryset
     

@@ -92,7 +92,7 @@ class Unit(models.Model):
     name = models.CharField(max_length=200, blank=False, null=False, unique=True)
     description = RichTextField()
     image = models.ImageField(upload_to='images/', null=True, blank=True)
-    social_media = models.ForeignKey(SocialMedia, on_delete=models.CASCADE, related_name='unit_social_media', null=True, blank=True)
+    social_media = models.OneToOneField(SocialMedia, on_delete=models.CASCADE, null=True, blank=True)
     # social_media = models.ManyToManyField(SocialMedia, related_name='unit_social_media', null=True, blank=True)
 
     def __str__(self):

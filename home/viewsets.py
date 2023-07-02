@@ -21,13 +21,21 @@ class SocialMediaViewSet(ModelViewSet):
 class ResourceViewSet(ModelViewSet):
     queryset = Resource.objects.all()
     serializer_class = ResourceSerializer
+    paginate_by =10
 
 class UnitViewSet(ModelViewSet):
     queryset = Unit.objects.all()
     serializer_class = UnitSerializer
+    paginate_by=10
 
 
 class ImageGalleryViewset(ModelViewSet):
     queryset = ImageGallery.objects.all()
     serializer_class = ImageGallerySerializer
+    paginate_by = 10
+
+
+class ImageViewset(ModelViewSet):
+    queryset = Image.objects.all()
+    serializer_class = ImageSerializer
     paginate_by = 10
