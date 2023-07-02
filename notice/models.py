@@ -2,6 +2,8 @@ from django.db import models
 import uuid
 from department.models import Department
 from django.utils import timezone
+from ckeditor.fields import RichTextField
+from django.core.validators import FileExtensionValidator
 
 # Create your models here.
 class NoticeType(models.Model):
@@ -15,7 +17,7 @@ class NoticeType(models.Model):
         ('Other', "Other"),
     )
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    notice_type = models.CharField(max_length=100, choices=type_enum,  null=False, blank=False)
+    notice_type = models.CharField(max_length=100, choices=type_enum, unique=True, null=False, blank=False)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     def __str__(self):
@@ -36,9 +38,9 @@ class Notice(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     slug = models.SlugField(max_length=250, null=False, blank=False, unique=True, editable=False)
     title = models.CharField(max_length=200, null=False, blank=False)
-    description = models.TextField(null=False, blank=False)
+    description = RichTextField()
     thumbnail = models.ImageField(upload_to='images/', null=True, blank=True)
-    download_file = models.FileField(upload_to='files/', null=True, blank=True)
+    download_file = models.FileField(upload_to='files/', null=True, blank=True, validators=[FileExtensionValidator(['pdf',])])
     notice_category = models.ForeignKey(NoticeCategory, blank=False, null=False, on_delete=models.CASCADE)
     department_id = models.ForeignKey(Department,blank=True, null=True, on_delete=models.CASCADE)
     is_featured = models.BooleanField(default=False)

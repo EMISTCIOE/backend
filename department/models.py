@@ -9,10 +9,12 @@ from django.core.validators import FileExtensionValidator
 # Create your models here.
 
 departments_enum = (
-    ('DOECE', "Department of Electronics and Communication Engineering"),
-    ('DOCE', "Department of Civil and Industrial Engineering"),
+    ('DOECE', "Department of Electronics and Computer Engineering"),
+    ('DOCE', "Department of Civil Engineering"),
+    ('DOIE', "Department of Industrial Engineering"),
     ('DOAME', "Department of AutoMobile and Mechanical Engineering"),
     ('DOARCH', "Department of Architecture"),
+    ('DOAS', "Department od Applied Science"),
     ('Admninistartion', "Administration"),
     ('Library', "Library"),
 )

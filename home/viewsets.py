@@ -1,8 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from .models import HomePage, SocialMedia
-from .serializer import HomePageSerializer, SocialMediaSerializer, ResourceSerializer, UnitSerializer
+from .models import HomePage, SocialMedia, Resource, Unit, ImageGallery, Image
+from .serializer import HomePageSerializer, SocialMediaSerializer, ResourceSerializer, UnitSerializer, ImageGallerySerializer, ImageSerializer
 # Create your views here.
 
 class HomeViewSet(ModelViewSet):
@@ -19,9 +19,23 @@ class SocialMediaViewSet(ModelViewSet):
     serializer_class = SocialMediaSerializer
 
 class ResourceViewSet(ModelViewSet):
-    queryset = SocialMedia.objects.all()
+    queryset = Resource.objects.all()
     serializer_class = ResourceSerializer
+    paginate_by =10
 
 class UnitViewSet(ModelViewSet):
-    queryset = SocialMedia.objects.all()
+    queryset = Unit.objects.all()
     serializer_class = UnitSerializer
+    paginate_by=10
+
+
+class ImageGalleryViewset(ModelViewSet):
+    queryset = ImageGallery.objects.all()
+    serializer_class = ImageGallerySerializer
+    paginate_by = 10
+
+
+class ImageViewset(ModelViewSet):
+    queryset = Image.objects.all()
+    serializer_class = ImageSerializer
+    paginate_by = 10
