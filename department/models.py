@@ -109,6 +109,7 @@ class QuestionBank(models.Model):
 class PlansPolicy(models.Model):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4,  editable=False)
+    name = models.CharField(max_length=100, null=True, blank=True)
     description = RichTextField()
 
     class Meta:
@@ -116,7 +117,7 @@ class PlansPolicy(models.Model):
         verbose_name_plural = 'Plans and Policies'
 
     def __str__(self):
-        return f'Plans and Policies - ID: {self.id}'
+        return f'Plans and Policies - Name: {self.name} ID: {self.id}'
 
 
 class Student(models.Model):
@@ -209,8 +210,8 @@ class Subject(models.Model):
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
     code = models.CharField(max_length=20)
     name = models.CharField(max_length=200)
-    course_objective = models.TextField(blank=True, null=True)
-    topics_covered = models.TextField(blank=True, null=True)
+    course_objective = RichTextField(null=True, blank=True)
+    topics_covered = RichTextField(null=True, blank=True)
     slug = models.SlugField(max_length=255, null=True, blank=True)
 
     def save(self, *args, **kwargs):
@@ -227,7 +228,7 @@ class StaffMember(models.Model):
     photo = models.ImageField(upload_to='images/', null=True, blank=True)
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     email = models.EmailField()
-    message = models.TextField(null=True, blank=True)
+    message = RichTextField(null=True, blank=True)
     department_id = models.ForeignKey(
         Department, blank=False, null=False, on_delete=models.CASCADE)
     designation_id = models.ForeignKey(

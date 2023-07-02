@@ -41,7 +41,7 @@ class Notice(models.Model):
     description = RichTextField()
     thumbnail = models.ImageField(upload_to='images/', null=True, blank=True)
     download_file = models.FileField(upload_to='files/', null=True, blank=True, validators=[FileExtensionValidator(['pdf',])])
-    notice_category = models.ForeignKey(NoticeCategory, blank=False, null=False, on_delete=models.CASCADE)
+    notice_category = models.ForeignKey(NoticeCategory, blank=True, null=True, on_delete=models.CASCADE)
     department_id = models.ForeignKey(Department,blank=True, null=True, on_delete=models.CASCADE)
     is_featured = models.BooleanField(default=False)
     published_date = models.DateField(default=timezone.now)
