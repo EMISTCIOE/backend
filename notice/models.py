@@ -15,7 +15,7 @@ class NoticeType(models.Model):
         ('Other', "Other"),
     )
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    notice_type = models.CharField(max_length=100, choices=type_enum,  null=False, blank=False)
+    notice_type = models.CharField(max_length=100, choices=type_enum, unique=True, null=False, blank=False)
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
     def __str__(self):

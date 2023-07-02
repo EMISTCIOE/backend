@@ -108,7 +108,27 @@ class Resource(models.Model):
 
     def __str__(self):
         return self.title
+    
+    class Meta:
+        ordering = ['-upload_date']
 
 
 class ImageGallery(models.Model):
-    pass
+    id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False)
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering=['-created_at']
+
+    def __str__(self):
+        return self.name
+
+
+class Image(models.Model):
+    gallery = models.ForeignKey(ImageGallery,null=True, on_delete=models.SET_NULL)
+    image = models.ImageField(upload_to='gallery/', null=False, blank=False)
+
+    def __str__(self):
+        return self.gallery.name

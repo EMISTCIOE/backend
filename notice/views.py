@@ -11,6 +11,7 @@ from django.db.models import Q
 class NoticeSearchView(ListAPIView):
     model = Notice
     serializer_class = NoticeSerializer
+    paginate_by = 10
 
     # get a query and search for it in the title and description of the notice
     def get_queryset(self):
