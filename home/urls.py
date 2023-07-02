@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from django.urls import path, include
 from rest_framework import routers
 from .viewsets import HomeViewSet, SocialMediaViewSet, ResourceViewSet, UnitViewSet, ImageGalleryViewset, ImageViewset
@@ -13,5 +12,4 @@ router.register(r'gallery', ImageGalleryViewset)
 
 urlpatterns = [
     path('', include(router.urls)),
-
 ]

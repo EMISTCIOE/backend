@@ -12,6 +12,7 @@ from .models import *
 class StaffMemberAdmin(admin.ModelAdmin):
     list_display = ['name', 'designation_id',
                     'department_id', 'phone_number', 'email', 'id']
+    search_fields = ['name', 'designation_id', 'email']
 
 
 admin.site.register(Designation)
@@ -20,6 +21,7 @@ admin.site.register(Designation)
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
     list_display = ['name', 'department', 'roll', 'is_cr', 'is_topper', 'id']
+    search_fields = ['name', 'department', 'roll', 'is_cr', 'is_topper']
 
 
 # from home app
@@ -34,6 +36,7 @@ admin.site.register([FAQ, Blog])
 @admin.register(QuestionBank)
 class QuestionBankAdmin(admin.ModelAdmin):
     list_display = ['__str__', 'id']
+    search_fields = ['subject_id', 'semester_id']
 
 
 @admin.register(Routine)
@@ -54,6 +57,7 @@ class ProjectAdmin(admin.ModelAdmin):
 @admin.register(Department)
 class DepartmentAdmin(admin.ModelAdmin):
     list_display = ['name', 'phone', 'email', 'id']
+    search_fields = ['name', 'phone', 'email']
 
 
 # @admin.register(Notice)
@@ -64,3 +68,4 @@ class DepartmentAdmin(admin.ModelAdmin):
 @admin.register(Programs)
 class ProgramAdmin(admin.ModelAdmin):
     list_display = ['name', 'department', 'id']
+    search_fields = ['name', 'department']

@@ -7,17 +7,20 @@ class HomePageSerializer(serializers.ModelSerializer):
     class Meta:
         model = HomePage
         fields = '__all__'
-    
 
-class SocialMediaSerializer(serializers.Serializer):
+
+class SocialMediaSerializer(serializers.ModelSerializer):
     class Meta:
         model = SocialMedia
-        fields = ['name', 'facebook', 'instagram', 'twitter', 'linkedin', 'github', 'youtube', 'website']
+        # fields = ['name', 'facebook', 'instagram', 'twitter', 'linkedin', 'github', 'youtube', 'website']
+        fields = '__all__'
+
 
 class ResourceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Resource
         fields = '__all__'
+
 
 class UnitSerializer(serializers.ModelSerializer):
     class Meta:
@@ -29,6 +32,7 @@ class ImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Image
         fields = '__all__'
+
 
 class ImageGallerySerializer(serializers.ModelSerializer):
     image = ImageSerializer(many=True, read_only="True")

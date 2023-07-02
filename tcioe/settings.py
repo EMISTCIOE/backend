@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'notice.apps.NoticeConfig',
     'department.apps.DepartmentConfig',
     'ckeditor',
-     "corsheaders",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
