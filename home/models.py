@@ -1,5 +1,6 @@
 from django.db import models
 import uuid
+from ckeditor.fields import RichTextField
 
 
 # Create your models here.
@@ -17,7 +18,7 @@ class HomePage(models.Model):
     slider_image2 = models.ImageField(upload_to='images/', null=True, blank=True)
     slider_image3 = models.ImageField(upload_to='images/', null=True, blank=True)
     slider_image4 = models.ImageField(upload_to='images/', null=True, blank=True)
-    description = models.TextField(null=False, blank=False)
+    description = RichTextField()
     phone_one = models.CharField(max_length=20, null=False, blank=False)
     phone_two = models.CharField(max_length=20, null=True, blank=True)
     phone_three = models.CharField(max_length=20, null=True, blank=True)
@@ -89,7 +90,7 @@ class SocialMedia(models.Model):
 class Unit(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200, blank=False, null=False, unique=True)
-    description = models.TextField(null=True, blank=True)
+    description = RichTextField()
     image = models.ImageField(upload_to='images/', null=True, blank=True)
     social_media = models.ForeignKey(SocialMedia, on_delete=models.CASCADE, related_name='unit_social_media', null=True, blank=True)
     # social_media = models.ManyToManyField(SocialMedia, related_name='unit_social_media', null=True, blank=True)
@@ -100,7 +101,7 @@ class Unit(models.Model):
 class Resource(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=200, blank=False, null=False, unique=True)
-    description = models.TextField(null=True, blank=True)
+    description = RichTextField()
     image = models.ImageField(upload_to='images/', null=True, blank=True)
     file = models.FileField(upload_to='files/', null=True, blank=True)
     is_featured = models.BooleanField(default=False)
@@ -116,7 +117,7 @@ class Resource(models.Model):
 class ImageGallery(models.Model):
     id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False)
     name = models.CharField(max_length=100)
-    description = models.TextField()
+    description = RichTextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
