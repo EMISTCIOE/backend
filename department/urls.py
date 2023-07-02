@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework import routers
 from .viewsets import *
+from .views import *
 
 router = routers.DefaultRouter()
 router.register(r'main', DepartmentViewSet)
@@ -20,4 +21,5 @@ router.register(r'routines', RoutineViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('subject-faculty/', DepartmentSubjects.as_view()),
 ]
