@@ -165,8 +165,8 @@ USE_TZ = True
 
 
 STATIC_URL = 'static/'
-MEDIA_URL = 'media/'
-MEDIA_ROOT = 'media/'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 if not DEBUG:
     STATIC_ROOT = 'static/'
 

@@ -24,6 +24,9 @@ class StudentAdmin(admin.ModelAdmin):
     list_display = ['name', 'department', 'roll', 'is_cr', 'is_topper', 'id']
     search_fields = ['name', 'department', 'roll', 'is_cr', 'is_topper']
 
+class SocialMediaInline(admin.StackedInline):
+    model = SocialMedia
+
 
 # from home app
 admin.site.register(SocialMedia)

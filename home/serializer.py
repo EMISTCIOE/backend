@@ -1,5 +1,6 @@
 from .models import HomePage, SocialMedia, Resource, Unit, ImageGallery, Image
 from rest_framework import serializers
+
 # from rest_framework.relations import PrimaryKeyRelatedField
 
 
@@ -23,6 +24,7 @@ class ResourceSerializer(serializers.ModelSerializer):
 
 
 class UnitSerializer(serializers.ModelSerializer):
+    unit_social = SocialMediaSerializer(read_only=True)
     class Meta:
         model = Unit
         fields = '__all__'

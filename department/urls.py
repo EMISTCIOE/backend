@@ -14,12 +14,13 @@ router.register(r'blogs', BlogViewSet)
 router.register(r'programs', ProgramsViewSet)
 router.register(r'semesters', SemesterViewSet)
 router.register(r'subjects', SubjectViewSet)
-router.register(r'staff-members', StaffMemberViewSet)
+router.register(r'staffmembers', StaffMemberViewSet)
 router.register(r'designations', DesignationViewSet)
 router.register(r'societies', SocietyViewSet)
 router.register(r'routines', RoutineViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('subject-faculty/', DepartmentSubjects.as_view()),
+    path('subjects/search', DepartmentSubjects.as_view()),
+    path('staffs/search', StaffSearchViews.as_view()),
 ]

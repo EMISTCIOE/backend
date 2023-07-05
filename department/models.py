@@ -8,27 +8,20 @@ from django.core.validators import FileExtensionValidator
 
 # Create your models here.
 
-departments_enum = (
-    ('DOECE', "Department of Electronics and Computer Engineering"),
-    ('DOCE', "Department of Civil Engineering"),
-    ('DOIE', "Department of Industrial Engineering"),
-    ('DOAME', "Department of AutoMobile and Mechanical Engineering"),
-    ('DOARCH', "Department of Architecture"),
-    ('DOAS', "Department od Applied Science"),
-    ('Admninistartion', "Administration"),
-    ('Library', "Library"),
-)
+departments_enum = [("Department of Electronics and Computer Engineering", 'DOECE'), ("Department of Civil Engineering", 'DOCE'), ("Department of Industrial Engineering", 'DOIE'), (
+    "Department of AutoMobile and Mechanical Engineering", 'DOAME'), ("Department of Architecture", 'DOARCH'), ("Department od Applied Science", 'DOAS'), ("Administration", 'Admninistartion'), ("Library", 'Library')]
+
 
 designations_enum = (
-    ('CHIEF', "Campus Chief"),
-    ('ASSIST_CHIEF', "Assistant Campus Chief"),
-    ('HOD', "Head of Department"),
-    ('DHOD', "Deputy Head of Department"),
-    ('PROF', "Professor"),
-    ('ASSO_PROF', "Associate Professor"),
-    ('ASSIST_PROF', "Assistant Professor"),
-    ('LECT', "Lecturer"),
-    ('HELPING_STAFF', "Helping Staff")
+    ('Campus Chief', 'CHIEF'),
+    ('Assistant Campus Chief', 'ASSIST_CHIEF'),
+    ('Head of Department', 'HOD'),
+    ('Deputy Head of Department', 'DHOD'),
+    ('Professor', 'PROF'),
+    ('Associate Professor', 'ASSO_PROF'),
+    ('Assistant Professor', 'ASSIST_PROF'),
+    ('Lecturer', 'LECT'),
+    ('Helping Staff', 'HELPING_STAFF')
 )
 
 
@@ -36,6 +29,8 @@ class Department(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100, choices=(
         departments_enum), default='DOECE', unique=True)
+    slug = models.SlugField(max_length=255, null=True,
+                            blank=True, editable=False)
     introduction = RichTextField()
     description = RichTextField()
     social_media = models.ForeignKey(
@@ -45,13 +40,11 @@ class Department(models.Model):
     routine = models.ImageField(
         upload_to='media/routine/', null=True, blank=True)
     plans = models.ForeignKey(
-        'PlansPolicy', on_delete=models.CASCADE, null=True, blank=True)
+        'PlansPolicy', on_delete=models.CASCADE, null=True, blank=True, related_name="department_plans")
     profile = models.ImageField(
         upload_to='media/profile/', null=True, blank=True)
 
     is_academic = models.BooleanField(default=False)
-
-    slug = models.SlugField(max_length=255, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
@@ -65,16 +58,16 @@ class Project(models.Model):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4,  editable=False)
     name = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, null=True,
+                            blank=True, editable=False)
     description = RichTextField()
     report = models.FileField(upload_to='media/files/project',
                               validators=[FileExtensionValidator(['pdf', 'docx'])])
     published_link = models.URLField(null=True, blank=True)
-    department = models.ForeignKey(Department, on_delete=models.PROTECT)
-    slug = models.CharField(max_length=255, null=True, blank=True)
+    department = models.ForeignKey(
+        Department, on_delete=models.PROTECT, related_name='department_projects')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    slug = models.CharField(max_length=255, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
@@ -87,10 +80,12 @@ class Project(models.Model):
 class QuestionBank(models.Model):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4,  editable=False)
+    name = models.CharField(max_length=255, null=True, blank=True)
+    slug = models.SlugField(max_length=255, null=True,
+                            blank=True, editable=False)
     file = models.FileField(
         upload_to='files/', validators=[FileExtensionValidator(['pdf', 'docx'])])
     subject = models.CharField(max_length=255)
-    slug = models.SlugField(max_length=255, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.subject)
@@ -118,14 +113,15 @@ class Student(models.Model):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4,  editable=False)
     name = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, null=True,
+                            blank=True, editable=False)
     roll = models.CharField(max_length=255)
     photo = models.FileField(
         upload_to='media/students/', null=True, blank=True)
     is_cr = models.BooleanField()
     is_topper = models.BooleanField()
-    department = models.ForeignKey(Department, on_delete=models.CASCADE)
-
-    slug = models.CharField(max_length=255, null=True, blank=True)
+    department = models.ForeignKey(
+        Department, on_delete=models.CASCADE, related_name='student_department')
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
@@ -143,7 +139,8 @@ class FAQ(models.Model):
         primary_key=True, default=uuid.uuid4,  editable=False)
     question = models.CharField(max_length=255)
     answer = RichTextField()
-    department = models.ForeignKey(Department, on_delete=models.CASCADE)
+    department = models.ForeignKey(
+        Department, on_delete=models.CASCADE, related_name='faq_department')
 
     def __str__(self):
         return f'FAQ - ID: {self.id}'
@@ -153,12 +150,12 @@ class Blog(models.Model):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4,  editable=False)
     title = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, null=True,
+                            blank=True, editable=False)
     description = RichTextField()
     author = models.CharField(max_length=255)
     department = models.ForeignKey(
-        Department, on_delete=models.CASCADE, null=True, blank=True)
-
-    slug = models.CharField(max_length=255, null=True, blank=True)
+        Department, on_delete=models.CASCADE, null=True, blank=True, related_name='blog_department')
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.title)
@@ -171,10 +168,12 @@ class Blog(models.Model):
 class Programs(models.Model):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4,  editable=False)
+    slug = models.SlugField(max_length=255, null=True,
+                            blank=True, editable=False)
     name = models.CharField(max_length=255)
     description = RichTextField()
-    department = models.ForeignKey(Department, on_delete=models.CASCADE)
-    slug = models.SlugField(max_length=255, null=True, blank=True)
+    department = models.ForeignKey(
+        Department, on_delete=models.CASCADE, related_name='department_programs')
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
@@ -190,9 +189,11 @@ class Programs(models.Model):
 class Semester(models.Model):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4,  editable=False)
+    slug = models.SlugField(max_length=255, null=True,
+                            blank=True, editable=False)
     name = models.CharField(max_length=100)
-    program = models.ForeignKey(Programs, on_delete=models.CASCADE)
-    slug = models.SlugField(max_length=255, null=True, blank=True)
+    program = models.ForeignKey(
+        Programs, on_delete=models.CASCADE, related_name='semesters')
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
@@ -205,17 +206,15 @@ class Semester(models.Model):
 class Subject(models.Model):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4,  editable=False)
-    semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
-    code = models.CharField(max_length=20)
+    slug = models.SlugField(max_length=255, null=True,
+                            blank=True, editable=False)
     name = models.CharField(max_length=200)
-<<<<<<< HEAD
-    course_objective = RichTextField(null=True, blank=True)
-    topics_covered = RichTextField(null=True, blank=True)
-=======
+    code = models.CharField(max_length=20)
+    semester = models.ForeignKey(
+        Semester, on_delete=models.CASCADE, related_name='subjects')
+
     course_objective = RichTextField()
     topics_covered = RichTextField()
->>>>>>> 61961a9d9fc6be43f4faceeef36a88b1450185c2
-    slug = models.SlugField(max_length=255, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
@@ -231,18 +230,20 @@ class Subject(models.Model):
 class StaffMember(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
+    slug = models.SlugField(max_length=255, null=True,
+                            blank=True, editable=False)
     responsibility = models.CharField(max_length=100, null=True, blank=True)
     photo = models.ImageField(upload_to='images/', null=True, blank=True)
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     email = models.EmailField()
     message = RichTextField(null=True, blank=True)
     department_id = models.ForeignKey(
-        Department, blank=False, null=False, on_delete=models.CASCADE)
+        Department, blank=False, null=False, on_delete=models.CASCADE, related_name='staff_members')
     designation_id = models.ForeignKey(
-        'Designation', blank=False, null=False, on_delete=models.CASCADE)
+        'Designation', blank=False, null=False, on_delete=models.CASCADE, related_name='associated_person')
+    is_key_official = models.BooleanField(default=False)
     social_media = models.ForeignKey(
-        SocialMedia, on_delete=models.CASCADE, related_name='staff_social_media')
-    slug = models.SlugField(max_length=255, null=True, blank=True)
+        SocialMedia, on_delete=models.CASCADE, related_name='socials')
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
@@ -271,15 +272,16 @@ class Designation(models.Model):
 class Society(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
+    slug = models.SlugField(max_length=255, null=True,
+                            blank=True, editable=False)
     description = models.TextField(null=False, blank=False)
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     email = models.EmailField()
     social_media = models.ForeignKey(
         SocialMedia, on_delete=models.CASCADE, related_name='society_social_media')
     department_id = models.ForeignKey(
-        Department, blank=False, null=False, on_delete=models.CASCADE)
+        Department, blank=False, null=False, on_delete=models.CASCADE, related_name='society_department')
     founded_at = models.DateField(null=True, blank=True)
-    slug = models.SlugField(max_length=255, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
@@ -294,7 +296,8 @@ class Society(models.Model):
 
 class Routine(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    semester = models.ForeignKey(
+        Semester, on_delete=models.CASCADE, related_name='routine_semester')
     # routine_pdf = models.Field(upload_to='media/routine/')
     routine_png = models.ImageField(upload_to='media/routine/')
     # programs = models.ForeignKey(Programs, on_delete=models.CASCADE)
