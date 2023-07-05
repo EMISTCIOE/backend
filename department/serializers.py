@@ -70,23 +70,26 @@ class ProgramsSerializer(serializers.ModelSerializer):
                   'description', 'department', 'semesters']
 
 
-class DesignationSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Designation
-        depth = 1
-        fields = ['id', 'designation']
-
-
 class StaffMemberSerializer(serializers.ModelSerializer):
-    staff_designation = DesignationSerializer(many=True, read_only=True)
+    staff_designation = serializers.CharField(
+        source='designation_id.designation')
     department = serializers.CharField(source='department_id.name')
     socials = SocialMediaSerializer(many=True, read_only=True)
 
     class Meta:
         model = StaffMember
         depth = 1
-        fields = ['id', 'slug', 'name', 'staff_designation', 'responsibility',
+        fields = ['id', 'slug', 'name', 'staff_designation', 'is_key_official', 'responsibility',
                   'photo', 'socials', 'phone_number', 'email', 'department', 'message']
+
+
+class DesignationSerializer(serializers.ModelSerializer):
+    associated_person = StaffMemberSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Designation
+        depth = 1
+        fields = ['id', 'designation', 'associated_person']
 
 
 class SocietySerializer(serializers.ModelSerializer):

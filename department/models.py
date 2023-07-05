@@ -208,10 +208,11 @@ class Subject(models.Model):
         primary_key=True, default=uuid.uuid4,  editable=False)
     slug = models.SlugField(max_length=255, null=True,
                             blank=True, editable=False)
+    name = models.CharField(max_length=200)
+    code = models.CharField(max_length=20)
     semester = models.ForeignKey(
         Semester, on_delete=models.CASCADE, related_name='subjects')
-    code = models.CharField(max_length=20)
-    name = models.CharField(max_length=200)
+
     course_objective = RichTextField()
     topics_covered = RichTextField()
 
@@ -239,7 +240,7 @@ class StaffMember(models.Model):
     department_id = models.ForeignKey(
         Department, blank=False, null=False, on_delete=models.CASCADE, related_name='staff_members')
     designation_id = models.ForeignKey(
-        'Designation', blank=False, null=False, on_delete=models.CASCADE, related_name='staff_designation')
+        'Designation', blank=False, null=False, on_delete=models.CASCADE, related_name='associated_person')
     is_key_official = models.BooleanField(default=False)
     social_media = models.ForeignKey(
         SocialMedia, on_delete=models.CASCADE, related_name='socials')

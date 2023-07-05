@@ -2,13 +2,12 @@ from django.contrib import admin
 from .models import Notice, NoticeType, NoticeCategory
 
 
-
 class NoticeAdmin(admin.ModelAdmin):
     list_display = ('title',  'notice_category', 'is_featured',
                     'published_date', 'is_active')
     list_filter = ('title', 'description', 'notice_category',
                    'department_id', 'is_featured', 'published_date', 'is_active')
-    search_fields = ('title', 'description', 'notice_category',
+    search_fields = ('title', 'description', 'category',
                      'department_id', 'is_featured', 'published_date', 'is_active')
 
 # class NoticeInline(admin.StackedInline):
@@ -18,7 +17,7 @@ class NoticeAdmin(admin.ModelAdmin):
 
 class NoticeCategoryAdmin(admin.ModelAdmin):
     # inlines = [NoticeInline]
-    list_display = ['notice_type', 'notice_category']
+    list_display = ['notice_type', 'category']
     search_fields = ['notice_category']
 
 
