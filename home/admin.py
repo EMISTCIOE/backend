@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import HomePage, Resource, Unit, ImageGallery, Image
 # Register your models here.
-
+from department.admin import SocialMediaInline
 
 class HomePageAdmin(admin.ModelAdmin):
     list_display = ('name', 'phone_one', 'email')

@@ -2,6 +2,7 @@ from django.contrib import admin
 from .models import Notice, NoticeType, NoticeCategory
 
 
+
 class NoticeAdmin(admin.ModelAdmin):
     list_display = ('title',  'notice_category', 'is_featured',
                     'published_date', 'is_active')
@@ -23,7 +24,7 @@ class NoticeCategoryAdmin(admin.ModelAdmin):
 
 class NoticeCategoryInline(admin.StackedInline):
     model = NoticeCategory
-    extra = 3
+    extra = 1
 
 
 class NoticeTypeAdmin(admin.ModelAdmin):
@@ -36,4 +37,4 @@ admin.site.register(Notice, NoticeAdmin)
 # admin.site.register(NoticeCategory, NoticeCategoryAdmin)
 admin.site.register(NoticeType, NoticeTypeAdmin)
 
-admin.site.register(NoticeCategory, NoticeCategoryAdmin)
+# admin.site.register(NoticeCategory, NoticeCategoryAdmin)
