@@ -33,7 +33,7 @@ class NoticeTypeAdmin(admin.ModelAdmin):
 
 # Register your models here.
 admin.site.register(Notice, NoticeAdmin)
-# admin.site.register(NoticeCategory, NoticeCategoryAdmin)
+admin.site.register(NoticeCategory, NoticeCategoryAdmin)
 admin.site.register(NoticeType, NoticeTypeAdmin)
 
 # admin.site.register(NoticeCategory, NoticeCategoryAdmin)
