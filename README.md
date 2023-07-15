@@ -18,15 +18,6 @@ Endpoint : /api/department/subjects/search/?sub_name=xxx&code=xxx&department=xxx
 - If no params are passed, all subjects will be returned.
 - Faculty with semester is not available right now but will be added soon.
 
-          <!-- keyword = self.request.GET.get('keyword', '')
-          category = self.request.GET.get('category', '')
-          notice_type = self.request.GET.get('notice_type', '')
-          department = self.request.GET.get('department', '')
-          is_featured = self.request.GET.get('is_featured', '')
-          published_date = self.request.GET.get('published_date', '')
-          start_date = self.request.GET.get('start_date', '')
-          end_date = self.request.GET.get('end_date', '') -->
-
 ## Notice
 
 Endpoint : /api/notice/search/?keyword=xxx&category=xxx&notice_type=xxx&department=xxx&is_featured=xxx&published_date=xxx&start_date=xxx&end_date=xxx
