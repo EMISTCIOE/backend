@@ -21,6 +21,6 @@ router.register(r'routines', RoutineViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('subjects/search', DepartmentSubjects.as_view()),
-    path('staffs/search', StaffSearchViews.as_view()),
+    path('subjects/search/', DepartmentSubjects.as_view()),
+    path('staffs/search/', StaffSearchViews.as_view()),
 ]
