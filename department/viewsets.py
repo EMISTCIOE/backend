@@ -68,7 +68,7 @@ class SubjectViewSet(viewsets.ModelViewSet):
 class StaffMemberViewSet(viewsets.ModelViewSet):
     queryset = StaffMember.objects.all()
     serializer_class = StaffMemberSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
 
 class DesignationViewSet(viewsets.ModelViewSet):

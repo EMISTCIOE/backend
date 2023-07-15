@@ -39,6 +39,7 @@ class StaffSearchViews(ListAPIView):
     model = StaffMember
     serializer_class = StaffMemberSerializer
     paginate_by = 10
+    # permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         # search by designation and is_key_official
@@ -49,7 +50,7 @@ class StaffSearchViews(ListAPIView):
         queryset = StaffMember.objects.all()
         if designation:
             queryset = queryset.filter(
-                designation_id__designation__icontains=designation)
+                designation_id__designation__iexact=designation)
         if key_officials:
             queryset = queryset.filter(
                 is_key_official__iexact=key_officials)
