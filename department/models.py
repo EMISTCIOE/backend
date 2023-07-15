@@ -12,18 +12,22 @@ departments_enum = [("Department of Electronics and Computer Engineering", 'DOEC
     "Department of AutoMobile and Mechanical Engineering", 'DOAME'), ("Department of Architecture", 'DOARCH'), ("Department od Applied Science", 'DOAS'), ("Administration", 'Admninistartion'), ("Library", 'Library')]
 
 
-designations_enum = (
-    ('Campus Chief', 'CHIEF'),
-    ('Assistant Campus Chief', 'ASSIST_CHIEF'),
-    ('Head of Department', 'HOD'),
-    ('Deputy Head of Department', 'DHOD'),
-    ('Professor', 'PROF'),
-    ('Associate Professor', 'ASSO_PROF'),
-    ('Assistant Professor', 'ASSIST_PROF'),
-    ('Lecturer', 'LECT'),
-    ('Helping Staff', 'HELPING_STAFF'),
-    ('Coordinator','COORDINATOR')
-)
+class DesignationEnums(models.IntegerChoices):
+    CAMPUS_CHIEF = 1, 'Campus Chief'
+    ASSIST_CAMPUS_CHIEF = 2, 'Assistant Campus Chief'
+    HOD = 3, 'Head of Department'
+    DHOD = 4, 'Deputy Head of Department'
+    MSC_COORD = 5, 'MSc. Coordinator'
+    BE_COORD = 6, 'BE Coordinator'
+    PROF = 7, 'Professor'
+    ASSOC_PROF = 8, 'Associate Professor'
+    ASSIST_PROF = 9, 'Assistant Professor'
+    LECT = 10, 'Lecturer'
+    ADMIN_STAFF = 11, 'Administrative Staff'
+    ACCOUNT_STAFF = 12, 'Account Section Staff'
+    EXAM_STAFF = 13, 'Examination Section Staff'
+    LIB_STAFF = 14, 'Library Staff'
+    HELPING_STAFF = 15, 'Helping Staff'
 
 
 class Department(models.Model):
@@ -238,13 +242,13 @@ class StaffMember(models.Model):
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     email = models.EmailField()
     message = RichTextField(null=True, blank=True)
-    department_id = models.ForeignKey(
+    department = models.ForeignKey(
         Department, blank=False, null=False, on_delete=models.CASCADE, related_name='staff_members')
-    designation_id = models.ForeignKey(
-        'Designation', blank=False, null=False, on_delete=models.CASCADE, related_name='associated_person')
+    designation = models.ForeignKey(
+        'Designation', blank=True, null=True, on_delete=models.SET_NULL, related_name='associated_person')
     is_key_official = models.BooleanField(default=False)
     social_media = models.ForeignKey(
-        SocialMedia, on_delete=models.CASCADE, related_name='socials')
+        SocialMedia, on_delete=models.SET_NULL, related_name='socials', null=True, blank=True)
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
@@ -259,15 +263,23 @@ class StaffMember(models.Model):
     def get_department(self):
         return self.department_id.name
 
+    class Meta:
+        verbose_name_plural = 'Staff Members'
+        ordering = ['-designation_id']
+
 
 class Designation(models.Model):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4,  editable=False)
-    designation = models.CharField(max_length=100, choices=(
-        designations_enum), null=False, blank=False)
+    designation = models.IntegerField(choices=(
+        DesignationEnums.choices), null=False, blank=False)
 
     def __str__(self):
-        return self.designation
+        return self.get_designation_display()
+
+    class Meta:
+        verbose_name_plural = 'Designations'
+        ordering = ['designation']
 
 
 class Society(models.Model):
