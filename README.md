@@ -1,4 +1,6 @@
-# Search Endpoints:
+# TCIOE API
+
+**_ Search Endpoints _**
 
 ## Staffs
 
@@ -25,9 +27,9 @@ Endpoint : /api/department/subjects/search/?sub_name=xxx&code=xxx&department=xxx
           start_date = self.request.GET.get('start_date', '')
           end_date = self.request.GET.get('end_date', '') -->
 
-  ## Notice
+## Notice
 
-  Endpoint : /api/notice/search/?keyword=xxx&category=xxx&notice_type=xxx&department=xxx&is_featured=xxx&published_date=xxx&start_date=xxx&end_date=xxx
+Endpoint : /api/notice/search/?keyword=xxx&category=xxx&notice_type=xxx&department=xxx&is_featured=xxx&published_date=xxx&start_date=xxx&end_date=xxx
 
 - All params are optional, just pass the parameter as required for search.
 - If no params are passed, all notices will be returned.
