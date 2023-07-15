@@ -39,7 +39,7 @@ class StaffSearchViews(ListAPIView):
     model = StaffMember
     serializer_class = StaffMemberSerializer
     paginate_by = 10
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         # search by designation and is_key_official
