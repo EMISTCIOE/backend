@@ -21,7 +21,8 @@ designations_enum = (
     ('Associate Professor', 'ASSO_PROF'),
     ('Assistant Professor', 'ASSIST_PROF'),
     ('Lecturer', 'LECT'),
-    ('Helping Staff', 'HELPING_STAFF')
+    ('Helping Staff', 'HELPING_STAFF'),
+    ('Coordinator','COORDINATOR')
 )
 
 
