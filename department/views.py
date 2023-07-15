@@ -3,6 +3,7 @@ from .models import Subject, StaffMember, Department, Blog, QuestionBank
 from rest_framework.generics import ListAPIView
 from django.db.models import Q
 from .serializers import SubjectSerializer, StaffMemberSerializer, BlogSerializer, QuestionBankSerializer
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 
 
 # Search view to search subject using faculty, department, code and subject name
@@ -12,6 +13,7 @@ class DepartmentSubjects(ListAPIView):
     model = Subject
     serializer_class = SubjectSerializer
     paginate_by = 10
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         print(self.request.GET)
