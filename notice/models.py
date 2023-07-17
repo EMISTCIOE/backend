@@ -13,6 +13,8 @@ class NoticeType(models.Model):
         ('Department', "Department"),
         ('Administration', "Administration"),
         ('Admission', "Admission"),
+        ('Exam', "Examination"),
+        ('Scholarship', "Scholarship"),
         ('Event', "Event"),
         ('Society', "Society"),
         ('Club', "Club"),
@@ -38,7 +40,7 @@ class NoticeCategory(models.Model):
     modified = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return self.category
+        return str(self.notice_type.notice_type) + "-" + self.category
 
 
 class Notice(models.Model):

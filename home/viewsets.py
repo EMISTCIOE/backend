@@ -28,7 +28,7 @@ class ResourceViewSet(ModelViewSet):
     queryset = Resource.objects.all()
     serializer_class = ResourceSerializer
     paginate_by = 10
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
 
 class UnitViewSet(ModelViewSet):
