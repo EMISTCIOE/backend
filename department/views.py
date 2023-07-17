@@ -44,13 +44,13 @@ class StaffSearchViews(ListAPIView):
     def get_queryset(self):
         # search by designation and is_key_official
         name = self.request.GET.get('name', '').lower()
-        designation = self.request.GET.get('designation', '').lower()
+        rank = self.request.GET.get('rank', '').lower()
         key_officials = self.request.GET.get('key_officials', '').lower()
         department = self.request.GET.get('department', '').lower()
         queryset = StaffMember.objects.all()
-        if designation:
+        if rank:
             queryset = queryset.filter(
-                designation_id__designation__iexact=designation)
+                designation_id__rank__iexact=rank)
         if key_officials:
             queryset = queryset.filter(
                 is_key_official__iexact=key_officials)

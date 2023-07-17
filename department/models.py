@@ -12,22 +12,43 @@ departments_enum = [("Department of Electronics and Computer Engineering", 'DOEC
     "Department of AutoMobile and Mechanical Engineering", 'DOAME'), ("Department of Architecture", 'DOARCH'), ("Department od Applied Science", 'DOAS'), ("Administration", 'Admninistartion'), ("Library", 'Library')]
 
 
-class DesignationEnums(models.IntegerChoices):
-    CAMPUS_CHIEF = 1, 'Campus Chief'
-    ASSIST_CAMPUS_CHIEF = 2, 'Assistant Campus Chief'
-    HOD = 3, 'Head of Department'
-    DHOD = 4, 'Deputy Head of Department'
-    MSC_COORD = 5, 'MSc. Coordinator'
-    BE_COORD = 6, 'BE Coordinator'
-    PROF = 7, 'Professor'
-    ASSOC_PROF = 8, 'Associate Professor'
-    ASSIST_PROF = 9, 'Assistant Professor'
-    LECT = 10, 'Lecturer'
-    ADMIN_STAFF = 11, 'Administrative Staff'
-    ACCOUNT_STAFF = 12, 'Account Section Staff'
-    EXAM_STAFF = 13, 'Examination Section Staff'
-    LIB_STAFF = 14, 'Library Staff'
-    HELPING_STAFF = 15, 'Helping Staff'
+designation_enums = [
+    ('CHIEF', 'Campus Chief'),
+    ('ASSIST_CAMPUS_CHIEF_ADMIN', 'Assistant Campus Chief Administration'),
+    ('ASSIST_CAMPUS_CHIEF_ACADEMIC', 'Assistant Campus Chief Academic'),
+    ('ASSIST_CAMPUS_CHIEF_PLANNING',
+     'Assistant Campus Chief Planning and Resource Management'),
+    ('HOD', 'Head of Department'),
+    ('DHOD', 'Deputy Head of Department'),
+    ('MSC_COORD', 'MSc. Coordinator'),
+    ('EMIS_HEAD', 'EMIS Head'),
+    ('RESEARCH_HEAD', 'Research and Development Head'),
+    ('MATERIAL_HEAD', 'Material Testing Head'),
+    ('CONSULTANCY_HEAD', 'Consultancy Head'),
+    ('EXAMS_ACADEMIC_HEAD', 'Examination and Academic Administration Head'),
+    ('LIBRARY_HEAD', 'Library Head'),
+    ('FINANCE_HEAD', 'Finance Administration Head'),
+    ('PERSONNEL_HEAD', 'Personnel Administration Head'),
+    ('GENERAL_HEAD', 'General Administration Head'),
+    ('PLANNING_HEAD', 'Planning Head'),
+    ('PROCUREMENT_HEAD', 'Procurement and Stores Head'),
+    ('SECURITY_HEAD', 'Security and Property Management Head'),
+    ('REPAIR_HEAD', 'Repair and Maintenance Head'),
+    ('IQAC_HEAD', 'IQAC Head'),
+    ('SAT_HEAD', 'SAT Head'),
+    ('ADMINISTRATION_HEAD', 'Administration Head'),
+    ('STORE_HEAD', 'Store Head'),
+    ('ACCOUNT_HEAD', 'Account Head'),
+    ('LECTURER', 'Lecturer'),
+    ('SENIOR_INSTRUCTOR', 'Senior Instructor'),
+    ('TEACHING_ASSISTANCE', 'Teaching Assistance'),
+    ('INSTRUCTOR', 'Instructor'),
+    ('READER', 'Reader'),
+    ('PROFESSOR', 'Professor'),
+    ('ASSOCIATE_PROFESSOR', 'Associate Professor'),
+    ('DEPUTY_INSTRUCTOR', 'Deputy Instructor'),
+    ('ASSISTANT_INSTRUCTOR', 'Assistant Instructor'),
+]
 
 
 class Department(models.Model):
@@ -266,20 +287,23 @@ class StaffMember(models.Model):
     class Meta:
         verbose_name_plural = 'Staff Members'
         ordering = ['-designation_id']
+        unique_together = ['name', 'designation']
 
 
 class Designation(models.Model):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4,  editable=False)
-    designation = models.IntegerField(choices=(
-        DesignationEnums.choices), null=False, blank=False)
+    designation = models.CharField(
+        max_length=100, choices=designation_enums)
+    rank = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return self.get_designation_display()
 
     class Meta:
         verbose_name_plural = 'Designations'
-        ordering = ['designation']
+        ordering = ['rank']
+        unique_together = ['designation', 'rank']
 
 
 class Society(models.Model):

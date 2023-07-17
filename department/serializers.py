@@ -89,7 +89,7 @@ class DesignationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Designation
         depth = 1
-        fields = ['id', 'designation', 'associated_person']
+        fields = ['id', 'designation', 'rank', 'associated_person']
 
 
 class SocietySerializer(serializers.ModelSerializer):
