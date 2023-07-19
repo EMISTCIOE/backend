@@ -12,18 +12,65 @@ departments_enum = [("Department of Electronics and Computer Engineering", 'DOEC
     "Department of AutoMobile and Mechanical Engineering", 'DOAME'), ("Department of Architecture", 'DOARCH'), ("Department od Applied Science", 'DOAS'), ("Administration", 'Admninistartion'), ("Library", 'Library')]
 
 
-designations_enum = (
-    ('Campus Chief', 'CHIEF'),
-    ('Assistant Campus Chief', 'ASSIST_CHIEF'),
-    ('Head of Department', 'HOD'),
-    ('Deputy Head of Department', 'DHOD'),
-    ('Professor', 'PROF'),
-    ('Associate Professor', 'ASSO_PROF'),
-    ('Assistant Professor', 'ASSIST_PROF'),
-    ('Lecturer', 'LECT'),
-    ('Helping Staff', 'HELPING_STAFF'),
-    ('Coordinator','COORDINATOR')
-)
+designation_enums = [
+    ('CHIEF', 'Campus Chief'),
+    ('ASSIST_CAMPUS_CHIEF_ADMIN', 'Assistant Campus Chief Administration'),
+    ('ASSIST_CAMPUS_CHIEF_ACADEMIC', 'Assistant Campus Chief Academic'),
+    ('ASSIST_CAMPUS_CHIEF_PLANNING',
+     'Assistant Campus Chief Planning and Resource Management'),
+    ('HOD', 'Head of Department'),
+    ('DHOD', 'Deputy Head of Department'),
+    ('MSC_COORD', 'MSc. Coordinator'),
+    ('EMIS_HEAD', 'EMIS Head'),
+    ('RESEARCH_HEAD', 'Research and Development Head'),
+    ('MATERIAL_HEAD', 'Material Testing Head'),
+    ('CONSULTANCY_HEAD', 'Consultancy Head'),
+    ('EXAMS_ACADEMIC_HEAD', 'Examination and Academic Administration Head'),
+    ('LIBRARY_HEAD', 'Library Head'),
+    ('FINANCE_HEAD', 'Finance Administration Head'),
+    ('PERSONNEL_HEAD', 'Personnel Administration Head'),
+    ('GENERAL_HEAD', 'General Administration Head'),
+    ('PLANNING_HEAD', 'Planning Head'),
+    ('PROCUREMENT_HEAD', 'Procurement and Stores Head'),
+    ('SECURITY_HEAD', 'Security and Property Management Head'),
+    ('REPAIR_HEAD', 'Repair and Maintenance Head'),
+    ('IQAC_HEAD', 'IQAC Head'),
+    ('SAT_HEAD', 'SAT Head'),
+    ('ADMINISTRATION_HEAD', 'Administration Head'),
+    ('STORE_HEAD', 'Store Head'),
+    ('ACCOUNT_HEAD', 'Account Head'),
+    ('LECTURER', 'Lecturer'),
+    ('SENIOR_INSTRUCTOR', 'Senior Instructor'),
+    ('TEACHING_ASSISTANCE', 'Teaching Assistance'),
+    ('INSTRUCTOR', 'Instructor'),
+    ('READER', 'Reader'),
+    ('PROFESSOR', 'Professor'),
+    ('ASSOCIATE_PROFESSOR', 'Associate Professor'),
+    ('DEPUTY_INSTRUCTOR', 'Deputy Instructor'),
+    ('ASSISTANT_INSTRUCTOR', 'Assistant Instructor'),
+    ('ASSISTANT_PROFESSOR', 'Assistant Professor'),
+    ('ASSISTANT_FINANCE_CONTROLLER', 'Assistant Finance Controller'),
+    ('DEPUTY_ADM_OFFICER', 'Deputy ADM Officer'),
+    ('DEPUTY_FINANCE_CONTROLLER', 'Deputy Finance Controller'),
+    ('SECTION_OFFICER', 'Section Officer'),
+    ('CHIEF_OFFICE_ASSISTANT', 'Chief Office Assistant'),
+    ('HEAD_ACCOUNT_ASSISTANCE', 'Head Account Assistance'),
+    ('LIBRARY_ASSISTANT', 'Library Assistant'),
+    ('OFFICE_ASSISTANT', 'Office Assistant'),
+    ('TECHNICAL_ASSISTANT', 'Technical Assistant'),
+    ('DRIVER', 'Driver'),
+    ('SENIOR_OFFICE_HELPER', 'Senior Office Helper'),
+    ('OFFICE_HELPER', 'Office Helper'),
+    ('HEAD_TECHNICAL_ASSISTANT', 'Head Technical Assistant'),
+    ('ASSISTANT_STOREKEEPER', 'Assistant Storekeeper'),
+    ('COMPUTER_OPERATOR', 'Computer Operator'),
+    ('LIBRARIAN', 'Librarian'),
+    ('LABORATORY_ASSISTANT', 'Laboratory Assistant'),
+    ('ACCOUNT_OFFICER', 'Account Officer'),
+    ('LIBRARY_INTERN', 'Library Intern'),
+    ('SECURITY_GUARD', 'Security Guard'),
+    ('SISTER', 'Sister'),
+]
 
 
 class Department(models.Model):
@@ -238,13 +285,13 @@ class StaffMember(models.Model):
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     email = models.EmailField()
     message = RichTextField(null=True, blank=True)
-    department_id = models.ForeignKey(
+    department = models.ForeignKey(
         Department, blank=False, null=False, on_delete=models.CASCADE, related_name='staff_members')
-    designation_id = models.ForeignKey(
-        'Designation', blank=False, null=False, on_delete=models.CASCADE, related_name='associated_person')
+    designation = models.ForeignKey(
+        'Designation', blank=True, null=True, on_delete=models.SET_NULL, related_name='associated_person')
     is_key_official = models.BooleanField(default=False)
     social_media = models.ForeignKey(
-        SocialMedia, on_delete=models.CASCADE, related_name='socials')
+        SocialMedia, on_delete=models.SET_NULL, related_name='socials', null=True, blank=True)
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
@@ -259,15 +306,26 @@ class StaffMember(models.Model):
     def get_department(self):
         return self.department_id.name
 
+    class Meta:
+        verbose_name_plural = 'Staff Members'
+        ordering = ['-designation_id']
+        unique_together = ['name', 'designation']
+
 
 class Designation(models.Model):
     id = models.UUIDField(
         primary_key=True, default=uuid.uuid4,  editable=False)
-    designation = models.CharField(max_length=100, choices=(
-        designations_enum), null=False, blank=False)
+    designation = models.CharField(
+        max_length=100, choices=designation_enums)
+    rank = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
-        return self.designation
+        return self.get_designation_display()
+
+    class Meta:
+        verbose_name_plural = 'Designations'
+        ordering = ['rank']
+        unique_together = ['designation', 'rank']
 
 
 class Society(models.Model):

@@ -10,10 +10,9 @@ from .models import *
 
 @admin.register(StaffMember)
 class StaffMemberAdmin(admin.ModelAdmin):
-    list_display = ['name', 'designation_id',
-                    'department_id', 'phone_number', 'email', 'id']
-    search_fields = ['name', 'designation_id', 'email']
-    
+    list_display = ['name', 'designation',
+                    'department', 'phone_number', 'email']
+    search_fields = ['name', 'designation', 'email']
 
 
 admin.site.register(Designation)
@@ -21,8 +20,9 @@ admin.site.register(Designation)
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
-    list_display = ['name', 'department', 'roll', 'is_cr', 'is_topper', 'id']
+    list_display = ['name', 'department', 'roll', 'is_cr', 'is_topper']
     search_fields = ['name', 'department', 'roll', 'is_cr', 'is_topper']
+
 
 class SocialMediaInline(admin.StackedInline):
     model = SocialMedia

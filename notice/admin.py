@@ -10,14 +10,9 @@ class NoticeAdmin(admin.ModelAdmin):
     search_fields = ('title', 'description', 'category',
                      'department_id', 'is_featured', 'published_date', 'is_active')
 
-# class NoticeInline(admin.StackedInline):
-#     model = Notice
-#     extra = 1
-
 
 class NoticeCategoryAdmin(admin.ModelAdmin):
-    # inlines = [NoticeInline]
-    list_display = ['notice_type', 'category']
+    list_display = ['category', 'notice_type']
     search_fields = ['notice_category']
 
 
@@ -33,7 +28,5 @@ class NoticeTypeAdmin(admin.ModelAdmin):
 
 # Register your models here.
 admin.site.register(Notice, NoticeAdmin)
-admin.site.register(NoticeCategory, NoticeCategoryAdmin)
 admin.site.register(NoticeType, NoticeTypeAdmin)
-
-# admin.site.register(NoticeCategory, NoticeCategoryAdmin)
+admin.site.register(NoticeCategory, NoticeCategoryAdmin)

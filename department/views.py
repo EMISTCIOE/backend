@@ -3,6 +3,7 @@ from .models import Subject, StaffMember, Department, Blog, QuestionBank
 from rest_framework.generics import ListAPIView
 from django.db.models import Q
 from .serializers import SubjectSerializer, StaffMemberSerializer, BlogSerializer, QuestionBankSerializer
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 
 
 # Search view to search subject using faculty, department, code and subject name
@@ -12,6 +13,7 @@ class DepartmentSubjects(ListAPIView):
     model = Subject
     serializer_class = SubjectSerializer
     paginate_by = 10
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         print(self.request.GET)
@@ -37,17 +39,18 @@ class StaffSearchViews(ListAPIView):
     model = StaffMember
     serializer_class = StaffMemberSerializer
     paginate_by = 10
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         # search by designation and is_key_official
         name = self.request.GET.get('name', '').lower()
-        designation = self.request.GET.get('designation', '').lower()
+        rank = self.request.GET.get('rank', '').lower()
         key_officials = self.request.GET.get('key_officials', '').lower()
         department = self.request.GET.get('department', '').lower()
         queryset = StaffMember.objects.all()
-        if designation:
+        if rank:
             queryset = queryset.filter(
-                designation_id__designation__icontains=designation)
+                designation_id__rank__iexact=rank)
         if key_officials:
             queryset = queryset.filter(
                 is_key_official__iexact=key_officials)
