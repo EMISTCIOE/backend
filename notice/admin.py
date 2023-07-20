@@ -7,13 +7,13 @@ class NoticeAdmin(admin.ModelAdmin):
                     'published_date', 'is_active')
     list_filter = ('title', 'description', 'notice_category',
                    'department_id', 'is_featured', 'published_date', 'is_active')
-    search_fields = ('title', 'description', 'category',
+    search_fields = ('title', 'description', 'notice_category__notice_type',
                      'department_id', 'is_featured', 'published_date', 'is_active')
 
 
 class NoticeCategoryAdmin(admin.ModelAdmin):
     list_display = ['category', 'notice_type']
-    search_fields = ['notice_category']
+    search_fields = ['category']
 
 
 class NoticeCategoryInline(admin.StackedInline):

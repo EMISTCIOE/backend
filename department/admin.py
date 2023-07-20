@@ -12,7 +12,7 @@ from .models import *
 class StaffMemberAdmin(admin.ModelAdmin):
     list_display = ['name', 'designation',
                     'department', 'phone_number', 'email']
-    search_fields = ['name', 'designation', 'email']
+    search_fields = ['name', 'designation__designation', 'email']
 
 
 admin.site.register(Designation)
@@ -40,7 +40,7 @@ admin.site.register([FAQ, Blog])
 @admin.register(QuestionBank)
 class QuestionBankAdmin(admin.ModelAdmin):
     list_display = ['__str__', 'id']
-    search_fields = ['subject_id', 'semester_id']
+    search_fields = ['subject']
 
 
 @admin.register(Routine)

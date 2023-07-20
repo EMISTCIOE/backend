@@ -4,14 +4,14 @@ from rest_framework.generics import ListAPIView
 from .models import Resource
 from .serializer import ResourceSerializer
 from django.db.models import Q
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import  IsAuthenticatedOrReadOnly
 
 
 class ResourceSearchView(ListAPIView):
     model = Resource
     serializer_class = ResourceSerializer
     paginate_by = 10
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     # get a query and search for it in the title and description of the Resource
     def get_queryset(self):
