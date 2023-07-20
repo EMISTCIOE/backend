@@ -1,9 +1,8 @@
-from django.shortcuts import render
-from .models import Subject, StaffMember, Department, Blog, QuestionBank
+from .models import Subject, StaffMember
 from rest_framework.generics import ListAPIView
 from django.db.models import Q
-from .serializers import SubjectSerializer, StaffMemberSerializer, BlogSerializer, QuestionBankSerializer
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
+from .serializers import SubjectSerializer, StaffMemberSerializer
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 
 # Search view to search subject using faculty, department, code and subject name
@@ -13,7 +12,7 @@ class DepartmentSubjects(ListAPIView):
     model = Subject
     serializer_class = SubjectSerializer
     paginate_by = 10
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
         print(self.request.GET)
@@ -39,7 +38,7 @@ class StaffSearchViews(ListAPIView):
     model = StaffMember
     serializer_class = StaffMemberSerializer
     paginate_by = 10
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
         # search by designation and is_key_official

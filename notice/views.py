@@ -4,14 +4,14 @@ from .models import Notice
 from rest_framework.response import Response
 from .serializer import NoticeSerializer
 from django.db.models import Q
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 
 class NoticeSearchView(ListAPIView):
     model = Notice
     serializer_class = NoticeSerializer
     paginate_by = 10
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     # get a query and search for it in the title and description of the notice,
     # if the query is empty then return all the notices

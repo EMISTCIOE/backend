@@ -106,6 +106,7 @@ class Resource(models.Model):
     file = models.FileField(upload_to='files/', null=True, blank=True)
     is_featured = models.BooleanField(default=False)
     upload_date = models.DateTimeField(auto_now_add=True)
+    is_downloadable = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
