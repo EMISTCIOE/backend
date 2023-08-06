@@ -12,33 +12,46 @@ departments_enum = [("Department of Electronics and Computer Engineering", 'DOEC
     "Department of AutoMobile and Mechanical Engineering", 'DOAME'), ("Department of Architecture", 'DOARCH'), ("Department od Applied Science", 'DOAS'), ("Administration", 'Admninistartion'), ("Library", 'Library')]
 
 
+# Head, Education Management Information Systems
+# Head, Consultancy Services
+# Head, Research and Development Unit
+# Head, Material Testing Laboratory
+# Head, Library Section
+# Head, Administration Section
+# Head, Financial Administation Section
+# Head, Planning Section
+# Head, Academic Administration and Exam Section
+
 designation_enums = [
     ('CHIEF', 'Campus Chief'),
-    ('ASSIST_CAMPUS_CHIEF_ADMIN', 'Assistant Campus Chief Administration'),
-    ('ASSIST_CAMPUS_CHIEF_ACADEMIC', 'Assistant Campus Chief Academic'),
+    ('ASSIST_CAMPUS_CHIEF_ADMIN', 'Assistant Campus Chief (Administration)'),
+    ('ASSIST_CAMPUS_CHIEF_ACADEMIC', 'Assistant Campus Chief (Academic)'),
     ('ASSIST_CAMPUS_CHIEF_PLANNING',
-     'Assistant Campus Chief Planning and Resource Management'),
+     'Assistant Campus Chief (Planning and Resource Management)'),
     ('HOD', 'Head of Department'),
     ('DHOD', 'Deputy Head of Department'),
-    ('MSC_COORD', 'MSc. Coordinator'),
-    ('EMIS_HEAD', 'EMIS Head'),
-    ('RESEARCH_HEAD', 'Research and Development Head'),
-    ('MATERIAL_HEAD', 'Material Testing Head'),
-    ('CONSULTANCY_HEAD', 'Consultancy Head'),
+    ('MSC_COORD_INFORMATION',
+     'Program Coordinator, M.Sc. in Informatics and Intelligent Systems Engineering'),
+    ('MSC_COORD_EARTHQUAKE', 'M.Sc. in Earthquake Engineering'),
+    ('MSC_COORD_DESIGN', 'M.Sc. in Mechanical Design and Manufacturing'),
+    ('EMIS_HEAD', 'Head, Education Management Information Systems'),
+    ('RESEARCH_HEAD', 'Head, Research and Development Unit'),
+    ('MATERIAL_HEAD', 'Head, Material Testing Laboratory'),
+    ('CONSULTANCY_HEAD', 'Head, Consultancy Services'),
     ('EXAMS_ACADEMIC_HEAD', 'Examination and Academic Administration Head'),
-    ('LIBRARY_HEAD', 'Library Head'),
-    ('FINANCE_HEAD', 'Finance Administration Head'),
-    ('PERSONNEL_HEAD', 'Personnel Administration Head'),
-    ('GENERAL_HEAD', 'General Administration Head'),
-    ('PLANNING_HEAD', 'Planning Head'),
-    ('PROCUREMENT_HEAD', 'Procurement and Stores Head'),
-    ('SECURITY_HEAD', 'Security and Property Management Head'),
-    ('REPAIR_HEAD', 'Repair and Maintenance Head'),
-    ('IQAC_HEAD', 'IQAC Head'),
-    ('SAT_HEAD', 'SAT Head'),
-    ('ADMINISTRATION_HEAD', 'Administration Head'),
-    ('STORE_HEAD', 'Store Head'),
-    ('ACCOUNT_HEAD', 'Account Head'),
+    ('LIBRARY_HEAD', 'Head, Library Section'),
+    ('FINANCE_HEAD', 'Head, Financial Administation Section'),
+    ('PERSONNEL_HEAD', 'Head, Personnel Section'),
+    ('GENERAL_HEAD', 'Head, General Administration Section'),
+    ('PLANNING_HEAD', 'Head, Planning Section'),
+    ('PROCUREMENT_HEAD', 'Head, Procurement Section'),
+    ('SECURITY_HEAD', 'Head, Security Section'),
+    ('REPAIR_HEAD', 'Head, Repair and Maintenance Section'),
+    ('IQAC_HEAD', 'Head, IQAC Section'),
+    ('SAT_HEAD', 'Head, SAT Section'),
+    ('ADMINISTRATION_HEAD', 'Head, Academic Administration and Exam Section'),
+    ('STORE_HEAD', 'Head, Store Section'),
+    ('ACCOUNT_HEAD', 'Head, Account Section'),
     ('LECTURER', 'Lecturer'),
     ('SENIOR_INSTRUCTOR', 'Senior Instructor'),
     ('TEACHING_ASSISTANCE', 'Teaching Assistance'),
