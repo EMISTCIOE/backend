@@ -12,16 +12,6 @@ departments_enum = [("Department of Electronics and Computer Engineering", 'DOEC
     "Department of AutoMobile and Mechanical Engineering", 'DOAME'), ("Department of Architecture", 'DOARCH'), ("Department od Applied Science", 'DOAS'), ("Administration", 'Admninistartion'), ("Library", 'Library')]
 
 
-# Head, Education Management Information Systems
-# Head, Consultancy Services
-# Head, Research and Development Unit
-# Head, Material Testing Laboratory
-# Head, Library Section
-# Head, Administration Section
-# Head, Financial Administation Section
-# Head, Planning Section
-# Head, Academic Administration and Exam Section
-
 designation_enums = [
     ('CHIEF', 'Campus Chief'),
     ('ASSIST_CAMPUS_CHIEF_ADMIN', 'Assistant Campus Chief (Administration)'),
