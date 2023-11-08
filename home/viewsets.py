@@ -1,9 +1,40 @@
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from .models import HomePage, SocialMedia, Resource, Unit, ImageGallery, Image
-from .serializer import HomePageSerializer, SocialMediaSerializer, ResourceSerializer, UnitSerializer, ImageGallerySerializer, ImageSerializer
+from .models import (
+    HomePage,
+    SocialMedia,
+    Resource,
+    Unit,
+    ImageGallery,
+    Image,
+    Calendar,
+    Report,
+)
+from .serializer import (
+    HomePageSerializer,
+    SocialMediaSerializer,
+    ResourceSerializer,
+    UnitSerializer,
+    ImageGallerySerializer,
+    ImageSerializer,
+    CalendarSerializer,
+    ReportSerializer,
+)
+
 # Create your views here.
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+
+
+class ReportViewset(ModelViewSet):
+    queryset = Report.objects.all()
+    serializer_class = ReportSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+
+class CalendarViewset(ModelViewSet):
+    queryset = Calendar.objects.all()
+    serializer_class = CalendarSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 
 class HomeViewSet(ModelViewSet):
