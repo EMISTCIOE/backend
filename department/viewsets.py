@@ -1,7 +1,41 @@
 from rest_framework import viewsets
-from .models import Department, Project, QuestionBank, PlansPolicy, Student, FAQ, Blog, Programs, Semester, Subject, StaffMember, Designation, Society, Routine
-from .serializers import DepartmentSerializer, ProjectSerializer, QuestionBankSerializer, PlansPolicySerializer, StudentSerializer, FAQSerializer, BlogSerializer, ProgramsSerializer, SemesterSerializer, SubjectSerializer, StaffMemberSerializer, DesignationSerializer, SocietySerializer, RoutineSerializer
+from .models import (
+    Department,
+    Project,
+    QuestionBank,
+    PlansPolicy,
+    Student,
+    FAQ,
+    Blog,
+    Programs,
+    Semester,
+    Subject,
+    StaffMember,
+    Designation,
+    Society,
+    Routine,
+
+)
+from .serializers import (
+    DepartmentSerializer,
+    ProjectSerializer,
+    QuestionBankSerializer,
+    PlansPolicySerializer,
+    StudentSerializer,
+    FAQSerializer,
+    BlogSerializer,
+    ProgramsSerializer,
+    SemesterSerializer,
+    SubjectSerializer,
+    StaffMemberSerializer,
+    DesignationSerializer,
+    SocietySerializer,
+    RoutineSerializer,
+)
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+
+
+
 
 
 class DepartmentViewSet(viewsets.ModelViewSet):
@@ -11,7 +45,7 @@ class DepartmentViewSet(viewsets.ModelViewSet):
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
-    queryset = Project.objects.all().order_by('-created_at')
+    queryset = Project.objects.all().order_by("-created_at")
     paginate_by = 10
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
