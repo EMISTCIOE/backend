@@ -9,7 +9,8 @@ from django.core.validators import FileExtensionValidator
 # Create your models here.
 
 departments_enum = [("Department of Electronics and Computer Engineering", 'DOECE'), ("Department of Civil Engineering", 'DOCE'), ("Department of Industrial Engineering", 'DOIE'), (
-    "Department of AutoMobile and Mechanical Engineering", 'DOAME'), ("Department of Architecture", 'DOARCH'), ("Department od Applied Science", 'DOAS'), ("Administration", 'Admninistartion'), ("Library", 'Library')]
+    "Department of AutoMobile and Mechanical Engineering", 'DOAME'), ("Department of Architecture", 'DOARCH'), ("Department of Applied Science", 'DOAS'), ("Administration", 'Admninistartion'), ("Library", 'Library'),
+("Education Management Information System Unit","EMIS"),("Research and Development Unit","R&D"),("Material Testing Laboratory Unit","MTL"),("Examination and Academic Administration","Admission"),("Finance Administration","Finance Administration"),("Main Store","Main Store"),("Consultancy","Consultancy")]
 
 
 designation_enums = [
@@ -308,7 +309,7 @@ class StaffMember(models.Model):
 
     class Meta:
         verbose_name_plural = 'Staff Members'
-        ordering = ['-designation_id']
+        ordering = ['designation']
         unique_together = ['name', 'designation']
 
 
