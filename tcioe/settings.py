@@ -20,12 +20,23 @@ from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+LOCAL = True
+
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config(
-    'SECRET_KEY') or 'django-insecure-e77*)tnppp(8j-5v8!rf2sqddq*bm5mv#1s1kfytc#&sz=&@$x'
+
+if not LOCAL:
+    SECRET_KEY = (
+        config("SECRET_KEY")
+        or "django-insecure-e77*)tnppp(8j-5v8!rf2sqddq*bm5mv#1s1kfytc#&sz=&@$x"
+    )
+
+else:
+    SECRET_KEY = "django-insecure-e77*)tnppp(8j-5v8!rf2sqddq*bm5mv#1s1kfytc#&sz=&@$x"
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -36,41 +47,42 @@ ALLOWED_HOSTS = ["*"]
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'rest_framework',
-    'home.apps.HomeConfig',
-    'notice.apps.NoticeConfig',
-    'department.apps.DepartmentConfig',
-    'ckeditor',
-     "corsheaders",
-    # 'rest_framework_simplejwt'
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "rest_framework",
+    "home.apps.HomeConfig",
+    "notice.apps.NoticeConfig",
+    "department.apps.DepartmentConfig",
+    "ckeditor",
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-CSRF_TRUSTED_ORIGINS = ['http://notices.tcioe.edu.np', 'https://notices.tcioe.edu.np',
-                        'http://www.notices.tcioe.edu.np', 'https://www.notices.tcioe.edu.np']
+CSRF_TRUSTED_ORIGINS = [
+    "http://notices.tcioe.edu.np",
+    "https://notices.tcioe.edu.np",
+    "http://www.notices.tcioe.edu.np",
+    "https://www.notices.tcioe.edu.np",
+]
 
 CORS_ALLOW_ALL_ORIGINS = True
 
-CORS_ALLOWED_ORIGINS = [
-    "https://www.tcioe.edu.np","https://tcioe.edu.np"
-]
+CORS_ALLOWED_ORIGINS = ["https://www.tcioe.edu.np", "https://tcioe.edu.np"]
 
 CORS_ALLOW_HEADERS = (
     "accept",
@@ -90,19 +102,19 @@ CORS_ALLOW_METHODS = (
     "PUT",
 )
 
-ROOT_URLCONF = 'tcioe.urls'
+ROOT_URLCONF = "tcioe.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
@@ -159,29 +171,31 @@ TEMPLATES = [
 #     'ROTATE_REFRESH_TOKENS': True,
 # }
 
-WSGI_APPLICATION = 'tcioe.wsgi.application'
+WSGI_APPLICATION = "tcioe.wsgi.application"
 
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-DATABASES = {
-     'default': {
-         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-         'NAME': config("DB_NAME"),
-         'USER': config("DB_USER"),
-         'PASSWORD': config("DB_PASSWORD"),
-         'HOST': config("DB_HOST"),
-         'PORT': config("DB_PORT"),
-     }
-}
+if not LOCAL:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql_psycopg2",
+            "NAME": config("DB_NAME"),
+            "USER": config("DB_USER"),
+            "PASSWORD": config("DB_PASSWORD"),
+            "HOST": config("DB_HOST"),
+            "PORT": config("DB_PORT"),
+        }
+    }
 
-#DATABASES = {
- #   'default': {
- #       'ENGINE': 'django.db.backends.sqlite3',
-#        'NAME': BASE_DIR / 'db.sqlite3',
-#    }
-#}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 
 # STORAGES = {
@@ -195,27 +209,26 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
-
 ]
 
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'Asia/Kathmandu'
+TIME_ZONE = "Asia/Kathmandu"
 
 USE_I18N = True
 
@@ -226,20 +239,18 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 
-STATIC_URL = 'static/'
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
-if not DEBUG:
-    STATIC_ROOT = 'static/'
+STATIC_URL = "static/"
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 
+if not DEBUG:
+    STATIC_ROOT = "static/"
 
 else:
-    STATICFILES_DIRS = [
-        os.path.join(BASE_DIR, 'static')
-    ]
+    STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
