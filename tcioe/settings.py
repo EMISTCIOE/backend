@@ -103,6 +103,9 @@ CORS_ALLOW_METHODS = (
     "PUT",
 )
 
+# X-Frame-Options
+X_FRAME_OPTIONS = "ALLOWALL"
+
 ROOT_URLCONF = "tcioe.urls"
 
 TEMPLATES = [
