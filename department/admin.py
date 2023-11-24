@@ -33,7 +33,7 @@ class SocialMediaInline(admin.StackedInline):
 # from home app
 admin.site.register(SocialMedia)
 
-admin.site.register([PlansPolicy, Semester])
+admin.site.register([PlansPolicy])
 admin.site.register([FAQ, Blog])
 
 # admin.site.register([Resource,Syllabus])
@@ -45,14 +45,6 @@ class QuestionBankAdmin(admin.ModelAdmin):
     search_fields = ["subject"]
 
 
-@admin.register(Routine)
-class RoutineAdmin(admin.ModelAdmin):
-    list_display = ["__str__", "id"]
-
-
-@admin.register(Subject)
-class SubjectAdmin(admin.ModelAdmin):
-    list_display = ["__str__", "semester", "id"]
 
 
 @admin.register(Project)
