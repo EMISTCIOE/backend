@@ -118,7 +118,7 @@ class Unit(models.Model):
 class Resource(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=200, blank=False, null=False, unique=True)
-    description = RichTextField()
+    description = RichTextField(null=True,blank=True)
     image = models.ImageField(upload_to="images/", null=True, blank=True)
     file = models.FileField(upload_to="files/", null=True, blank=True)
     is_featured = models.BooleanField(default=False)

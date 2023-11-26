@@ -48,7 +48,7 @@ class Notice(models.Model):
     slug = models.SlugField(max_length=250, null=False,
                             blank=False, unique=True, editable=False)
     title = models.CharField(max_length=200, null=False, blank=False)
-    description = RichTextField()
+    description = RichTextField(null=True,blank=True)
     thumbnail = models.ImageField(upload_to='images/', null=True, blank=True)
     download_file = models.FileField(
         upload_to='files/', null=True, blank=True, validators=[FileExtensionValidator(['pdf',])])

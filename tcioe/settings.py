@@ -20,7 +20,7 @@ from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-LOCAL = True
+LOCAL = False
 
 
 # Quick-start development settings - unsuitable for production
@@ -71,7 +71,12 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "csp.middleware.CSPMiddleware",
 ]
+
+CSP_DEFAULT_SRC = ("'self'", 'https://tcioe.edu.np')
+
+CSP_FRAME_SRC = ("'self'", 'https://tcioe.edu.np')
 
 CSRF_TRUSTED_ORIGINS = [
     "http://notices.tcioe.edu.np",
@@ -103,7 +108,7 @@ CORS_ALLOW_METHODS = (
 )
 
 # X-Frame-Options
-X_FRAME_OPTIONS = "ALLOWALL"
+X_FRAME_OPTIONS = "ALLOW-FROM https://www.tcioe.edu.np"
 
 ROOT_URLCONF = "tcioe.urls"
 
