@@ -23,10 +23,14 @@ class HomePage(models.Model):
         choices=(sections_enum),
         unique=True,
     )
-    slider_image1 = models.ImageField(upload_to="images/", null=True, blank=True)
-    slider_image2 = models.ImageField(upload_to="images/", null=True, blank=True)
-    slider_image3 = models.ImageField(upload_to="images/", null=True, blank=True)
-    slider_image4 = models.ImageField(upload_to="images/", null=True, blank=True)
+    slider_image1 = models.ImageField(
+        upload_to="images/", null=True, blank=True)
+    slider_image2 = models.ImageField(
+        upload_to="images/", null=True, blank=True)
+    slider_image3 = models.ImageField(
+        upload_to="images/", null=True, blank=True)
+    slider_image4 = models.ImageField(
+        upload_to="images/", null=True, blank=True)
     description = RichTextField()
     phone_one = models.CharField(max_length=20, null=False, blank=False)
     phone_two = models.CharField(max_length=20, null=True, blank=True)
@@ -99,7 +103,8 @@ class SocialMedia(models.Model):
 
 class Unit(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=200, blank=False, null=False, unique=True)
+    name = models.CharField(max_length=200, blank=False,
+                            null=False, unique=True)
     description = RichTextField()
     image = models.ImageField(upload_to="images/", null=True, blank=True)
     social_media = models.OneToOneField(
@@ -117,8 +122,9 @@ class Unit(models.Model):
 
 class Resource(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    title = models.CharField(max_length=200, blank=False, null=False, unique=True)
-    description = RichTextField(null=True,blank=True)
+    title = models.CharField(
+        max_length=200, blank=False, null=False, unique=True)
+    description = RichTextField(null=True, blank=True)
     image = models.ImageField(upload_to="images/", null=True, blank=True)
     file = models.FileField(upload_to="files/", null=True, blank=True)
     is_featured = models.BooleanField(default=False)
@@ -146,7 +152,8 @@ class ImageGallery(models.Model):
 
 
 class Image(models.Model):
-    gallery = models.ForeignKey(ImageGallery, null=True, on_delete=models.SET_NULL)
+    gallery = models.ForeignKey(
+        ImageGallery, null=True, on_delete=models.SET_NULL)
     image = models.ImageField(upload_to="gallery/", null=False, blank=False)
 
     def __str__(self):
@@ -162,7 +169,8 @@ calendar_for = [
 class Calendar(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=255, null=False)
-    calendar_level = models.CharField(choices=calendar_for, max_length=100, null=False)
+    calendar_level = models.CharField(
+        choices=calendar_for, max_length=100, null=False)
     calendar_pdf = models.FileField(
         upload_to="media/calendars/",
         null=True,
@@ -205,6 +213,7 @@ class ReportType(models.Model):
 
 class Report(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
     title = models.CharField(max_length=200)
     slug = models.CharField(max_length=255, null=True, blank=True)
     file = models.FileField(
@@ -221,3 +230,6 @@ class Report(models.Model):
 
     def __str__(self):
         return self.title
+
+    class Meta:
+        ordering = ["-uploaded_at"]
