@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "csp",
     "home.apps.HomeConfig",
     "notice.apps.NoticeConfig",
     "department.apps.DepartmentConfig",
@@ -72,11 +73,14 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "csp.middleware.CSPMiddleware",
+    "notice.middlewares.CSPMiddleware",
 ]
 
-CSP_DEFAULT_SRC = ("'self'", 'https://tcioe.edu.np')
+CSP_DEFAULT_SRC = ("'self'", "https://notices.tcioe.edu.np",
+                   "https://docs.google.com")
 
-CSP_FRAME_SRC = ("'self'", 'https://tcioe.edu.np')
+CSP_FRAME_SRC = ("'self'", "https://notices.tcioe.edu.np",
+                 "https://docs.google.com")
 
 CSRF_TRUSTED_ORIGINS = [
     "http://notices.tcioe.edu.np",
@@ -107,10 +111,12 @@ CORS_ALLOW_METHODS = (
     "PUT",
 )
 
+
 # X-Frame-Options
 X_FRAME_OPTIONS = "ALLOW-FROM https://www.tcioe.edu.np"
 
 ROOT_URLCONF = "tcioe.urls"
+
 
 TEMPLATES = [
     {
