@@ -14,7 +14,7 @@ departments_enum = [
     ("Department of AutoMobile and Mechanical Engineering", "DOAME"),
     ("Department of Architecture", "DOARCH"),
     ("Department of Applied Science", "DOAS"),
-    ("Administration", "Admninistartion"),
+    ("Administration", "Admninistration"),
     ("Economic Administration Section", "Economic Administration Section"),
     ("Planning Section", "Planning Section"),
     ("General Administration Section", "General Administration Section"),
@@ -50,10 +50,10 @@ designation_enums = [
         "MSC_COORD_INFORMATION",
         "Program Coordinator, M.Sc. in Informatics and Intelligent Systems Engineering",
     ),
-    ("MSC_COORD_EARTHQUAKE", "Program Coordinato, M.Sc. in Earthquake Engineering"),
+    ("MSC_COORD_EARTHQUAKE", "Program Coordinator, M.Sc. in Earthquake Engineering"),
     (
         "MSC_COORD_DESIGN",
-        "Program Coordinato, M.Sc. in Mechanical Design and Manufacturing",
+        "Program Coordinator, M.Sc. in Mechanical Design and Manufacturing",
     ),
     ("EMIS_HEAD", "Head, Education Management Information Systems"),
     ("RESEARCH_HEAD", "Head, Research and Development Unit"),
@@ -114,8 +114,8 @@ class Department(models.Model):
     )
     slug = models.SlugField(max_length=255, null=True,
                             blank=True, editable=False)
-    introduction = RichTextField()
-    description = RichTextField()
+    introduction = RichTextField(null=True, blank=True)
+    description = RichTextField(null=True, blank=True)
     social_media = models.ForeignKey(
         SocialMedia,
         on_delete=models.CASCADE,
@@ -146,13 +146,16 @@ class Department(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        ordering = ["is_academic"]
+
 
 class Project(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, null=True,
                             blank=True, editable=False)
-    description = RichTextField()
+    description = RichTextField(null=True, blank=True)
     report = models.FileField(
         upload_to="media/files/project",
         validators=[FileExtensionValidator(["pdf", "docx"])],
@@ -193,7 +196,7 @@ class QuestionBank(models.Model):
 class PlansPolicy(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100, null=True, blank=True)
-    description = RichTextField()
+    description = RichTextField(null=True, blank=True)
 
     class Meta:
         verbose_name = "Plans and Policy"
@@ -231,7 +234,7 @@ class Student(models.Model):
 class FAQ(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     question = models.CharField(max_length=255)
-    answer = RichTextField()
+    answer = RichTextField(null=True, blank=True)
     department = models.ForeignKey(
         Department, on_delete=models.CASCADE, related_name="faq_department"
     )
@@ -245,7 +248,7 @@ class Blog(models.Model):
     title = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, null=True,
                             blank=True, editable=False)
-    description = RichTextField()
+    description = RichTextField(null=True, blank=True)
     author = models.CharField(max_length=255)
     department = models.ForeignKey(
         Department,
@@ -268,7 +271,7 @@ class Programs(models.Model):
     slug = models.SlugField(max_length=255, null=True,
                             blank=True, editable=False)
     name = models.CharField(max_length=255)
-    description = RichTextField()
+    description = RichTextField(null=True, blank=True)
     department = models.ForeignKey(
         Department, on_delete=models.CASCADE, related_name="department_programs"
     )
@@ -311,8 +314,8 @@ class Subject(models.Model):
         Semester, on_delete=models.CASCADE, related_name="subjects"
     )
 
-    course_objective = RichTextField()
-    topics_covered = RichTextField()
+    course_objective = RichTextField(null=True, blank=True)
+    topics_covered = RichTextField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)

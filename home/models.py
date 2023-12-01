@@ -31,7 +31,7 @@ class HomePage(models.Model):
         upload_to="images/", null=True, blank=True)
     slider_image4 = models.ImageField(
         upload_to="images/", null=True, blank=True)
-    description = RichTextField()
+    description = RichTextField(null=True, blank=True)
     phone_one = models.CharField(max_length=20, null=False, blank=False)
     phone_two = models.CharField(max_length=20, null=True, blank=True)
     phone_three = models.CharField(max_length=20, null=True, blank=True)
@@ -105,7 +105,7 @@ class Unit(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200, blank=False,
                             null=False, unique=True)
-    description = RichTextField()
+    description = RichTextField(null=True, blank=True)
     image = models.ImageField(upload_to="images/", null=True, blank=True)
     social_media = models.OneToOneField(
         SocialMedia,
@@ -141,7 +141,7 @@ class Resource(models.Model):
 class ImageGallery(models.Model):
     id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False)
     name = models.CharField(max_length=100)
-    description = RichTextField()
+    description = RichTextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
