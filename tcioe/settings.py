@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "home.apps.HomeConfig",
     "notice.apps.NoticeConfig",
     "department.apps.DepartmentConfig",
+    "journal.apps.JournalConfig",
     "ckeditor",
     "corsheaders",
 ]
