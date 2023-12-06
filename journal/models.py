@@ -24,7 +24,7 @@ class Author(models.Model):
 
 class Article(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    url_id = models.IntegerField(blank=False, null=False)
+    url_id = models.CharField(blank=False, null=False)
     title = models.CharField(max_length=100, blank=False, null=False)
     genre = models.CharField(max_length=100, blank=False, null=False)
     date_published = models.DateField(
