@@ -1,5 +1,6 @@
 from django.db import models
 import uuid
+from django.urls import reverse
 
 # Create your models here.
 
@@ -8,9 +9,9 @@ class Author(models.Model):
     given_name = models.CharField(max_length=100, verbose_name="Given Name")
     family_name = models.CharField(max_length=100, verbose_name="Family Name")
     affiliation = models.CharField(max_length=100)
-    country = models.CharField(max_length=100)
-    email = models.EmailField()
-    bio = models.TextField()
+    country = models.CharField(max_length=100, null=True, blank=True)
+    email = models.EmailField(null=True, blank=True)
+    bio = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.given_name} {self.family_name}"
@@ -24,17 +25,18 @@ class Author(models.Model):
 
 class Article(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    url_id = models.IntegerField(blank=False, null=False)
-    title = models.CharField(max_length=100, blank=False, null=False)
-    genre = models.CharField(max_length=100, blank=False, null=False)
-    date_published = models.DateField(
-        blank=False, null=False, verbose_name="Published Date")
-    doi_id = models.CharField(max_length=100, verbose_name="DOI ID")
+    url_id = models.IntegerField()
+    title = models.CharField(max_length=100)
+    genre = models.CharField(max_length=100)
+    date_published = models.DateField(verbose_name="Published Date")
+    doi_id = models.CharField(
+        max_length=100, verbose_name="DOI ID", null=True, blank=True)
     abstract = models.TextField()
     keywords = models.CharField(max_length=100)
-    discipline = models.CharField(max_length=100)
+    discipline = models.CharField(max_length=100, null=True, blank=True)
     authors = models.ManyToManyField(Author)
-    submission_id = models.IntegerField(verbose_name="Submission ID")
+    submission_id = models.IntegerField(
+        verbose_name="Submission ID", null=True, blank=True)
     volume = models.IntegerField()
     number = models.IntegerField()
     year = models.IntegerField()
@@ -46,8 +48,8 @@ class Article(models.Model):
     def get_author(self):
         return ", ".join([str(p) for p in self.authors.all()])
 
-    def get_absolute_url(self):
-        return reverse("article_detail", kwargs={"pk": self.pk})
+    # def get_absolute_url(self):
+    #     return reverse("api/journal/article", kwargs={"pk": self.pk})
 
     class Meta:
         ordering = ["title"]
@@ -59,14 +61,20 @@ class BoardMember(models.Model):
     image = models.ImageField(
         upload_to="media/editorial_board/images", null=True, blank=True)
     role = models.CharField(max_length=100)
+    rank = models.IntegerField(null=True, blank=True)
     designation = models.CharField(max_length=100)
     department = models.CharField(max_length=100)
     organization = models.CharField(max_length=100)
     email = models.EmailField()
-    link = models.URLField(null=True, blank=True)
+    orcid_id = models.CharField(
+        max_length=50, verbose_name="ORCID iD", null=True, blank=True)
+    google_scholar_link = models.URLField(
+        null=True, blank=True, verbose_name="Google Scholar Profile")
+    research_gate_link = models.URLField(
+        null=True, blank=True, verbose_name="Research Gate Profile")
 
     def __str__(self):
-        return self.name
+        return self.name + "-" + str(self.orcid_id)
 
     class Meta:
-        ordering = ["designation"]
+        ordering = ["-rank", "designation"]

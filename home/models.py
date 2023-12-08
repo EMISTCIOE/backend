@@ -153,7 +153,7 @@ class ImageGallery(models.Model):
 
 class Image(models.Model):
     gallery = models.ForeignKey(
-        ImageGallery, null=True, on_delete=models.SET_NULL)
+        ImageGallery, null=True, on_delete=models.CASCADE)
     image = models.ImageField(upload_to="gallery/", null=False, blank=False)
 
     def __str__(self):
