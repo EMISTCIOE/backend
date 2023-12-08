@@ -64,5 +64,5 @@ class ImageGalleryAdmin(admin.ModelAdmin):
     ]
 
 
-admin.site.register(Image)
+# admin.site.register(Image)
 admin.site.register(ImageGallery, ImageGalleryAdmin)
