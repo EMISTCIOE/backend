@@ -1,7 +1,7 @@
 from django.db import models
 import uuid
 from django.urls import reverse
-
+from django.core.validators import FileExtensionValidator
 # Create your models here.
 
 
@@ -25,10 +25,11 @@ class Author(models.Model):
 
 class Article(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    url_id = models.IntegerField()
+    url_id = models.CharField(max_length=50)
     title = models.CharField(max_length=100)
     genre = models.CharField(max_length=100)
-    date_published = models.DateField(verbose_name="Published Date")
+    date_published = models.DateField(
+        verbose_name="Published Date", null=True, blank=True)
     doi_id = models.CharField(
         max_length=100, verbose_name="DOI ID", null=True, blank=True)
     abstract = models.TextField()
@@ -37,10 +38,10 @@ class Article(models.Model):
     authors = models.ManyToManyField(Author)
     submission_id = models.IntegerField(
         verbose_name="Submission ID", null=True, blank=True)
-    volume = models.IntegerField()
-    number = models.IntegerField()
-    year = models.IntegerField()
-    pages = models.CharField(max_length=20)
+    volume = models.IntegerField(null=True, blank=True)
+    number = models.IntegerField(null=True, blank=True)
+    year = models.IntegerField(null=True, blank=True)
+    pages = models.CharField(max_length=20, null=True, blank=True)
 
     def __str__(self):
         return self.title
@@ -53,6 +54,7 @@ class Article(models.Model):
 
     class Meta:
         ordering = ["title"]
+        unique_together = ['url_id']
 
 
 class BoardMember(models.Model):
@@ -74,7 +76,24 @@ class BoardMember(models.Model):
         null=True, blank=True, verbose_name="Research Gate Profile")
 
     def __str__(self):
-        return self.name + "-" + str(self.orcid_id)
+        return self.name.title() + "-" + str(role)
 
     class Meta:
         ordering = ["-rank", "designation"]
+        verbose_name = "Board Member"
+
+
+class ArticleXml(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    article_name = models.CharField(
+        max_length=100, null=True, blank=True, unique=True)
+    xml_file = models.FileField(upload_to="xmls/articles/", null=True, blank=True, validators=[
+                                FileExtensionValidator(['xml',])])
+
+    def __str__(self):
+        # return file name only not the path
+        return str(self.article_name.title())
+
+    class Meta:
+        ordering = ["-article_name"]
+        verbose_name = "Article XML"

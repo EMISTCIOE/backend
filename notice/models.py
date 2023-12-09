@@ -38,6 +38,10 @@ class NoticeType(models.Model):
     def __str__(self):
         return self.notice_type
 
+    class Meta:
+        ordering = ['notice_type']
+        verbose_name_plural = "Notice Types"
+
 
 class NoticeCategory(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -50,6 +54,10 @@ class NoticeCategory(models.Model):
 
     def __str__(self):
         return str(self.notice_type.notice_type) + "-" + self.category
+
+    class Meta:
+        ordering = ['notice_type', 'category']
+        verbose_name_plural = "Notice Categories"
 
 
 class Notice(models.Model):
@@ -86,3 +94,4 @@ class Notice(models.Model):
 
     class Meta:
         ordering = ['-published_date']
+        verbose_name_plural = "Notices"

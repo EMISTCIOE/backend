@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Author, Article, BoardMember
+from .models import Author, Article, BoardMember, ArticleXml
 # Register your models here.
 
 
@@ -9,6 +9,11 @@ class ArticleAdmin(admin.ModelAdmin):
     search_fields = ("title", "genre", "date_published")
 
 
+class ArticleXmlAdmin(admin.ModelAdmin):
+    readonly_fields = ("article_name",)
+
+
 admin.site.register(Article, ArticleAdmin)
 admin.site.register(Author)
 admin.site.register(BoardMember)
+admin.site.register(ArticleXml, ArticleXmlAdmin)
