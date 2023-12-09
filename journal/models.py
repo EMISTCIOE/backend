@@ -26,15 +26,15 @@ class Author(models.Model):
 class Article(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     url_id = models.CharField(max_length=50)
-    title = models.CharField(max_length=100)
-    genre = models.CharField(max_length=100)
+    title = models.CharField(max_length=200)
+    genre = models.CharField(max_length=200)
     date_published = models.DateField(
         verbose_name="Published Date", null=True, blank=True)
     doi_id = models.CharField(
         max_length=100, verbose_name="DOI ID", null=True, blank=True)
     abstract = models.TextField()
-    keywords = models.CharField(max_length=100)
-    discipline = models.CharField(max_length=100, null=True, blank=True)
+    keywords = models.CharField(max_length=200)
+    discipline = models.CharField(max_length=200, null=True, blank=True)
     authors = models.ManyToManyField(Author)
     submission_id = models.IntegerField(
         verbose_name="Submission ID", null=True, blank=True)
@@ -65,8 +65,8 @@ class BoardMember(models.Model):
     role = models.CharField(max_length=100)
     rank = models.IntegerField(null=True, blank=True)
     designation = models.CharField(max_length=100)
-    department = models.CharField(max_length=100)
-    organization = models.CharField(max_length=100)
+    department = models.CharField(max_length=200)
+    organization = models.CharField(max_length=200)
     email = models.EmailField()
     orcid_id = models.CharField(
         max_length=50, verbose_name="ORCID iD", null=True, blank=True)
@@ -76,7 +76,7 @@ class BoardMember(models.Model):
         null=True, blank=True, verbose_name="Research Gate Profile")
 
     def __str__(self):
-        return self.name.title() + "-" + str(role)
+        return self.name.title() + "-" + str(self.role)
 
     class Meta:
         ordering = ["-rank", "designation"]
