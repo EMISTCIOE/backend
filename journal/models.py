@@ -6,10 +6,10 @@ from django.core.validators import FileExtensionValidator
 
 
 class Author(models.Model):
-    given_name = models.CharField(max_length=100, verbose_name="Given Name")
-    family_name = models.CharField(max_length=100, verbose_name="Family Name")
-    affiliation = models.CharField(max_length=100)
-    country = models.CharField(max_length=100, null=True, blank=True)
+    given_name = models.CharField(max_length=200, verbose_name="Given Name")
+    family_name = models.CharField(max_length=200, verbose_name="Family Name")
+    affiliation = models.CharField(max_length=200)
+    country = models.CharField(max_length=200, null=True, blank=True)
     email = models.EmailField(null=True, blank=True)
     bio = models.TextField(null=True, blank=True)
 
