@@ -57,7 +57,7 @@ def authorsList(data):
 def format(data):
     return {
 
-        "url_id": str(selectLatest(data)['id'][0]['#text'] + '/' + selectLatest(data)['article_galley']['id']['#text']) if isinstance(selectLatest(data)['id'], list) else str(selectLatest(data)['id']['#text'] + '/' + selectLatest(data)['article_galley']['id']['#text']),
+        "url_id": str(selectLatest(data)['id']['#text'] + '/' + selectLatest(data)['article_galley']['id']['#text']) if isinstance(selectLatest(data)['id'], list) else str(selectLatest(data)['id']['#text'] + '/' + selectLatest(data)['article_galley']['id']['#text']),
         "title": selectLatest(data)['title']['#text'],
         "genre": data['submission_file'][0]['@genre'] if isinstance(data['submission_file'], list) else data['submission_file']['@genre'],
         "date_published": selectLatest(data)['@date_published'] if '@date_published' in selectLatest(data) else '',
