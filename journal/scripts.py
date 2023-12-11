@@ -69,7 +69,7 @@ def format(data):
         "doi_id": doid,
         "genre": data['submission_file'][0]['@genre'] if isinstance(data['submission_file'], list) else data['submission_file']['@genre'],
         "date_published": selectLatest(data)['@date_published'] if '@date_published' in selectLatest(data) else '',
-        "abstract": selectLatest(data)['abstract']['#text'],
+        "abstract": BeautifulSoup(selectLatest(data)['abstract']['#text'], "lxml").text if 'abstract' in selectLatest(data) else '',
         "keywords": selectLatest(data)['keywords']['keyword'] if 'keywords' in selectLatest(data) else '',
         "discipline": selectLatest(data)['disciplines']['discipline'] if 'disciplines' in selectLatest(data) else '',
         "authors": authorsList(data),
