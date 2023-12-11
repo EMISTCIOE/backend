@@ -25,7 +25,8 @@ def create_article(sender, instance, created, **kwargs):
             # if keywords is in list then join them with comma and if already in string then just set it to string
             keywords=', '.join(data['keywords']) if type(
                 data['keywords']) == list else data['keywords'] if data['keywords'] != '' else None,
-            discipline=data['discipline'] if data['discipline'] != '' else None,
+            discipline=', '.join(data['discipline']) if type(
+                data['discipline']) == list else data['discipline'] if data['discipline'] != '' else None,
             submission_id=data['submission_id'] if data['submission_id'] != '' else None,
             volume=data['volume'] if data['volume'] != '' else None,
             number=data['number'] if data['number'] != '' else None,
