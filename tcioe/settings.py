@@ -258,7 +258,7 @@ STATIC_URL = "static/"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-if not DEBUG:
+if not LOCAL:
     STATIC_ROOT = "static/"
 
 else:

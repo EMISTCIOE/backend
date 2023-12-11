@@ -36,7 +36,7 @@ class Article(models.Model):
     keywords = models.CharField(max_length=200, null=True, blank=True)
     discipline = models.CharField(max_length=200, null=True, blank=True)
     authors = models.ManyToManyField(
-        Author, related_name="article_author", blank=True, null=True)
+        Author, related_name="article_author")
     submission_id = models.IntegerField(
         verbose_name="Submission ID", null=True, blank=True)
     volume = models.IntegerField(null=True, blank=True)

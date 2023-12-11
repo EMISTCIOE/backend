@@ -2,6 +2,8 @@ from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 from .models import Article, ArticleXml, Author
 from .scripts import fetch, format
+# Q module
+from django.db.models import Q
 
 
 # signal used to create article object when xml file is uploaded
@@ -33,6 +35,7 @@ def create_article(sender, instance, created, **kwargs):
         if data['authors'] != '':
             authors = data['authors']
             for author in authors:
+                # get only with name  or create new author
                 author = Author.objects.get_or_create(
                     given_name=author['given_name'] if author['given_name'] != '' else None,
                     family_name=author['family_name'] if author['family_name'] != '' else None,
