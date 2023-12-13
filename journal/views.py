@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView
 from django.db.models import Q
 from .models import Article, BoardMember, ArticleXml
-from .serializers import ArticleSerializer, BoardMemberSerializer, ArticleXmlSerializer
+from .serializers import ArticleSerializer, BoardMemberSerializer, ArticleXmlSerializer, AuthorSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 # Create your views here.
 
@@ -53,7 +53,7 @@ class BoardMemberSearchView(ListAPIView):
 class ArticleXMLPostView(CreateAPIView):
     model = ArticleXml
     serializer_class = ArticleXmlSerializer
-    # permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def post(self, request, *args, **kwargs):
         # edit before saving

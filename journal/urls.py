@@ -1,11 +1,12 @@
 from django.urls import path, include
 from rest_framework import routers
-from .viewsets import ArticleViewsets, BoardMemberViewset
+from .viewsets import ArticleViewsets, BoardMemberViewset, AuthorViewset
 from .views import ArticleSearchView, BoardMemberSearchView, ArticleXMLPostView
 
 router = routers.DefaultRouter()
 router.register(r'articles', ArticleViewsets)
 router.register(r'board-members', BoardMemberViewset)
+router.register(r'authors', AuthorViewset)
 
 
 urlpatterns = [

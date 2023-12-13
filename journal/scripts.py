@@ -39,7 +39,7 @@ def authorsList(data):
                 "affiliation": author['affiliation']['#text'] if 'affiliation' in author else '',
                 "country": author['country'],
                 "email": author['email'],
-                "bio": author['biography']['#text'] if 'biography' in author else ''
+                "bio": BeautifulSoup(author['biography']['#text'], "lxml").text if 'biography' in author else ''
             })
     else:
         out.append({
@@ -48,7 +48,8 @@ def authorsList(data):
             "affiliation": lst['affiliation']['#text'] if 'affiliation' in lst else '',
             "country": lst['country'] if 'country' in lst else '',
             "email": lst['email'] if 'email' in lst else '',
-            "bio": lst['biography']['#text'] if 'biography' in lst else ''
+            "bio": BeautifulSoup(lst['biography']['#text'], "lxml").text if 'biography' in lst else ''
+
         })
     return out
 
