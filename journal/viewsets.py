@@ -14,3 +14,9 @@ class BoardMemberViewset(viewsets.ModelViewSet):
     queryset = BoardMember.objects.all()
     serializer_class = BoardMemberSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
+
+
+class AuthorViewset(viewsets.ModelViewSet):
+    queryset = Author.objects.all()
+    serializer_class = AuthorSerializer
+    # permission_classes = [IsAuthenticatedOrReadOnly]
