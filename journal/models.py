@@ -27,14 +27,14 @@ class Article(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     url_id = models.CharField(max_length=50)
     title = models.CharField(max_length=500)
-    genre = models.CharField(max_length=200)
+    genre = models.CharField(max_length=500)
     date_published = models.DateField(
         verbose_name="Published Date", null=True, blank=True)
     doi_id = models.CharField(
-        max_length=100, verbose_name="DOI ID", null=True, blank=True)
+        max_length=500, verbose_name="DOI ID", null=True, blank=True)
     abstract = models.TextField()
-    keywords = models.CharField(max_length=200, null=True, blank=True)
-    discipline = models.CharField(max_length=200, null=True, blank=True)
+    keywords = models.CharField(max_length=500, null=True, blank=True)
+    discipline = models.CharField(max_length=500, null=True, blank=True)
     authors = models.ManyToManyField(
         Author, related_name="article_author")
     submission_id = models.IntegerField(
@@ -42,7 +42,7 @@ class Article(models.Model):
     volume = models.IntegerField(null=True, blank=True)
     number = models.IntegerField(null=True, blank=True)
     year = models.IntegerField(null=True, blank=True)
-    pages = models.CharField(max_length=20, null=True, blank=True)
+    pages = models.CharField(max_length=40, null=True, blank=True)
 
     def __str__(self):
         return self.title
