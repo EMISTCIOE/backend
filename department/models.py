@@ -73,6 +73,7 @@ designation_enums = [
     ("PROCUREMENT_HEAD", "Head, Procurement Section"),
     ("SECURITY_HEAD", "Head, Security Section"),
     ("REPAIR_HEAD", "Head, Repair and Maintenance Section"),
+    ("SPECIAL_SECTION_HEAD", "Head, Special Section"),
     ("IQAC_HEAD", "Head, IQAC Section"),
     ("SAT_HEAD", "Head, SAT Section"),
     ("ADMINISTRATION_HEAD", "Head, Academic Administration and Exam Section"),
