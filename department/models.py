@@ -63,6 +63,8 @@ designation_enums = [
     ("EXAMS_ACADEMIC_HEAD", "Examination and Academic Administration Head"),
     ("UNIT_HEAD", "Head, Unit"),
     ("SECTION_HEAD", "Head, Section"),
+    ("UNIT_DEPUTY_HEAD", "Deputy Head, Unit"),
+    ("SECTION_DEPUTY_HEAD", "Deputy Head, Section"),
     ("LIBRARY_HEAD", "Head, Library Section"),
     ("FINANCE_HEAD", "Head, Financial Administation Section"),
     ("PERSONNEL_HEAD", "Head, Personnel Section"),
