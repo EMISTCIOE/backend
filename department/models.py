@@ -44,6 +44,7 @@ designation_enums = [
         "ASSIST_CAMPUS_CHIEF_PLANNING",
         "Assistant Campus Chief (Planning and Resource Management)",
     ),
+    ("ASSIST_CAMPUS_CHIEF", "Assistant Campus Chief"),
     ("HOD", "Head of Department"),
     ("DHOD", "Deputy Head of Department"),
     (
@@ -61,6 +62,7 @@ designation_enums = [
     ("CONSULTANCY_HEAD", "Head, Consultancy Services"),
     ("EXAMS_ACADEMIC_HEAD", "Examination and Academic Administration Head"),
     ("UNIT_HEAD", "Head, Unit"),
+    ("SECTION_HEAD", "Head, Section"),
     ("LIBRARY_HEAD", "Head, Library Section"),
     ("FINANCE_HEAD", "Head, Financial Administation Section"),
     ("PERSONNEL_HEAD", "Head, Personnel Section"),
