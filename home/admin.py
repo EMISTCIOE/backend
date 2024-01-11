@@ -18,7 +18,7 @@ admin.site.register(ReportType)
 
 @admin.register(Report)
 class ReportAdmin(admin.ModelAdmin):
-    list_display = ["title", "type"]
+    list_display = ["title", "type", "uploaded_at"]
 
 
 @admin.register(Calendar)
@@ -64,5 +64,5 @@ class ImageGalleryAdmin(admin.ModelAdmin):
     ]
 
 
-admin.site.register(Image)
+# admin.site.register(Image)
 admin.site.register(ImageGallery, ImageGalleryAdmin)

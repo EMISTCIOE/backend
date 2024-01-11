@@ -20,7 +20,7 @@ from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-LOCAL = True
+LOCAL = False
 
 
 # Quick-start development settings - unsuitable for production
@@ -54,12 +54,9 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
-    "csp",
     "home.apps.HomeConfig",
     "notice.apps.NoticeConfig",
     "department.apps.DepartmentConfig",
-    "curriculum.apps.CurriculumConfig",
-    "journal.apps.JournalConfig",
     "ckeditor",
     "corsheaders",
 ]
@@ -75,14 +72,11 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "csp.middleware.CSPMiddleware",
-    "notice.middlewares.CSPMiddleware",
 ]
 
-CSP_DEFAULT_SRC = ("'self'", "https://notices.tcioe.edu.np",
-                   "https://docs.google.com")
+CSP_DEFAULT_SRC = ("'self'", 'https://tcioe.edu.np')
 
-CSP_FRAME_SRC = ("'self'", "https://notices.tcioe.edu.np",
-                 "https://docs.google.com")
+CSP_FRAME_SRC = ("'self'", 'https://tcioe.edu.np')
 
 CSRF_TRUSTED_ORIGINS = [
     "http://notices.tcioe.edu.np",
@@ -103,7 +97,7 @@ CORS_ALLOW_HEADERS = (
     "x-csrftoken",
     "x-requested-with",
 )
-
+	
 CORS_ALLOW_METHODS = (
     "DELETE",
     "GET",
@@ -113,12 +107,10 @@ CORS_ALLOW_METHODS = (
     "PUT",
 )
 
-
 # X-Frame-Options
 X_FRAME_OPTIONS = "ALLOW-FROM https://www.tcioe.edu.np"
 
 ROOT_URLCONF = "tcioe.urls"
-
 
 TEMPLATES = [
     {

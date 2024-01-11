@@ -11,4 +11,4 @@ class RoutineAdmin(admin.ModelAdmin):
 
 @admin.register(Subject)
 class SubjectAdmin(admin.ModelAdmin):
-    list_display = ["__str__", "semester", "id"]
+    list_display = ["__str__", "semester", 'program', "id"]

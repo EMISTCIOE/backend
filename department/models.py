@@ -5,8 +5,6 @@ from django.utils.text import slugify
 from ckeditor.fields import RichTextField
 from django.core.validators import FileExtensionValidator
 
-
-
 # Create your models here.
 
 departments_enum = [
@@ -16,15 +14,25 @@ departments_enum = [
     ("Department of AutoMobile and Mechanical Engineering", "DOAME"),
     ("Department of Architecture", "DOARCH"),
     ("Department of Applied Science", "DOAS"),
-    ("Administration", "Admninistartion"),
-    ("Library", "Library"),
-    ("Education Management Information System Unit", "EMIS"),
-    ("Research and Development Unit", "R&D"),
-    ("Material Testing Laboratory Unit", "MTL"),
-    ("Examination and Academic Administration", "Admission"),
-    ("Finance Administration", "Finance Administration"),
-    ("Main Store", "Main Store"),
-    ("Consultancy", "Consultancy"),
+    ("Administration", "Admninistration"),
+    ("Financial Administration Section", "Financial Administration Section"),
+    ("Planning Section", "Planning Section"),
+    ("General Administration Section", "General Administration Section"),
+    ("Personnel Administration Section", "Personnel Administration Section"),
+    ("Academic Administration and Examination Section",
+     "Academic Administration and Examination Section"),
+    ("Store Section", "Store Section"),
+    ("Facilities Section", "Facilities Section"),
+    ("Library Section", "Library Section"),
+    ("Education Management Information System Unit",
+     "Education Management Information System(EMIS) Unit"),
+    ("Research and Development Unit", "Research and Development Unit"),
+    ("Material Testing Laboratory", "Material Testing Laboratory"),
+    ("Examination and Academic Administration",
+     "Examination and Academic Administration"),
+    ("Finance Administration Unit", "Finance Administration Unit"),
+    ("Main Store Unit", "Main Store Unit"),
+    ("Consultancy Services", "Consultancy Services"),
 ]
 
 
@@ -42,10 +50,10 @@ designation_enums = [
         "MSC_COORD_INFORMATION",
         "Program Coordinator, M.Sc. in Informatics and Intelligent Systems Engineering",
     ),
-    ("MSC_COORD_EARTHQUAKE", "Program Coordinato, M.Sc. in Earthquake Engineering"),
+    ("MSC_COORD_EARTHQUAKE", "Program Coordinator, M.Sc. in Earthquake Engineering"),
     (
         "MSC_COORD_DESIGN",
-        "Program Coordinato, M.Sc. in Mechanical Design and Manufacturing",
+        "Program Coordinator, M.Sc. in Mechanical Design and Manufacturing",
     ),
     ("EMIS_HEAD", "Head, Education Management Information Systems"),
     ("RESEARCH_HEAD", "Head, Research and Development Unit"),
@@ -65,6 +73,7 @@ designation_enums = [
     ("ADMINISTRATION_HEAD", "Head, Academic Administration and Exam Section"),
     ("STORE_HEAD", "Head, Store Section"),
     ("ACCOUNT_HEAD", "Head, Account Section"),
+    ("FACILITIES_HEAD", "Head, Facilities Section"),
     ("LECTURER", "Lecturer"),
     ("SENIOR_INSTRUCTOR", "Senior Instructor"),
     ("TEACHING_ASSISTANCE", "Teaching Assistance"),
@@ -104,9 +113,10 @@ class Department(models.Model):
     name = models.CharField(
         max_length=100, choices=(departments_enum), default="DOECE", unique=True
     )
-    slug = models.SlugField(max_length=255, null=True, blank=True, editable=False)
-    introduction = RichTextField()
-    description = RichTextField()
+    slug = models.SlugField(max_length=255, null=True,
+                            blank=True, editable=False)
+    introduction = RichTextField(null=True, blank=True)
+    description = RichTextField(null=True, blank=True)
     social_media = models.ForeignKey(
         SocialMedia,
         on_delete=models.CASCADE,
@@ -116,7 +126,8 @@ class Department(models.Model):
     )
     phone = models.CharField(max_length=15)
     email = models.EmailField()
-    routine = models.ImageField(upload_to="media/routine/", null=True, blank=True)
+    routine = models.ImageField(
+        upload_to="media/routine/", null=True, blank=True)
     plans = models.ForeignKey(
         "PlansPolicy",
         on_delete=models.CASCADE,
@@ -124,7 +135,8 @@ class Department(models.Model):
         blank=True,
         related_name="department_plans",
     )
-    profile = models.ImageField(upload_to="media/profile/", null=True, blank=True)
+    profile = models.ImageField(
+        upload_to="media/profile/", null=True, blank=True)
 
     is_academic = models.BooleanField(default=False)
 
@@ -135,12 +147,16 @@ class Department(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        ordering = ["is_academic"]
+
 
 class Project(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
-    slug = models.SlugField(max_length=255, null=True, blank=True, editable=False)
-    description = RichTextField()
+    slug = models.SlugField(max_length=255, null=True,
+                            blank=True, editable=False)
+    description = RichTextField(null=True, blank=True)
     report = models.FileField(
         upload_to="media/files/project",
         validators=[FileExtensionValidator(["pdf", "docx"])],
@@ -163,7 +179,8 @@ class Project(models.Model):
 class QuestionBank(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255, null=True, blank=True)
-    slug = models.SlugField(max_length=255, null=True, blank=True, editable=False)
+    slug = models.SlugField(max_length=255, null=True,
+                            blank=True, editable=False)
     file = models.FileField(
         upload_to="files/", validators=[FileExtensionValidator(["pdf", "docx"])]
     )
@@ -180,7 +197,7 @@ class QuestionBank(models.Model):
 class PlansPolicy(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100, null=True, blank=True)
-    description = RichTextField()
+    description = RichTextField(null=True, blank=True)
 
     class Meta:
         verbose_name = "Plans and Policy"
@@ -193,9 +210,11 @@ class PlansPolicy(models.Model):
 class Student(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
-    slug = models.SlugField(max_length=255, null=True, blank=True, editable=False)
+    slug = models.SlugField(max_length=255, null=True,
+                            blank=True, editable=False)
     roll = models.CharField(max_length=255)
-    photo = models.FileField(upload_to="media/students/", null=True, blank=True)
+    photo = models.FileField(
+        upload_to="media/students/", null=True, blank=True)
     is_cr = models.BooleanField()
     is_topper = models.BooleanField()
     department = models.ForeignKey(
@@ -216,7 +235,7 @@ class Student(models.Model):
 class FAQ(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     question = models.CharField(max_length=255)
-    answer = RichTextField()
+    answer = RichTextField(null=True, blank=True)
     department = models.ForeignKey(
         Department, on_delete=models.CASCADE, related_name="faq_department"
     )
@@ -228,8 +247,9 @@ class FAQ(models.Model):
 class Blog(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=255)
-    slug = models.SlugField(max_length=255, null=True, blank=True, editable=False)
-    description = RichTextField()
+    slug = models.SlugField(max_length=255, null=True,
+                            blank=True, editable=False)
+    description = RichTextField(null=True, blank=True)
     author = models.CharField(max_length=255)
     department = models.ForeignKey(
         Department,
@@ -249,9 +269,10 @@ class Blog(models.Model):
 
 class Programs(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    slug = models.SlugField(max_length=255, null=True, blank=True, editable=False)
+    slug = models.SlugField(max_length=255, null=True,
+                            blank=True, editable=False)
     name = models.CharField(max_length=255)
-    description = RichTextField()
+    description = RichTextField(null=True, blank=True)
     department = models.ForeignKey(
         Department, on_delete=models.CASCADE, related_name="department_programs"
     )
@@ -269,11 +290,11 @@ class Programs(models.Model):
 
 
 
-
 class StaffMember(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
-    slug = models.SlugField(max_length=255, null=True, blank=True, editable=False)
+    slug = models.SlugField(max_length=255, null=True,
+                            blank=True, editable=False)
     responsibility = models.CharField(max_length=100, null=True, blank=True)
     photo = models.ImageField(upload_to="images/", null=True, blank=True)
     phone_number = models.CharField(max_length=20, null=True, blank=True)
@@ -338,7 +359,8 @@ class Designation(models.Model):
 class Society(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
-    slug = models.SlugField(max_length=255, null=True, blank=True, editable=False)
+    slug = models.SlugField(max_length=255, null=True,
+                            blank=True, editable=False)
     description = models.TextField(null=False, blank=False)
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     email = models.EmailField()

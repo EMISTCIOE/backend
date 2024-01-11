@@ -13,24 +13,13 @@ class DepartmentSubjects(ListAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        print(self.request.GET)
-        faculty = self.request.GET.get("faculty", "").lower()
-        department = self.request.GET.get("department", "").lower()
+        program = self.request.GET.get("program", "").lower()
         code = self.request.GET.get("code", "").lower()
         sub_name = self.request.GET.get("name", "").lower()
         queryset = Subject.objects.all()
-        # if faculty:
-        #     queryset = queryset.filter(
-        #         semester__program__faculty__name__icontains=faculty
-        #     )
-        # if department:
-        #     queryset = queryset.filter(
-        #         semester__program__department__name__icontains=department
-        #     )
         if department:
             queryset = queryset.filter(
-                program__icontains=department
-            )
+                program__icontains=program)
         if code:
             queryset = queryset.filter(code__iexact=code)
         if sub_name:

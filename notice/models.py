@@ -4,8 +4,17 @@ from department.models import Department
 from django.utils import timezone
 from ckeditor.fields import RichTextField
 from django.core.validators import FileExtensionValidator
-
+from datetime import datetime
+import os
 # Create your models here.
+
+
+def update_filename(instance, filename):
+    ext = filename.split('.')[-1]
+    path = "files/"
+    format = "%s_%s_%s_%s.%s" % (instance.notice_category.notice_type.notice_type.replace(
+        " ", "-"), instance.notice_category.category.replace(" ", "-"), instance.department.name, datetime.now().strftime("%H:%M:%S"), ext)
+    return os.path.join(path, format)
 
 
 class NoticeType(models.Model):
@@ -29,6 +38,10 @@ class NoticeType(models.Model):
     def __str__(self):
         return self.notice_type
 
+    class Meta:
+        ordering = ['notice_type']
+        verbose_name_plural = "Notice Types"
+
 
 class NoticeCategory(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -42,16 +55,20 @@ class NoticeCategory(models.Model):
     def __str__(self):
         return str(self.notice_type.notice_type) + "-" + self.category
 
+    class Meta:
+        ordering = ['notice_type', 'category']
+        verbose_name_plural = "Notice Categories"
+
 
 class Notice(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     slug = models.SlugField(max_length=250, null=False,
                             blank=False, unique=True, editable=False)
     title = models.CharField(max_length=200, null=False, blank=False)
-    description = RichTextField()
+    description = RichTextField(null=True, blank=True)
     thumbnail = models.ImageField(upload_to='images/', null=True, blank=True)
     download_file = models.FileField(
-        upload_to='files/', null=True, blank=True, validators=[FileExtensionValidator(['pdf',])])
+        upload_to=update_filename, null=True, blank=True, validators=[FileExtensionValidator(['pdf',])])
     notice_category = models.ForeignKey(
         NoticeCategory, blank=True, null=True, on_delete=models.CASCADE, related_name='notice_category_set')
     department = models.ForeignKey(
@@ -77,3 +94,4 @@ class Notice(models.Model):
 
     class Meta:
         ordering = ['-published_date']
+        verbose_name_plural = "Notices"
