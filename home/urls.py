@@ -10,7 +10,7 @@ from .viewsets import (
     ReportViewset,
     CalendarViewset,
 )
-from .views import ResourceSearchView
+from .views import ResourceSearchView, ImageSearchView
 
 router = routers.DefaultRouter()
 router.register(r"home", HomeViewSet)
@@ -25,4 +25,5 @@ router.register(r"calendar", CalendarViewset)
 urlpatterns = [
     path("", include(router.urls)),
     path("resource-search/", ResourceSearchView.as_view(), name="resource-search"),
+    path("image-search/", ImageSearchView.as_view(), name="image-search"),
 ]

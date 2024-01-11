@@ -2,6 +2,8 @@ from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 from .models import Article, ArticleXml, Author
 from .scripts import fetch, format
+# Q module
+from django.db.models import Q
 
 
 # signal used to create article object when xml file is uploaded
@@ -20,25 +22,32 @@ def create_article(sender, instance, created, **kwargs):
             date_published=data['date_published'] if data['date_published'] != '' else None,
             doi_id=data['doi_id'] if data['doi_id'] != '' else None,
             abstract=data['abstract'] if data['abstract'] != '' else None,
-            keywords=data['keywords'] if data['keywords'] != '' else None,
-            discipline=data['discipline'] if data['discipline'] != '' else None,
+            # if keywords is in list then join them with comma and if already in string then just set it to string
+            keywords=', '.join(data['keywords']) if type(
+                data['keywords']) == list else data['keywords'] if data['keywords'] != '' else None,
+            discipline=', '.join(data['discipline']) if type(
+                data['discipline']) == list else data['discipline'] if data['discipline'] != '' else None,
             submission_id=data['submission_id'] if data['submission_id'] != '' else None,
             volume=data['volume'] if data['volume'] != '' else None,
             number=data['number'] if data['number'] != '' else None,
             year=data['year'] if data['year'] != '' else None,
             pages=data['pages'] if data['pages'] != '' else None
         )
-        authors = data['authors']
-        for author in authors:
-            author = Author.objects.get_or_create(
-                given_name=author['given_name'] if author['given_name'] != '' else None,
-                family_name=author['family_name'] if author['family_name'] != '' else None,
-                affiliation=author['affiliation'] if author['affiliation'] != '' else None,
-                country=author['country'] if author['country'] != '' else None,
-                email=author['email'] if author['email'] != '' else None,
-                bio=author['bio'] if author['bio'] != '' else None
-            )
-            article[0].authors.add(author[0])
+        if data['authors'] != '':
+            authors = data['authors']
+            for author in authors:
+                # get only with name  or create new author
+                author = Author.objects.get_or_create(
+                    given_name=author['given_name'] if author['given_name'] != '' else None,
+                    family_name=author['family_name'] if author['family_name'] != '' else None,
+                    affiliation=author['affiliation'] if author['affiliation'] != '' else None,
+                    country=author['country'] if author['country'] != '' else None,
+                    email=author['email'] if author['email'] != '' else None,
+                    bio=author['bio'] if author['bio'] != '' else None
+                )
+                article[0].authors.add(author[0])
+        else:
+            article[0].authors.add(None)
         # update the instance object name with article title
         instance.article_name = article[0].title
         article[0].save()

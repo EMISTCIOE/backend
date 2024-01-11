@@ -13,7 +13,7 @@ def update_filename(instance, filename):
     ext = filename.split('.')[-1]
     path = "files/"
     format = "%s_%s_%s_%s.%s" % (instance.notice_category.notice_type.notice_type.replace(
-        " ", "-"), instance.notice_category.category.replace(" ", "-"), instance.department.name, datetime.now().strftime("%H:%M:%S"), ext)
+        " ", "-"), instance.notice_category.category.replace(" ", "-"), instance.department.name  if instance.department else "General", datetime.now().strftime("%H:%M:%S"), ext)
     return os.path.join(path, format)
 
 
