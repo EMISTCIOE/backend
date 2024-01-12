@@ -1,8 +1,10 @@
-from django.shortcuts import render
-from .serializers import SubjectSerializer
+from .serializers import SubjectSerializer, SuggestionSerializer
 from .models import Subject
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from django.http import JsonResponse
+from rest_framework.parsers import JSONParser
+from rest_framework.decorators import api_view
 
 
 # Create your views here.
@@ -17,11 +19,27 @@ class DepartmentSubjects(ListAPIView):
         code = self.request.GET.get("code", "").lower()
         sub_name = self.request.GET.get("name", "").lower()
         queryset = Subject.objects.all()
-        if department:
-            queryset = queryset.filter(
-                program__icontains=program)
+        if program:
+            queryset = queryset.filter(program__icontains=program)
         if code:
             queryset = queryset.filter(code__iexact=code)
         if sub_name:
             queryset = queryset.filter(name__icontains=sub_name)
         return queryset
+
+    # customm view for suggestion box
+
+
+@api_view(["POST"])
+def suggestion_create_view(request):
+    if request.method == "POST":
+        data = JSONParser().parse(request)
+        print(data)
+        serializer = SuggestionSerializer(data=data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, status=201)
+        return JsonResponse(serializer.errors, status=400)
+
+    return JsonResponse({"error": "Only POST requests are allowed"}, status=405)

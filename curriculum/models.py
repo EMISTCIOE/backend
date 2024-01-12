@@ -96,3 +96,13 @@ class Routine(models.Model):
 
     def __str__(self):
         return f"{self.semester.name} - {self.semester.program.name}"
+
+
+
+class Suggestion(models.Model):
+    name = models.CharField(null= True, blank = True, max_length = 255)
+    message = models.TextField(null=False, blank=False)
+    date = models.DateTimeField(auto_now_add = True)
+
+    def __str__(self):
+        return f'{self.message[:10]}'

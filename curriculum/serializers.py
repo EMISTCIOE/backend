@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Subject, Routine
+from .models import Subject, Routine,Suggestion
 
 
 class SubjectSerializer(serializers.ModelSerializer):
@@ -20,4 +20,10 @@ class SubjectSerializer(serializers.ModelSerializer):
 class RoutineSerializer(serializers.ModelSerializer):
     class Meta:
         model = Routine
+        fields = "__all__"
+
+
+class SuggestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Suggestion
         fields = "__all__"
