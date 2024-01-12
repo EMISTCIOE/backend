@@ -294,45 +294,6 @@ class Programs(models.Model):
         return self.name
 
 
-class Semester(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    slug = models.SlugField(max_length=255, null=True,
-                            blank=True, editable=False)
-    name = models.CharField(max_length=100)
-    program = models.ForeignKey(
-        Programs, on_delete=models.CASCADE, related_name="semesters"
-    )
-
-    def save(self, *args, **kwargs):
-        self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return f"{self.name} - {self.program.name}"
-
-
-class Subject(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    slug = models.SlugField(max_length=255, null=True,
-                            blank=True, editable=False)
-    name = models.CharField(max_length=200)
-    code = models.CharField(max_length=20)
-    semester = models.ForeignKey(
-        Semester, on_delete=models.CASCADE, related_name="subjects"
-    )
-
-    course_objective = RichTextField(null=True, blank=True)
-    topics_covered = RichTextField(null=True, blank=True)
-
-    def save(self, *args, **kwargs):
-        self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return f"{self.name} [{self.code}]"
-
-    def get_semester(self):
-        return self.semester.name
 
 
 class StaffMember(models.Model):
@@ -432,14 +393,10 @@ class Society(models.Model):
         return self.department_id.name
 
 
-class Routine(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    semester = models.ForeignKey(
-        Semester, on_delete=models.CASCADE, related_name="routine_semester"
-    )
-    # routine_pdf = models.Field(upload_to='media/routine/')
-    routine_png = models.ImageField(upload_to="media/routine/")
-    # programs = models.ForeignKey(Programs, on_delete=models.CASCADE)
 
-    def __str__(self):
-        return f"{self.semester.name} - {self.semester.program.name}"
+
+
+
+
+
+

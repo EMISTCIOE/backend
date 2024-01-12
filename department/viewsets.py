@@ -8,12 +8,9 @@ from .models import (
     FAQ,
     Blog,
     Programs,
-    Semester,
-    Subject,
     StaffMember,
     Designation,
     Society,
-    Routine,
 
 )
 from .serializers import (
@@ -25,12 +22,9 @@ from .serializers import (
     FAQSerializer,
     BlogSerializer,
     ProgramsSerializer,
-    SemesterSerializer,
-    SubjectSerializer,
     StaffMemberSerializer,
     DesignationSerializer,
     SocietySerializer,
-    RoutineSerializer,
 )
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
@@ -87,18 +81,6 @@ class ProgramsViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
 
-class SemesterViewSet(viewsets.ModelViewSet):
-    queryset = Semester.objects.all()
-    serializer_class = SemesterSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
-
-
-class SubjectViewSet(viewsets.ModelViewSet):
-    queryset = Subject.objects.all()
-    serializer_class = SubjectSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
-
-
 class StaffMemberViewSet(viewsets.ModelViewSet):
     queryset = StaffMember.objects.all()
     serializer_class = StaffMemberSerializer
@@ -117,7 +99,3 @@ class SocietyViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
 
-class RoutineViewSet(viewsets.ModelViewSet):
-    queryset = Routine.objects.all()
-    serializer_class = RoutineSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]

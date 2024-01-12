@@ -8,17 +8,11 @@ from .models import (
     FAQ,
     Blog,
     Programs,
-    Semester,
-    Subject,
     StaffMember,
     Designation,
     Society,
-    Routine,
 )
 from home.serializer import SocialMediaSerializer
-
-
-
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -66,39 +60,22 @@ class BlogSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class SubjectSerializer(serializers.ModelSerializer):
-    semester = serializers.CharField(source="semester.name")
+# class SemesterSerializer(serializers.ModelSerializer):
+#     subjects = SubjectSerializer(many=True, read_only=True)
 
-    class Meta:
-        model = Subject
-        fields = [
-            "id",
-            "name",
-            "slug",
-            "semester",
-            "code",
-            "course_objective",
-            "topics_covered",
-        ]
-
-
-class SemesterSerializer(serializers.ModelSerializer):
-    subjects = SubjectSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Semester
-        depth = 1
-        fields = ["id", "name", "slug", "subjects"]
+#     class Meta:
+#         model = Semester
+#         depth = 1
+#         fields = ["id", "name", "slug", "subjects"]
 
 
 class ProgramsSerializer(serializers.ModelSerializer):
-    semesters = SemesterSerializer(many=True, read_only=True)
     department = serializers.CharField(source="department.name")
 
     class Meta:
         model = Programs
         depth = 1
-        fields = ["id", "slug", "name", "description", "department", "semesters"]
+        fields = ["id", "slug", "name", "description", "department"]
 
 
 class StaffMemberSerializer(serializers.ModelSerializer):
@@ -142,10 +119,7 @@ class SocietySerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class RoutineSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Routine
-        fields = "__all__"
+
 
 
 class DepartmentSerializer(serializers.ModelSerializer):

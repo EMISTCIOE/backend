@@ -35,6 +35,7 @@ urlpatterns = [
     path("api/", include("home.urls")),
     path("api/notice/", include("notice.urls")),
     path("api/department/", include("department.urls")),
+    path("api/curriculum/", include("curriculum.urls")),
     path("api/journal/", include("journal.urls")),
     # path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     # path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

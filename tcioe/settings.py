@@ -20,7 +20,7 @@ from datetime import timedelta
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-LOCAL = False
+LOCAL = True
 
 
 # Quick-start development settings - unsuitable for production
@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "home.apps.HomeConfig",
     "notice.apps.NoticeConfig",
     "department.apps.DepartmentConfig",
+    "curriculum.apps.CurriculumConfig",
     "journal.apps.JournalConfig",
     "ckeditor",
     "corsheaders",
