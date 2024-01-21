@@ -35,7 +35,7 @@ def authorsList(data):
         for author in lst:
             out.append({
                 "given_name": author['givenname']['#text'],
-                "family_name": author['familyname']['#text'],
+                "family_name": author['familyname']['#text'] if 'familyname' in author else '',
                 "affiliation": author['affiliation']['#text'] if 'affiliation' in author else '',
                 "country": author['country'],
                 "email": author['email'],
