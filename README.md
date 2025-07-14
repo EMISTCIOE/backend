@@ -1,6 +1,5 @@
 # Thapathali Campus EMIS BACKEND
 
-
 **To get started with the Project, follow these simple steps:**
 
 1. Navigate to the project directory and create a virtual environment by running: - python -m venv venv
@@ -35,3 +34,11 @@
 1. ruff check / ruff check --fix / ruff format
 2. black .
 3. pre-commit run --all-files
+
+# Contributing to Project 🔐
+
+Remember, Good PR makes you a Good contributor !
+
+We work hard to maintain the structure, and [use conventional Pull](https://github.com/emis-tcioe/tcioe-emis/blob/main/CONTRIBUTING.md#pull-request-title-format-) request titles and commits. Without a proper template for the PR, not following the guidelines and spam might get the pull request closed, or banned.
+
+- [Contributing Guidelines](/CONTRIBUTING.md) to be followed.
