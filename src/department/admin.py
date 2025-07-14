@@ -1,5 +1,5 @@
 from django.contrib import admin
-from home.models import SocialMedia
+from src.home.models import SocialMedia
 
 from .models import *
 from .models import Department, Designation, StaffMember

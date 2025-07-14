@@ -11,8 +11,6 @@ from .models import (
     Unit,
 )
 
-# from rest_framework.relations import PrimaryKeyRelatedField
-
 
 class ReportSerializer(serializers.ModelSerializer):
     class Meta:

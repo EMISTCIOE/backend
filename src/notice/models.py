@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 
 from ckeditor.fields import RichTextField
-from department.models import Department
+from src.department.models import Department
 from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.utils import timezone

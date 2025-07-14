@@ -1,4 +1,4 @@
-from home.serializer import SocialMediaSerializer
+from src.home.serializer import SocialMediaSerializer
 from rest_framework import serializers
 
 from .models import (

@@ -1,8 +1,6 @@
 from django.db.models import Q
-from django.shortcuts import render
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from rest_framework.views import APIView
 
 from .models import Image, Resource
 from .serializer import ImageSerializer, ResourceSerializer

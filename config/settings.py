@@ -47,11 +47,11 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    "src.home.apps.HomeConfig",
-    "src.notice.apps.NoticeConfig",
-    "src.department.apps.DepartmentConfig",
-    "src.curriculum.apps.CurriculumConfig",
-    "src.journal.apps.JournalConfig",
+    "src.home",
+    "src.notice",
+    "src.department",
+    "src.curriculum",
+    "src.journal",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

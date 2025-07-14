@@ -4,7 +4,7 @@ from ckeditor.fields import RichTextField
 from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.utils.text import slugify
-from home.models import SocialMedia
+from src.home.models import SocialMedia
 
 # Create your models here.
 

@@ -27,11 +27,11 @@ class CustomSpectacularSwaggerView(SpectacularSwaggerView):
 
 
 urlpatterns = [
-    path("api/", include("home.urls")),
-    path("api/notice/", include("notice.urls")),
-    path("api/department/", include("department.urls")),
-    path("api/curriculum/", include("curriculum.urls")),
-    path("api/journal/", include("journal.urls")),
+    path("api/", include("src.home.urls")),
+    path("api/notice/", include("src.notice.urls")),
+    path("api/department/", include("src.department.urls")),
+    path("api/curriculum/", include("src.curriculum.urls")),
+    path("api/journal/", include("src.journal.urls")),
     # Django Admin, use {% url 'admin:index' %}
     path(settings.ADMIN_URL, admin.site.urls),
     # Media files

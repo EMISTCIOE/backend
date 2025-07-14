@@ -1,5 +1,4 @@
 # Register your models here.
-from department.admin import SocialMediaInline
 from django.contrib import admin
 
 from .models import (

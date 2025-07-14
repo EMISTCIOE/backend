@@ -5,6 +5,7 @@ from .views import *
 from .viewsets import *
 
 router = routers.DefaultRouter()
+
 router.register(r"main", DepartmentViewSet)
 router.register(r"projects", ProjectViewSet)
 router.register(r"question-banks", QuestionBankViewSet)
