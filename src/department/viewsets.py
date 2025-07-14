@@ -1,35 +1,32 @@
 from rest_framework import viewsets
-from .models import (
-    Department,
-    Project,
-    QuestionBank,
-    PlansPolicy,
-    Student,
-    FAQ,
-    Blog,
-    Programs,
-    StaffMember,
-    Designation,
-    Society,
-
-)
-from .serializers import (
-    DepartmentSerializer,
-    ProjectSerializer,
-    QuestionBankSerializer,
-    PlansPolicySerializer,
-    StudentSerializer,
-    FAQSerializer,
-    BlogSerializer,
-    ProgramsSerializer,
-    StaffMemberSerializer,
-    DesignationSerializer,
-    SocietySerializer,
-)
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
-
-
+from .models import (
+    FAQ,
+    Blog,
+    Department,
+    Designation,
+    PlansPolicy,
+    Programs,
+    Project,
+    QuestionBank,
+    Society,
+    StaffMember,
+    Student,
+)
+from .serializers import (
+    BlogSerializer,
+    DepartmentSerializer,
+    DesignationSerializer,
+    FAQSerializer,
+    PlansPolicySerializer,
+    ProgramsSerializer,
+    ProjectSerializer,
+    QuestionBankSerializer,
+    SocietySerializer,
+    StaffMemberSerializer,
+    StudentSerializer,
+)
 
 
 class DepartmentViewSet(viewsets.ModelViewSet):
@@ -97,5 +94,3 @@ class SocietyViewSet(viewsets.ModelViewSet):
     queryset = Society.objects.all()
     serializer_class = SocietySerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
-
-

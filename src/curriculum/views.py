@@ -1,10 +1,11 @@
-from .serializers import SubjectSerializer, SuggestionSerializer
-from .models import Subject
-from rest_framework.generics import ListAPIView
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django.http import JsonResponse
-from rest_framework.parsers import JSONParser
 from rest_framework.decorators import api_view
+from rest_framework.generics import ListAPIView
+from rest_framework.parsers import JSONParser
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+
+from .models import Subject
+from .serializers import SubjectSerializer, SuggestionSerializer
 
 
 # Create your views here.

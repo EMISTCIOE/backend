@@ -1,28 +1,28 @@
-from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
-from .models import (
-    HomePage,
-    SocialMedia,
-    Resource,
-    Unit,
-    ImageGallery,
-    Image,
-    Calendar,
-    Report,
-)
-from .serializer import (
-    HomePageSerializer,
-    SocialMediaSerializer,
-    ResourceSerializer,
-    UnitSerializer,
-    ImageGallerySerializer,
-    ImageSerializer,
-    CalendarSerializer,
-    ReportSerializer,
-)
-
 # Create your views here.
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
+
+from .models import (
+    Calendar,
+    HomePage,
+    Image,
+    ImageGallery,
+    Report,
+    Resource,
+    SocialMedia,
+    Unit,
+)
+from .serializer import (
+    CalendarSerializer,
+    HomePageSerializer,
+    ImageGallerySerializer,
+    ImageSerializer,
+    ReportSerializer,
+    ResourceSerializer,
+    SocialMediaSerializer,
+    UnitSerializer,
+)
 
 
 class ReportViewset(ModelViewSet):

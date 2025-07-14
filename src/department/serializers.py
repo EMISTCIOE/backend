@@ -1,18 +1,19 @@
+from home.serializer import SocialMediaSerializer
 from rest_framework import serializers
+
 from .models import (
-    Department,
-    Project,
-    QuestionBank,
-    PlansPolicy,
-    Student,
     FAQ,
     Blog,
-    Programs,
-    StaffMember,
+    Department,
     Designation,
+    PlansPolicy,
+    Programs,
+    Project,
+    QuestionBank,
     Society,
+    StaffMember,
+    Student,
 )
-from home.serializer import SocialMediaSerializer
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -80,7 +81,7 @@ class ProgramsSerializer(serializers.ModelSerializer):
 
 class StaffMemberSerializer(serializers.ModelSerializer):
     staff_designation = serializers.CharField(
-        source="designation.get_designation_display"
+        source="designation.get_designation_display",
     )
     department = serializers.CharField(source="department.name")
     socials = SocialMediaSerializer(many=True, read_only=True)
@@ -117,9 +118,6 @@ class SocietySerializer(serializers.ModelSerializer):
     class Meta:
         model = Society
         fields = "__all__"
-
-
-
 
 
 class DepartmentSerializer(serializers.ModelSerializer):

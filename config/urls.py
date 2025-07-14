@@ -32,7 +32,6 @@ urlpatterns = [
     path("api/department/", include("department.urls")),
     path("api/curriculum/", include("curriculum.urls")),
     path("api/journal/", include("journal.urls")),
-
     # Django Admin, use {% url 'admin:index' %}
     path(settings.ADMIN_URL, admin.site.urls),
     # Media files
@@ -48,7 +47,6 @@ if settings.DEBUG:
 # API URLS
 urlpatterns += [
     path("", TemplateView.as_view(template_name="pages/home.html"), name="home"),
-
     # DRF auth token
     path("api-auth/", include("rest_framework.urls")),
     path("api/schema/", SpectacularAPIView.as_view(), name="api-schema"),

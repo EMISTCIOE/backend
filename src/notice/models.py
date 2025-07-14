@@ -1,37 +1,49 @@
-from django.db import models
-import uuid
-from department.models import Department
-from django.utils import timezone
-from ckeditor.fields import RichTextField
-from django.core.validators import FileExtensionValidator
-from datetime import datetime
 import os
+import uuid
+from datetime import datetime
+
+from ckeditor.fields import RichTextField
+from department.models import Department
+from django.core.validators import FileExtensionValidator
+from django.db import models
+from django.utils import timezone
+
 # Create your models here.
 
 
 def update_filename(instance, filename):
-    ext = filename.split('.')[-1]
+    ext = filename.split(".")[-1]
     path = "files/"
-    format = "%s_%s_%s_%s.%s" % (instance.notice_category.notice_type.notice_type.replace(
-        " ", "-"), instance.notice_category.category.replace(" ", "-"), instance.department.name  if instance.department else "General", datetime.now().strftime("%H:%M:%S"), ext)
+    format = "%s_%s_%s_%s.%s" % (
+        instance.notice_category.notice_type.notice_type.replace(" ", "-"),
+        instance.notice_category.category.replace(" ", "-"),
+        instance.department.name if instance.department else "General",
+        datetime.now().strftime("%H:%M:%S"),
+        ext,
+    )
     return os.path.join(path, format)
 
 
 class NoticeType(models.Model):
     type_enum = (
-        ('Department', "Department"),
-        ('Administration', "Administration"),
-        ('Admission', "Admission"),
-        ('Exam', "Examination"),
-        ('Scholarship', "Scholarship"),
-        ('Event', "Event"),
-        ('Society', "Society"),
-        ('Club', "Club"),
-        ('Other', "Other"),
+        ("Department", "Department"),
+        ("Administration", "Administration"),
+        ("Admission", "Admission"),
+        ("Exam", "Examination"),
+        ("Scholarship", "Scholarship"),
+        ("Event", "Event"),
+        ("Society", "Society"),
+        ("Club", "Club"),
+        ("Other", "Other"),
     )
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     notice_type = models.CharField(
-        max_length=100, choices=type_enum, unique=True, null=False, blank=False)
+        max_length=100,
+        choices=type_enum,
+        unique=True,
+        null=False,
+        blank=False,
+    )
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
@@ -39,16 +51,25 @@ class NoticeType(models.Model):
         return self.notice_type
 
     class Meta:
-        ordering = ['notice_type']
+        ordering = ["notice_type"]
         verbose_name_plural = "Notice Types"
 
 
 class NoticeCategory(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     notice_type = models.ForeignKey(
-        NoticeType, blank=False, null=False, on_delete=models.CASCADE, related_name='notice_type_set')
+        NoticeType,
+        blank=False,
+        null=False,
+        on_delete=models.CASCADE,
+        related_name="notice_type_set",
+    )
     category = models.CharField(
-        max_length=100, null=False, blank=False, default="General")
+        max_length=100,
+        null=False,
+        blank=False,
+        default="General",
+    )
     created = models.DateTimeField(auto_now_add=True)
     modified = models.DateTimeField(auto_now=True)
 
@@ -56,23 +77,47 @@ class NoticeCategory(models.Model):
         return str(self.notice_type.notice_type) + "-" + self.category
 
     class Meta:
-        ordering = ['notice_type', 'category']
+        ordering = ["notice_type", "category"]
         verbose_name_plural = "Notice Categories"
 
 
 class Notice(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    slug = models.SlugField(max_length=250, null=False,
-                            blank=False, unique=True, editable=False)
+    slug = models.SlugField(
+        max_length=250,
+        null=False,
+        blank=False,
+        unique=True,
+        editable=False,
+    )
     title = models.CharField(max_length=200, null=False, blank=False)
     description = RichTextField(null=True, blank=True)
-    thumbnail = models.ImageField(upload_to='images/', null=True, blank=True)
+    thumbnail = models.ImageField(upload_to="images/", null=True, blank=True)
     download_file = models.FileField(
-        upload_to=update_filename, null=True, blank=True, validators=[FileExtensionValidator(['pdf',])])
+        upload_to=update_filename,
+        null=True,
+        blank=True,
+        validators=[
+            FileExtensionValidator(
+                [
+                    "pdf",
+                ],
+            ),
+        ],
+    )
     notice_category = models.ForeignKey(
-        NoticeCategory, blank=True, null=True, on_delete=models.CASCADE, related_name='notice_category_set')
+        NoticeCategory,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+        related_name="notice_category_set",
+    )
     department = models.ForeignKey(
-        Department, blank=True, null=True, on_delete=models.CASCADE)
+        Department,
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE,
+    )
     is_featured = models.BooleanField(default=False, null=False, blank=False)
     published_date = models.DateField(default=timezone.now)
     modified = models.DateTimeField(auto_now=True)
@@ -93,5 +138,5 @@ class Notice(models.Model):
         super(Notice, self).save(*args, **kwargs)
 
     class Meta:
-        ordering = ['-published_date']
+        ordering = ["-published_date"]
         verbose_name_plural = "Notices"

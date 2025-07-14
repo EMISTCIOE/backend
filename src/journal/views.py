@@ -1,9 +1,16 @@
-from django.shortcuts import render
-from rest_framework.generics import ListAPIView, RetrieveAPIView, CreateAPIView
 from django.db.models import Q
-from .models import Article, BoardMember, ArticleXml
-from .serializers import ArticleSerializer, BoardMemberSerializer, ArticleXmlSerializer, AuthorSerializer
+from django.shortcuts import render
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+
+from .models import Article, ArticleXml, BoardMember
+from .serializers import (
+    ArticleSerializer,
+    ArticleXmlSerializer,
+    AuthorSerializer,
+    BoardMemberSerializer,
+)
+
 # Create your views here.
 
 
@@ -14,10 +21,10 @@ class ArticleSearchView(ListAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        url_id = self.request.GET.get('url_id', '').lower()
-        title = self.request.GET.get('title', '').lower()
-        genre = self.request.GET.get('genre', '').lower()
-        doi_id = self.request.GET.get('doi_id', '').lower()
+        url_id = self.request.GET.get("url_id", "").lower()
+        title = self.request.GET.get("title", "").lower()
+        genre = self.request.GET.get("genre", "").lower()
+        doi_id = self.request.GET.get("doi_id", "").lower()
         queryset = Article.objects.all()
         if url_id:
             queryset = queryset.filter(url_id__iexact=url_id)
@@ -37,9 +44,9 @@ class BoardMemberSearchView(ListAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        name = self.request.GET.get('name', '').lower()
-        designation = self.request.GET.get('designation', '').lower()
-        department = self.request.GET.get('department', '').lower()
+        name = self.request.GET.get("name", "").lower()
+        designation = self.request.GET.get("designation", "").lower()
+        department = self.request.GET.get("department", "").lower()
         queryset = BoardMember.objects.all()
         if name:
             queryset = queryset.filter(name__icontains=name)

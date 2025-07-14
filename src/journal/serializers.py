@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Article, Author, BoardMember, ArticleXml
+
+from .models import Article, ArticleXml, Author, BoardMember
 
 
 class AuthorSerializer(serializers.ModelSerializer):
@@ -13,8 +14,23 @@ class ArticleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Article
-        fields = ["id", "url_id", "title", "genre", "date_published", "doi_id", "abstract",
-                  "keywords", "discipline", "authors", "submission_id", "volume", "number", "year", "pages"]
+        fields = [
+            "id",
+            "url_id",
+            "title",
+            "genre",
+            "date_published",
+            "doi_id",
+            "abstract",
+            "keywords",
+            "discipline",
+            "authors",
+            "submission_id",
+            "volume",
+            "number",
+            "year",
+            "pages",
+        ]
 
 
 class BoardMemberSerializer(serializers.ModelSerializer):

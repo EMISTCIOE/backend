@@ -2,10 +2,10 @@
 Django settings for tcioe project.
 """
 
-import environ
-from pathlib import Path
 from datetime import timedelta
+from pathlib import Path
 
+import environ
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 APPS_DIR = BASE_DIR / "src"
@@ -125,14 +125,14 @@ if not LOCAL:
             "PASSWORD": env("DB_PASSWORD"),
             "HOST": env("DB_HOST"),
             "PORT": env("DB_PORT"),
-        }
+        },
     }
 else:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": BASE_DIR / "db.sqlite3",
-        }
+        },
     }
 
 DATABASES["default"]["ATOMIC_REQUESTS"] = True

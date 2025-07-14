@@ -1,17 +1,17 @@
-from django.contrib import admin
-from .models import (
-    HomePage,
-    Resource,
-    Unit,
-    ImageGallery,
-    Image,
-    Calendar,
-    Report,
-    ReportType,
-)
-
 # Register your models here.
 from department.admin import SocialMediaInline
+from django.contrib import admin
+
+from .models import (
+    Calendar,
+    HomePage,
+    Image,
+    ImageGallery,
+    Report,
+    ReportType,
+    Resource,
+    Unit,
+)
 
 admin.site.register(ReportType)
 

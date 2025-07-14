@@ -3,11 +3,11 @@
 
 
  API documentation for the journal
- endpoint: 
+ endpoint:
 1. /api/journal/articles
 2. /api/journal/board-members
 3. /api/journal/article-search?title=xxx&genre=xxx&doi_id=xxx
-4. /api/journal/board-member-search?name=xxx&designation=xxx&department=xxx 
+4. /api/journal/board-member-search?name=xxx&designation=xxx&department=xxx
 
 
 - Search using exact title(tight) or keyword.

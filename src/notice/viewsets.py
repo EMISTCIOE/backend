@@ -1,7 +1,8 @@
-from rest_framework.viewsets import ModelViewSet
-from .models import Notice, NoticeType, NoticeCategory
-from .serializer import NoticeSerializer, NoticeTypeSerializer, NoticeCategorySerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.viewsets import ModelViewSet
+
+from .models import Notice, NoticeCategory, NoticeType
+from .serializer import NoticeCategorySerializer, NoticeSerializer, NoticeTypeSerializer
 
 # Create your views here.
 

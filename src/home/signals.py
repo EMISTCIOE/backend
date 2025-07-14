@@ -1,6 +1,7 @@
 from django.db.models.signals import pre_delete
 from django.dispatch import receiver
-from .models import HomePage, Unit, Resource, Report, ImageGallery
+
+from .models import HomePage, ImageGallery, Report, Resource, Unit
 
 
 @receiver(pre_delete, sender=HomePage)

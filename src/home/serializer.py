@@ -1,14 +1,15 @@
-from .models import (
-    HomePage,
-    SocialMedia,
-    Resource,
-    Unit,
-    ImageGallery,
-    Image,
-    Calendar,
-    Report,
-)
 from rest_framework import serializers
+
+from .models import (
+    Calendar,
+    HomePage,
+    Image,
+    ImageGallery,
+    Report,
+    Resource,
+    SocialMedia,
+    Unit,
+)
 
 # from rest_framework.relations import PrimaryKeyRelatedField
 
@@ -53,7 +54,6 @@ class UnitSerializer(serializers.ModelSerializer):
 
 
 class ImageSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Image
         fields = "__all__"

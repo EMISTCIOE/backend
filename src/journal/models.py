@@ -1,13 +1,20 @@
-from django.db import models
 import uuid
-from django.urls import reverse
+
 from django.core.validators import FileExtensionValidator
+from django.db import models
+from django.urls import reverse
+
 # Create your models here.
 
 
 class Author(models.Model):
     given_name = models.CharField(max_length=200, verbose_name="Given Name")
-    family_name = models.CharField(max_length=200, verbose_name="Family Name", null=True, blank=True)
+    family_name = models.CharField(
+        max_length=200,
+        verbose_name="Family Name",
+        null=True,
+        blank=True,
+    )
     affiliation = models.CharField(max_length=500, null=True, blank=True)
     country = models.CharField(max_length=200, null=True, blank=True)
     email = models.EmailField(null=True, blank=True)
@@ -29,16 +36,25 @@ class Article(models.Model):
     title = models.CharField(max_length=500)
     genre = models.CharField(max_length=500)
     date_published = models.DateField(
-        verbose_name="Published Date", null=True, blank=True)
+        verbose_name="Published Date",
+        null=True,
+        blank=True,
+    )
     doi_id = models.CharField(
-        max_length=500, verbose_name="DOI ID", null=True, blank=True)
+        max_length=500,
+        verbose_name="DOI ID",
+        null=True,
+        blank=True,
+    )
     abstract = models.TextField()
     keywords = models.CharField(max_length=500, null=True, blank=True)
     discipline = models.CharField(max_length=500, null=True, blank=True)
-    authors = models.ManyToManyField(
-        Author, related_name="article_author")
+    authors = models.ManyToManyField(Author, related_name="article_author")
     submission_id = models.IntegerField(
-        verbose_name="Submission ID", null=True, blank=True)
+        verbose_name="Submission ID",
+        null=True,
+        blank=True,
+    )
     volume = models.IntegerField(null=True, blank=True)
     number = models.IntegerField(null=True, blank=True)
     year = models.IntegerField(null=True, blank=True)
@@ -55,14 +71,17 @@ class Article(models.Model):
 
     class Meta:
         ordering = ["title"]
-        unique_together = ['url_id']
+        unique_together = ["url_id"]
 
 
 class BoardMember(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=200)
     image = models.ImageField(
-        upload_to="media/editorial_board/images", null=True, blank=True)
+        upload_to="media/editorial_board/images",
+        null=True,
+        blank=True,
+    )
     role = models.CharField(max_length=200)
     rank = models.IntegerField(null=True, blank=True)
     designation = models.CharField(max_length=200)
@@ -70,11 +89,21 @@ class BoardMember(models.Model):
     organization = models.CharField(max_length=500)
     email = models.EmailField()
     orcid_id = models.CharField(
-        max_length=50, verbose_name="ORCID iD", null=True, blank=True)
+        max_length=50,
+        verbose_name="ORCID iD",
+        null=True,
+        blank=True,
+    )
     google_scholar_link = models.URLField(
-        null=True, blank=True, verbose_name="Google Scholar Profile")
+        null=True,
+        blank=True,
+        verbose_name="Google Scholar Profile",
+    )
     research_gate_link = models.URLField(
-        null=True, blank=True, verbose_name="Research Gate Profile")
+        null=True,
+        blank=True,
+        verbose_name="Research Gate Profile",
+    )
 
     def __str__(self):
         return self.name.title() + "-" + str(self.role)
@@ -86,14 +115,27 @@ class BoardMember(models.Model):
 
 class ArticleXml(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    article_name = models.CharField(
-        max_length=500, null=True, blank=True, unique=True)
-    xml_file = models.FileField(upload_to="xmls/articles/", null=True, blank=True, validators=[
-                                FileExtensionValidator(['xml',])])
+    article_name = models.CharField(max_length=500, null=True, blank=True, unique=True)
+    xml_file = models.FileField(
+        upload_to="xmls/articles/",
+        null=True,
+        blank=True,
+        validators=[
+            FileExtensionValidator(
+                [
+                    "xml",
+                ],
+            ),
+        ],
+    )
 
     def __str__(self):
         # return file name only not the path
-        return str(self.article_name.title()) if self.article_name != None else "Article XML"
+        return (
+            str(self.article_name.title())
+            if self.article_name != None
+            else "Article XML"
+        )
 
     class Meta:
         ordering = ["-article_name"]

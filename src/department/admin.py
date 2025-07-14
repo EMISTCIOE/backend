@@ -1,14 +1,14 @@
 from django.contrib import admin
-from .models import Department, StaffMember, Designation
 from home.models import SocialMedia
+
 from .models import *
+from .models import Department, Designation, StaffMember
 
 # Register your models here.
 
 
 # admin.site.register(Department)
 # admin.site.register(StaffMember)
-
 
 
 @admin.register(StaffMember)
@@ -43,8 +43,6 @@ admin.site.register([FAQ, Blog])
 class QuestionBankAdmin(admin.ModelAdmin):
     list_display = ["__str__", "id"]
     search_fields = ["subject"]
-
-
 
 
 @admin.register(Project)

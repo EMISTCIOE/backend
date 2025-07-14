@@ -1,16 +1,17 @@
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework import routers
+
+from .views import ImageSearchView, ResourceSearchView
 from .viewsets import (
+    CalendarViewset,
     HomeViewSet,
-    SocialMediaViewSet,
-    ResourceViewSet,
-    UnitViewSet,
     ImageGalleryViewset,
     ImageViewset,
     ReportViewset,
-    CalendarViewset,
+    ResourceViewSet,
+    SocialMediaViewSet,
+    UnitViewSet,
 )
-from .views import ResourceSearchView, ImageSearchView
 
 router = routers.DefaultRouter()
 router.register(r"home", HomeViewSet)

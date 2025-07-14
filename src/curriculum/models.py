@@ -1,6 +1,7 @@
-from django.db import models
-from ckeditor.fields import RichTextField
 import uuid
+
+from ckeditor.fields import RichTextField
+from django.db import models
 from django.utils.text import slugify
 
 Programs = [
@@ -65,10 +66,16 @@ class Subject(models.Model):
     name = models.CharField(max_length=200)
     code = models.CharField(max_length=20)
     semester = models.CharField(
-        max_length=200, choices=Semester, null=False, blank=False
+        max_length=200,
+        choices=Semester,
+        null=False,
+        blank=False,
     )
     program = models.CharField(
-        max_length=200, choices=Programs, null=False, blank=False
+        max_length=200,
+        choices=Programs,
+        null=False,
+        blank=False,
     )
 
     # course_objective = RichTextField()
@@ -88,7 +95,10 @@ class Subject(models.Model):
 class Routine(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     semester = models.CharField(
-        max_length=200, choices=Semester, null=False, blank=False
+        max_length=200,
+        choices=Semester,
+        null=False,
+        blank=False,
     )
     # routine_pdf = models.Field(upload_to='media/routine/')
     routine_png = models.ImageField(upload_to="media/routine/")
@@ -98,11 +108,10 @@ class Routine(models.Model):
         return f"{self.semester.name} - {self.semester.program.name}"
 
 
-
 class Suggestion(models.Model):
-    name = models.CharField(null= True, blank = True, max_length = 255)
+    name = models.CharField(null=True, blank=True, max_length=255)
     message = models.TextField(null=False, blank=False)
-    date = models.DateTimeField(auto_now_add = True)
+    date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f'{self.message[:10]}'
+        return f"{self.message[:10]}"

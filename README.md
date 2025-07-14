@@ -12,7 +12,7 @@
 
    3. Install the required dependencies by running the command:
 
-      - pip install -r requirements\base.txt
+      - pip install -r requirements.txt
       - pre-commit install
 
    4. Next, apply the database migrations by running:
