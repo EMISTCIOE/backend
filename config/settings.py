@@ -47,6 +47,7 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
+    "src.user",
     "src.home",
     "src.notice",
     "src.department",
@@ -166,6 +167,7 @@ FIXTURE_DIRS = (str(APPS_DIR / "fixtures"),)
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
 ]
+AUTH_USER_MODEL = "user.User"
 
 
 # Internationalization
@@ -281,7 +283,7 @@ SPECTACULAR_SETTINGS = {
         "drf_spectacular.contrib.djangorestframework_camel_case.camelize_serializer_fields",
     ],
     "SERVE_PERMISSIONS": ["rest_framework.permissions.IsAuthenticated"],
-    "SCHEMA_PATH_PREFIX": "/api",
+    "SCHEMA_PATH_PREFIX": "/api/v1/cms/",
     "SWAGGER_UI_SETTINGS": {
         "defaultModelsExpandDepth": -1,
     },
@@ -301,3 +303,4 @@ SIMPLE_JWT = {
 # Constants
 # ------------------------------------------------------------------------------
 WEBSITE_MEDIA_MAX_UPLOAD_SIZE = int(env("WEBSITE_MEDIA_MAX_UPLOAD_SIZE"))
+AUTH_LINK_EXP_TIME = int(env("AUTH_LINK_EXP_TIME"))
