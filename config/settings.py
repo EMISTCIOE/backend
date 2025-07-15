@@ -268,6 +268,8 @@ NESTED_FORM_PARSER = {"OPTIONS": {"allow_empty": True, "allow_blank": True}}
 APPEND_SLASH = False
 CORS_URLS_REGEX = r"^/api/.*$"
 
+# API DOCUMENTATION
+# ------------------------------------------------------------------------------
 SPECTACULAR_SETTINGS = {
     "SCHEMA_COMPONENT_SPLIT_UNDERSCORES": False,
     "TITLE": "TCIOE EMIS Backend API",
@@ -285,6 +287,8 @@ SPECTACULAR_SETTINGS = {
     },
 }
 
+# JWT Authentication
+# ------------------------------------------------------------------------------
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=int(env("ACCESS_TOKEN_TIME", default=7))),
     "REFRESH_TOKEN_LIFETIME": timedelta(
@@ -293,3 +297,9 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKEN": False,
     "BLACKLIST_AFTER_ROTATION": False,
 }
+
+# Constants
+# ------------------------------------------------------------------------------
+WEBSITE_MEDIA_MAX_UPLOAD_SIZE = int(
+    env("WEBSITE_MEDIA_MAX_UPLOAD_SIZE"), default=5242880
+)
