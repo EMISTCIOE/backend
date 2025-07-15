@@ -1,0 +1,23 @@
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+
+from .models import Article, Author, BoardMember
+from .serializers import ArticleSerializer, AuthorSerializer, BoardMemberSerializer
+
+
+class ArticleViewsets(viewsets.ModelViewSet):
+    queryset = Article.objects.all()
+    serializer_class = ArticleSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+
+class BoardMemberViewset(viewsets.ModelViewSet):
+    queryset = BoardMember.objects.all()
+    serializer_class = BoardMemberSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+
+class AuthorViewset(viewsets.ModelViewSet):
+    queryset = Author.objects.all()
+    serializer_class = AuthorSerializer
+    # permission_classes = [IsAuthenticatedOrReadOnly]

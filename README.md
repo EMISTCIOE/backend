@@ -1,36 +1,44 @@
-# TCIOE API
+# Thapathali Campus EMIS BACKEND
 
-**_ Search Endpoints _**
+**To get started with the Project, follow these simple steps:**
 
-## Staffs
+1. Navigate to the project directory and create a virtual environment by running: - python -m venv venv
 
-Endpoint : /api/department/staffs/search/?name=xxx&designation=xxx&department=xxx&key_officials=xxx
+   2. Activate the virtual environment by running the command:
 
-- All params are optional, just pass the parameter as required for search.
-- If no params are passed, all staffs will be returned.
-- key_officials can be either true or false.
+      - source venv/bin/activate
+        OR - .\venv\Scripts\activate
 
-## Subjects
+   3. Install the required dependencies by running the command:
 
-Endpoint : /api/department/subjects/search/?sub_name=xxx&code=xxx&department=xxx&faculty=xxx
+      - pip install -r requirements.txt
+      - pre-commit install
 
-- All params are optional, just pass the parameter as required for search.
-- If no params are passed, all subjects will be returned.
-- Faculty with semester is not available right now but will be added soon.
+   4. Next, apply the database migrations by running:
 
-## Notice
+      - python manage.py migrate
 
-Endpoint : /api/notice/search/?keyword=xxx&category=xxx&notice_type=xxx&department=xxx&is_featured=xxx&published_date=xxx&start_date=xxx&end_date=xxx
+   5. Create a superuser account by running:
 
-- All params are optional, just pass the parameter as required for search.
-- If no params are passed, all notices will be returned.
-- is_featured can be either true or false.
-- published_date, start_date and end_date should be in YYYY-MM-DD format.
-- start_date and end_date are used to filter notices based on published_date range.
+      - python manage.py createsuperuser
 
-### Authentication (JWT)
+   6. Load the static files
 
-- To get the token, send a POST request to /api/token/ with username and password in the body.
-- To refresh the token, send a POST request to /api/token/refresh/ with refresh token in the body.
+      - python manage.py collectstatic
 
-#### To access the protected endpoints, send the token in the Authorization header as Bearer token.
+   7. Finally, start the Django server by running:
+      - python manage.py runserver
+
+**Formatting and Linting Code**
+
+1. ruff check / ruff check --fix / ruff format
+2. black .
+3. pre-commit run --all-files
+
+# Contributing to Project 🔐
+
+Remember, Good PR makes you a Good contributor !
+
+We work hard to maintain the structure, and [use conventional Pull](https://github.com/emis-tcioe/tcioe-emis/blob/main/CONTRIBUTING.md#pull-request-title-format-) request titles and commits. Without a proper template for the PR, not following the guidelines and spam might get the pull request closed, or banned.
+
+- [Contributing Guidelines](/CONTRIBUTING.md) to be followed.
