@@ -300,6 +300,4 @@ SIMPLE_JWT = {
 
 # Constants
 # ------------------------------------------------------------------------------
-WEBSITE_MEDIA_MAX_UPLOAD_SIZE = int(
-    env("WEBSITE_MEDIA_MAX_UPLOAD_SIZE"), default=5242880
-)
+WEBSITE_MEDIA_MAX_UPLOAD_SIZE = int(env("WEBSITE_MEDIA_MAX_UPLOAD_SIZE"))
