@@ -22,11 +22,15 @@
 
       - python manage.py createsuperuser
 
-   6. Load the static files
+   6. Load Fixtures:
+
+      - python load_fixtures.py
+
+   7. Load the static files
 
       - python manage.py collectstatic
 
-   7. Finally, start the Django server by running:
+   8. Finally, start the Django server by running:
       - python manage.py runserver
 
 **Formatting and Linting Code**

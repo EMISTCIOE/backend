@@ -11,12 +11,11 @@ from .auth_views import (
     UserVerifyAccountAPIView,
 )
 from .listing_apis.views import RoleForUserView
-from .views import RoleArchiveView, RoleViewSet, UserArchiveView, UserViewSet
+from .views import UserArchiveView, UserViewSet
 
 router = DefaultRouter(trailing_slash=False)
 
 router.register("users", UserViewSet, basename="users")
-router.register("roles", RoleViewSet, basename="roles")
 
 urlpatterns = [
     # User Auth
@@ -40,13 +39,8 @@ urlpatterns = [
         UserChangePasswordView.as_view(),
         name="user-change-password",
     ),
-    # User/Roles Setup
+    # User Setup
     # ----------------------------------------------------------------------------------
-    path(
-        "roles/<int:role_id>/archive",
-        RoleArchiveView.as_view(),
-        name="user-role-archive",
-    ),
     path("users/<int:user_id>/archive", UserArchiveView.as_view(), name="user-archive"),
     # Listing APIs
     # ----------------------------------------------------------------------------------

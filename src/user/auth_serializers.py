@@ -9,8 +9,6 @@ from rest_framework_simplejwt.tokens import RefreshToken
 # Project Imports
 from src.libs.get_context import get_user_by_context
 from src.user.validators import validate_user_image
-from src.libs.messages import UNKNOWN_ERROR
-from src.user.constants import SYSTEM_USER_ROLE
 from .messages import (
     ACCOUNT_ALREADY_VERIFIED,
     ACCOUNT_DISABLED,
@@ -99,15 +97,10 @@ class UserLoginSerializer(serializers.ModelSerializer):
 
     def check_system_user(self, user: User) -> None:
         if not user.is_superuser:
-            try:
-                system_user_role = UserRole.objects.get(codename=SYSTEM_USER_ROLE)
-            except UserRole.DoesNotExist as err:
-                raise serializers.ValidationError({"error": UNKNOWN_ERROR}) from err
-
             # Fetch all roles associated with the user
-            user_roles = user.roles.filter(is_active=True).values_list("id", flat=True)
+            has_cms_role = user.roles.filter(is_active=True, is_cms_role=True).exists()
 
-            if system_user_role.id not in user_roles:
+            if not has_cms_role:
                 raise serializers.ValidationError({"persona": INVALID_CREDENTIALS})
 
     def check_user_status(self, user: User) -> None:

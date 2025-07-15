@@ -1,0 +1,4 @@
+import os
+
+os.system("python manage.py loaddata user_role")
+os.system("python manage.py loaddata dummy_users")

@@ -19,15 +19,6 @@ USER_ERRORS = {
     "MISSING_ROLES": _("Please select at least one user ROLE."),
 }
 
-# User Role Validation Messages
-USER_ROLE_NOT_FOUND = _("User role not found.")
-USER_ROLE_ARCHIVED = _("User role archived successfully.")
-USER_ROLE_CREATED = _("User role registered successfully.")
-USER_ROLE_UPDATED = _("User role updated successfully.")
-USER_ROLE_ERRORS = {
-    "ROLE_NAME": _("User role with name {name} already exists."),
-}
-
 # flake8: noqa
 INVALID_PASSWORD = _("Incorrect password. Please try again.")
 ACCOUNT_DISABLED = _(

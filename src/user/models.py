@@ -13,7 +13,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 # Project Imports
 from src.base.models import AuditInfoModel
 
-from .constants import PUBLIC_USER_ROLE, SYSTEM_USER_ROLE
+from src.base.constants import PUBLIC_USER_ROLE
 from .exceptions import RoleNotFound
 from .validators import validate_user_image
 
@@ -27,10 +27,10 @@ class UserRole(AuditInfoModel):
 
     name = models.CharField(_("name"), max_length=50, unique=True)
     codename = models.CharField(_("codename"), max_length=50, unique=True)
-    is_system_managed = models.BooleanField(
-        _("System Managed"),
+    is_cms_role = models.BooleanField(
+        _("Is CMS Role"),
         default=False,
-        help_text="Managed by system",
+        help_text=_("Is this role for CMS Users"),
     )
 
     class Meta:
@@ -87,14 +87,6 @@ class UserManager(BaseUserManager):
         **extra_fields,
     ):
         user: User = self.create_user(username, email, password, **extra_fields)
-
-        try:
-            role = UserRole.objects.get(codename=SYSTEM_USER_ROLE)
-            user.roles.add(role)
-            user.save()
-        except UserRole.DoesNotExist as err:
-            role = "System User"
-            raise RoleNotFound(role) from err
         return user
 
     def create_public_user(

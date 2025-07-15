@@ -10,7 +10,7 @@ from .serializers import RoleForUserSerializer
 
 class RoleForUserView(ListAPIView):
     permission_classes = [UserSetupPermission]
-    queryset = UserRole.objects.filter(is_active=True, is_system_managed=False)
+    queryset = UserRole.objects.filter(is_active=True, is_cms_role=True)
     serializer_class = RoleForUserSerializer
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
     filter_fields = ["id", "name", "codename"]
