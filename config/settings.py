@@ -48,11 +48,12 @@ THIRD_PARTY_APPS = [
 
 LOCAL_APPS = [
     "src.user",
+    "src.core",
     "src.home",
     "src.notice",
+    "src.journal",
     "src.department",
     "src.curriculum",
-    "src.journal",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
