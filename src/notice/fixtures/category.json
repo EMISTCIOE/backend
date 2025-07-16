@@ -1,0 +1,158 @@
+[
+  {
+    "model": "notice.NoticeCategory",
+    "pk": 1,
+    "fields": {
+      "name": "General Information",
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "notice.NoticeCategory",
+    "pk": 2,
+    "fields": {
+      "name": "Vacancy",
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "notice.NoticeCategory",
+    "pk": 3,
+    "fields": {
+      "name": "Result",
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "notice.NoticeCategory",
+    "pk": 4,
+    "fields": {
+      "name": "Scholarship",
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "notice.NoticeCategory",
+    "pk": 5,
+    "fields": {
+      "name": "Others",
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "notice.NoticeCategory",
+    "pk": 6,
+    "fields": {
+      "name": "Department",
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:08:00.000000Z",
+      "updated_at": "2024-05-19T05:08:00.000000Z",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "notice.NoticeCategory",
+    "pk": 7,
+    "fields": {
+      "name": "Administration",
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:08:00.000000Z",
+      "updated_at": "2024-05-19T05:08:00.000000Z",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "notice.NoticeCategory",
+    "pk": 8,
+    "fields": {
+      "name": "Admission",
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:08:00.000000Z",
+      "updated_at": "2024-05-19T05:08:00.000000Z",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "notice.NoticeCategory",
+    "pk": 9,
+    "fields": {
+      "name": "Examination",
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:08:00.000000Z",
+      "updated_at": "2024-05-19T05:08:00.000000Z",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "notice.NoticeCategory",
+    "pk": 10,
+    "fields": {
+      "name": "Event",
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:08:00.000000Z",
+      "updated_at": "2024-05-19T05:08:00.000000Z",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "notice.NoticeCategory",
+    "pk": 11,
+    "fields": {
+      "name": "Society",
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:08:00.000000Z",
+      "updated_at": "2024-05-19T05:08:00.000000Z",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "notice.NoticeCategory",
+    "pk": 12,
+    "fields": {
+      "name": "Club",
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:08:00.000000Z",
+      "updated_at": "2024-05-19T05:08:00.000000Z",
+      "created_by": 1
+    }
+  },
+  {
+    "model": "notice.NoticeCategory",
+    "pk": 13,
+    "fields": {
+      "name": "Other",
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:08:00.000000Z",
+      "updated_at": "2024-05-19T05:08:00.000000Z",
+      "created_by": 1
+    }
+  }
+]

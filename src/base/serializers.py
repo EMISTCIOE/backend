@@ -12,7 +12,6 @@ class AbstractInfoRetrieveSerializer(ModelSerializer):
         model = AuditInfoModel
         fields = [
             "created_by",
-            "created_by",
             "updated_by",
             "created_at",
             "updated_at",
