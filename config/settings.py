@@ -140,6 +140,11 @@ else:
 DATABASES["default"]["ATOMIC_REQUESTS"] = True
 
 
+# EMAIL CONFIGURATION
+# ------------------------------------------------------------------------------
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+
 # PASSWORDS
 # ------------------------------------------------------------------------------
 PASSWORD_HASHERS = [
