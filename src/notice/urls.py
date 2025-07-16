@@ -1,15 +1,21 @@
-from django.shortcuts import render
 from django.urls import include, path
-from rest_framework import routers
+from rest_framework.routers import DefaultRouter
 
-from .views import NoticeSearchView
-from .viewsets import NoticeCategoryViewSet, NoticeTypeViewSet, NoticeViewSet
+from .views import NoticeViewSet
+from .listing_apis.views import (
+    DepartmentForNoticeListAPIView,
+    CategoryForNoticeListAPIView,
+    AuthorForNoticeListAPIView,
+)
 
-router = routers.DefaultRouter()
-router.register(r"notices", NoticeViewSet)
-router.register(r"types", NoticeTypeViewSet)
-router.register(r"categories", NoticeCategoryViewSet)
+router = DefaultRouter(trailing_slash=False)
+
+router.register("notices", NoticeViewSet, basename="notices")
+
+
 urlpatterns = [
+    path("notices/deparments", DepartmentForNoticeListAPIView.as_view()),
+    path("notices/categories", CategoryForNoticeListAPIView.as_view()),
+    path("notices/authors", AuthorForNoticeListAPIView.as_view()),
     path("", include(router.urls)),
-    path("search/", NoticeSearchView.as_view(), name="notice-search"),
 ]

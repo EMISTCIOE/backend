@@ -1,50 +1,76 @@
-from django.db.models import Q
-from django.shortcuts import render
-from rest_framework.generics import ListAPIView
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from rest_framework.response import Response
+# Django Imports
+import django_filters
+from django.db import transaction
+from django_filters.filterset import FilterSet
+from django_filters.rest_framework import DjangoFilterBackend
 
+# Rest Framework Imports
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.filters import OrderingFilter, SearchFilter
+
+# Project Imports
+from src.libs.utils import set_binary_files_null_if_empty
+from .serializers import (
+    NoticeCreateSerializer,
+    NoticeListSerializer,
+    NoticePatchSerializer,
+    NoticeRetrieveSerializer,
+)
 from .models import Notice
-from .serializer import NoticeSerializer
+from .permissions import NoticePermission
 
 
-class NoticeSearchView(ListAPIView):
-    model = Notice
-    serializer_class = NoticeSerializer
-    paginate_by = 10
-    permission_classes = [IsAuthenticatedOrReadOnly]
+class FilterForNoticeViewSet(FilterSet):
+    """Filters For Notice ViewSet"""
 
-    # get a query and search for it in the title and description of the notice,
-    # if the query is empty then return all the notices
-    # search for notices based on category, notice type, department, is_featured, published_date, start_date, end_date parameters
+    date = django_filters.DateFromToRangeFilter(field_name="created_at")
+
+    class Meta:
+        model = Notice
+        fields = ["id", "is_active", "department", "category", "is_featured", "date"]
+
+
+class NoticeViewSet(ModelViewSet):
+    """
+    ViewSet for managing CRUD operations for Notice.
+    """
+
+    permission_classes = [NoticePermission]
+    filterset_class = FilterForNoticeViewSet
+    filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
+    search_fields = ["title"]
+    ordering_fields = ["-created_at", "published_at"]
+    http_method_names = ["options", "head", "get", "patch", "post"]
+
     def get_queryset(self):
-        keyword = self.request.GET.get("keyword", "")
-        category = self.request.GET.get("category", "")
-        notice_type = self.request.GET.get("notice_type", "")
-        department = self.request.GET.get("department", "")
-        is_featured = self.request.GET.get("is_featured", "")
-        published_date = self.request.GET.get("published_date", "")
-        start_date = self.request.GET.get("start_date", "")
-        end_date = self.request.GET.get("end_date", "")
+        return Notice.objects.filter(is_archived=False)
 
-        # print(query)
-        queryset = Notice.objects.all()
-        if start_date and end_date:
-            queryset = queryset.filter(published_date__range=[start_date, end_date])
-        if category:
-            queryset = queryset.filter(notice_category__category__iexact=category)
-        if notice_type:
-            queryset = queryset.filter(
-                notice_category__notice_type__notice_type__iexact=notice_type,
-            )
-        if department:
-            queryset = queryset.filter(department__name__icontains=department)
-        if is_featured:
-            queryset = queryset.filter(is_featured__iexact=is_featured)
-        if published_date:
-            queryset = queryset.filter(published_date__icontains=published_date)
-        if keyword:
-            queryset = queryset.filter(
-                Q(title__icontains=keyword) | Q(description__icontains=keyword),
-            )
-        return queryset
+    def get_serializer_class(self):
+        serializer_class = NoticeListSerializer
+        if self.request.method == "GET":
+            if self.action == "list":
+                serializer_class = NoticeListSerializer
+            else:
+                serializer_class = NoticeRetrieveSerializer
+
+        if self.request.method == "POST":
+            serializer_class = NoticeCreateSerializer
+        elif self.request.method == "PATCH":
+            serializer_class = NoticePatchSerializer
+        return serializer_class
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        # set blank file fields to None/null
+        file_fields = ["thumbnail"]
+        if file_fields:
+            set_binary_files_null_if_empty(file_fields, request.data)
+        return super().create(request, *args, **kwargs)
+
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        # set blank file fields to None/null
+        file_fields = ["thumbnail"]
+        if file_fields:
+            set_binary_files_null_if_empty(file_fields, request.data)
+        return super().update(request, *args, **kwargs)

@@ -1,4 +1,5 @@
 from rest_framework.permissions import SAFE_METHODS
+from rest_framework.permissions import BasePermission
 
 from src.user.models import User
 
@@ -55,3 +56,16 @@ def validate_permissions(
         return False
 
     return bool(user_roles & allowed_roles)
+
+
+class PublicUserBasePermission(BasePermission):
+    def has_permission(self, request, view):
+        if (
+            request.user.is_anonymous
+            or request.user.is_archived
+            or not request.user.is_active
+            or not request.user.is_email_verified
+        ):
+            return False
+
+        return True
