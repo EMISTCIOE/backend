@@ -1,4 +1,5 @@
 import uuid
+from src.base.models import AuditInfoModel
 
 from ckeditor.fields import RichTextField
 from django.core.validators import (
@@ -18,13 +19,11 @@ sections_enum = (
 )
 
 
-class HomePage(models.Model):
-    # multiple images
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+class HomePage(AuditInfoModel):
     name = models.CharField(
         max_length=100,
         default="TCIOE",
-        choices=(sections_enum),
+        choices=sections_enum,
         unique=True,
     )
     slider_image1 = models.ImageField(upload_to="images/", null=True, blank=True)
@@ -84,8 +83,7 @@ class HomePage(models.Model):
 #         return self.department_id.name + " " + self.type
 
 
-class SocialMedia(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+class SocialMedia(AuditInfoModel):
     name = models.CharField(
         max_length=100,
         default="doece-social",
@@ -105,8 +103,7 @@ class SocialMedia(models.Model):
         return self.name
 
 
-class Unit(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+class Unit(AuditInfoModel):
     name = models.CharField(max_length=200, blank=False, null=False, unique=True)
     description = RichTextField(null=True, blank=True)
     image = models.ImageField(upload_to="images/", null=True, blank=True)
@@ -123,28 +120,24 @@ class Unit(models.Model):
         return self.name
 
 
-class Resource(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+class Resource(AuditInfoModel):
     title = models.CharField(max_length=200, blank=False, null=False, unique=True)
     description = RichTextField(null=True, blank=True)
     image = models.ImageField(upload_to="images/", null=True, blank=True)
     file = models.FileField(upload_to="files/", null=True, blank=True)
     is_featured = models.BooleanField(default=False)
-    upload_date = models.DateTimeField(auto_now_add=True)
     is_downloadable = models.BooleanField(default=False)
 
     def __str__(self):
         return self.title
 
     class Meta:
-        ordering = ["-upload_date"]
+        ordering = ["-created_at"]
 
 
-class ImageGallery(models.Model):
-    id = models.UUIDField(default=uuid.uuid4, primary_key=True, editable=False)
+class ImageGallery(AuditInfoModel):
     name = models.CharField(max_length=100)
     description = RichTextField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ["-created_at"]
@@ -153,13 +146,13 @@ class ImageGallery(models.Model):
         return self.name
 
 
-class Image(models.Model):
+class Image(AuditInfoModel):
     gallery = models.ForeignKey(ImageGallery, null=True, on_delete=models.CASCADE)
     name = models.CharField(max_length=100, null=True, blank=True)
     image = models.ImageField(upload_to="gallery/", null=False, blank=False)
 
     def __str__(self):
-        return self.gallery.name
+        return self.gallery.name if self.gallery else "No Gallery"
 
 
 calendar_for = [
@@ -168,8 +161,7 @@ calendar_for = [
 ]
 
 
-class Calendar(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+class Calendar(AuditInfoModel):
     title = models.CharField(max_length=255, null=False)
     calendar_level = models.CharField(choices=calendar_for, max_length=100, null=False)
     calendar_pdf = models.FileField(
@@ -178,8 +170,6 @@ class Calendar(models.Model):
         blank=True,
         validators=[FileExtensionValidator(["pdf"])],
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
     slug = models.SlugField(null=True, blank=True)
     academic_year = models.IntegerField(
         validators=[
@@ -199,8 +189,7 @@ class Calendar(models.Model):
         ordering = ["-academic_year"]
 
 
-class ReportType(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+class ReportType(AuditInfoModel):
     title = models.CharField(max_length=200)
     slug = models.CharField(max_length=255, null=True, blank=True)
 
@@ -212,9 +201,7 @@ class ReportType(models.Model):
         return self.title
 
 
-class Report(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    uploaded_at = models.DateTimeField(auto_now_add=True)
+class Report(AuditInfoModel):
     title = models.CharField(max_length=200)
     slug = models.CharField(max_length=255, null=True, blank=True)
     file = models.FileField(
@@ -233,4 +220,4 @@ class Report(models.Model):
         return self.title
 
     class Meta:
-        ordering = ["-uploaded_at"]
+        ordering = ["-created_at"]
