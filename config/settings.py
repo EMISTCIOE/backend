@@ -49,7 +49,7 @@ THIRD_PARTY_APPS = [
 LOCAL_APPS = [
     "src.user",
     "src.core",
-    "src.home",
+    "src.website",
     "src.notice",
     "src.journal",
     "src.department",

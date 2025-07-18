@@ -5,6 +5,33 @@ from src.base.models import AuditInfoModel
 from src.core.constants import EMAIL_TYPES
 
 
+class FiscalSessionBS(AuditInfoModel):
+    """
+    Represents a fiscal session in Bikram Sambat (BS), used across campus reports and other resources.
+    E.g., session_full: "2079/2080", session_short: "079/80"
+    """
+
+    session_full = models.CharField(
+        _("Full Session"),
+        max_length=9,
+        unique=True,
+        help_text=_("E.g. 2079/2080"),
+    )
+    session_short = models.CharField(
+        _("Short Session"),
+        max_length=5,
+        unique=True,
+        help_text=_("E.g. 079/80"),
+    )
+
+    class Meta:
+        verbose_name = _("Fiscal Session (BS)")
+        verbose_name_plural = _("Fiscal Sessions (BS)")
+
+    def __str__(self):
+        return self.session_short
+
+
 class EmailConfig(AuditInfoModel):
     """Model to store email configuration settings."""
 
