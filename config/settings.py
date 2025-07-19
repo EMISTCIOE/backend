@@ -52,6 +52,7 @@ LOCAL_APPS = [
     "src.website",
     "src.notice",
     "src.journal",
+    "src.department",
     "src.curriculum",
 ]
 

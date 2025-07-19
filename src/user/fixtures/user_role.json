@@ -1,58 +1,47 @@
 [
   {
-    "model": "user.UserRole",
+    "model": "user.Role",
     "pk": 1,
+    "fields": {
+      "name": "System Vendor",
+      "codename": "SYSTEM-VENDOR",
+      "permissions": [],
+      "created_by": 1,
+      "is_active": true,
+      "is_system_managed": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z"
+    }
+  },
+  {
+    "model": "user.Role",
+    "pk": 2,
+    "fields": {
+      "name": "System User",
+      "codename": "SYSTEM-USER",
+      "permissions": [],
+      "created_by": 1,
+      "is_system_managed": true,
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z"
+    }
+  },
+  {
+    "model": "user.Role",
+    "pk": 3,
     "fields": {
       "name": "Public User",
       "codename": "PUBLIC-USER",
+      "permissions": [],
       "created_by": 1,
-      "is_cms_role": false,
+      "is_system_managed": true,
       "is_active": true,
       "is_archived": false,
-      "created_at": "2025-07-15T09:00:00Z",
-      "updated_at": "2025-07-15T09:00:00Z"
-    }
-  },
-  {
-    "model": "user.UserRole",
-    "pk": 2,
-    "fields": {
-      "name": "CMS Administrator",
-      "codename": "CMS-ADMIN",
-      "created_by": 1,
-      "is_cms_role": true,
-      "is_active": true,
-      "is_archived": false,
-      "created_at": "2025-07-15T09:00:00Z",
-      "updated_at": "2025-07-15T09:00:00Z"
-    }
-  },
-  {
-    "model": "user.UserRole",
-    "pk": 3,
-    "fields": {
-      "name": "Content Editor",
-      "codename": "CONTENT-EDITOR",
-      "created_by": 1,
-      "is_cms_role": true,
-      "is_active": true,
-      "is_archived": false,
-      "created_at": "2025-07-15T09:00:00Z",
-      "updated_at": "2025-07-15T09:00:00Z"
-    }
-  },
-  {
-    "model": "user.UserRole",
-    "pk": 4,
-    "fields": {
-      "name": "Teacher",
-      "codename": "TEACHER",
-      "created_by": 1,
-      "is_cms_role": true,
-      "is_active": true,
-      "is_archived": false,
-      "created_at": "2025-07-15T09:00:00Z",
-      "updated_at": "2025-07-15T09:00:00Z"
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z"
     }
   }
 ]

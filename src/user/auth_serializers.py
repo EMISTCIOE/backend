@@ -1,17 +1,22 @@
 from datetime import timedelta
 
 from django.conf import settings
+from django.contrib.auth.hashers import check_password
 from django.contrib.auth.password_validation import validate_password
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 
-# Project Imports
 from src.libs.get_context import get_user_by_context
+from src.libs.messages import UNKNOWN_ERROR
+from src.user.constants import SYSTEM_USER_ROLE
+from src.user.utils.verification import send_user_forget_password_email
 from src.user.validators import validate_user_image
+
 from .messages import (
     ACCOUNT_ALREADY_VERIFIED,
     ACCOUNT_DISABLED,
+    ACCOUNT_NOT_FOUND,
     INVALID_CREDENTIALS,
     INVALID_LINK,
     INVALID_PASSWORD,
@@ -21,12 +26,41 @@ from .messages import (
     PASSWORDS_NOT_MATCH,
     SAME_OLD_NEW_PASSWORD,
 )
-from .models import UserRole, User, UserAccountVerification
+from .models import (
+    Permission,
+    Role,
+    User,
+    UserAccountVerification,
+    UserForgetPasswordRequest,
+)
+from .utils.generators import generate_secure_token
+
+
+class UserPermissionsSerializer(serializers.ModelSerializer):
+    main_module = serializers.ReadOnlyField(source="permission_category.main_module.id")
+    main_module_name = serializers.ReadOnlyField(
+        source="permission_category.main_module.name",
+    )
+    permission_category_name = serializers.ReadOnlyField(
+        source="permission_category.name",
+    )
+
+    class Meta:
+        model = Permission
+        fields = [
+            "id",
+            "name",
+            "codename",
+            "permission_category",
+            "permission_category_name",
+            "main_module",
+            "main_module_name",
+        ]
 
 
 class UserRoleSerializer(serializers.ModelSerializer):
     class Meta:
-        model = UserRole
+        model = Role
         fields = ["id", "name", "codename"]
 
 
@@ -48,7 +82,7 @@ class UserLoginSerializer(serializers.ModelSerializer):
         persona = attrs.get("persona")
         password = attrs.pop("password")
 
-        user: User = self.get_user(persona)
+        user = self.get_user(persona)
 
         # Validation Functions
         self.check_password(user, password)
@@ -56,6 +90,11 @@ class UserLoginSerializer(serializers.ModelSerializer):
         self.check_system_user(user)
 
         roles = UserRoleSerializer(user.roles.filter(is_active=True), many=True).data
+        permissions = UserPermissionsSerializer(
+            user.get_all_permissions(),
+            many=True,
+        ).data
+
         # save the last login timestamp
         user.last_login = timezone.now()
         user.save()
@@ -73,6 +112,7 @@ class UserLoginSerializer(serializers.ModelSerializer):
             "tokens": user.tokens,
             "full_name": user.get_full_name(),
             "roles": roles,
+            "permissions": permissions,
         }
 
     def get_photo(self, user: User) -> str | None:
@@ -91,16 +131,21 @@ class UserLoginSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"persona": INVALID_CREDENTIALS}) from err
         return user
 
-    def check_password(self, user: User, password: str) -> None:
+    def check_password(self, user: str, password: str) -> None:
         if not user.check_password(password):
             raise serializers.ValidationError({"password": INVALID_PASSWORD})
 
     def check_system_user(self, user: User) -> None:
         if not user.is_superuser:
-            # Fetch all roles associated with the user
-            has_cms_role = user.roles.filter(is_active=True, is_cms_role=True).exists()
+            try:
+                system_user_role = Role.objects.get(codename=SYSTEM_USER_ROLE)
+            except Role.DoesNotExist as err:
+                raise serializers.ValidationError({"error": UNKNOWN_ERROR}) from err
 
-            if not has_cms_role:
+            # Fetch all roles associated with the user
+            user_roles = user.roles.filter(is_active=True).values_list("id", flat=True)
+
+            if system_user_role.id not in user_roles:
                 raise serializers.ValidationError({"persona": INVALID_CREDENTIALS})
 
     def check_user_status(self, user: User) -> None:
@@ -263,6 +308,122 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+
+
+class UserForgetPasswordRequestSerializer(serializers.Serializer):
+    """User Forget Password Request Serializer"""
+
+    email = serializers.EmailField(required=True, write_only=True)
+    message = serializers.CharField(read_only=True)
+
+    def validate(self, attrs):
+        email = attrs.get("email", "")
+        try:
+            user = User.objects.get(email=email)
+            if not user.is_active:
+                raise serializers.ValidationError({"email": ACCOUNT_DISABLED})
+            attrs["user"] = user
+        except User.DoesNotExist as err:
+            raise serializers.ValidationError(
+                {"email": ACCOUNT_NOT_FOUND.format(email=email)},
+            ) from err
+
+        return attrs
+
+    def create(self, validated_data):
+        user = validated_data.pop("user", None)
+
+        if user is not None:
+            # Filter forget password requests by user and is_archived flag
+            forget_password_requests = UserForgetPasswordRequest.objects.filter(
+                user=user,
+                is_archived=False,
+            )
+
+            # Archive the existing requests
+            if forget_password_requests:
+                forget_password_requests.update(is_archived=True)
+
+            # Get new Token
+            token = generate_secure_token()
+            UserForgetPasswordRequest.objects.create(
+                user=user,
+                token=token,
+                created_at=timezone.now(),
+            )
+            # Send the email to the user
+            send_user_forget_password_email(
+                recipient_email=validated_data["email"],
+                token=token,
+                request=self.context["request"],
+            )
+
+        return validated_data
+
+
+class UserResetPasswordSerializer(serializers.Serializer):
+    """User Reset Password Serializer"""
+
+    token = serializers.CharField(max_length=64, required=True, write_only=True)
+    new_password = serializers.CharField(
+        max_length=32,
+        required=True,
+        write_only=True,
+        validators=[validate_password],
+    )
+    confirm_password = serializers.CharField(
+        max_length=32,
+        required=True,
+        write_only=True,
+    )
+    message = serializers.CharField(read_only=True)
+
+    def validate(self, attrs):
+        token = attrs.get("token")
+        new_password = attrs.get("new_password")
+        confirm_password = attrs.get("confirm_password")
+
+        try:
+            forget_password_request = UserForgetPasswordRequest.objects.get(
+                token=token,
+                is_archived=False,
+            )
+            attrs["forget_password_request"] = forget_password_request
+            now = timezone.now()
+            delta = now - forget_password_request.created_at
+            if delta > timedelta(minutes=settings.AUTH_LINK_EXP_TIME):
+                forget_password_request.is_archived = True
+                forget_password_request.save()
+                raise serializers.ValidationError({"error": LINK_EXPIRED})
+        except UserForgetPasswordRequest.DoesNotExist as err:
+            raise serializers.ValidationError({"error": INVALID_LINK}) from err
+
+        attrs["user"] = forget_password_request.user
+        old_password = attrs["user"].password
+
+        # Check if new password and old password are same
+        if check_password(new_password, old_password):
+            raise serializers.ValidationError({"new_password": SAME_OLD_NEW_PASSWORD})
+
+        # Check if new password and confirm password match
+        if new_password != confirm_password:
+            raise serializers.ValidationError({"confirm_password": PASSWORDS_NOT_MATCH})
+
+        return attrs
+
+    def create(self, validated_data):
+        new_password = validated_data["new_password"]
+        forget_password_request: UserForgetPasswordRequest = validated_data.get(
+            "forget_password_request",
+        )
+
+        user: User = validated_data["user"]
+        user.set_password(new_password)
+        user.save()
+        forget_password_request.is_archived = True
+        forget_password_request.save()
+
+        return validated_data
 
 
 class UserVerifyAccountSerializer(serializers.Serializer):

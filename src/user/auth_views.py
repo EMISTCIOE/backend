@@ -9,22 +9,25 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
-# Project Imports
-from src.user.throttling import LoginThrottle
+from src.user.throttling import ForgetPasswordThrottle, LoginThrottle
 from src.user.utils.generators import generate_secure_token
 from src.user.utils.verification import send_user_account_verification_email
+
 from .auth_serializers import (
     UserChangePasswordSerializer,
+    UserForgetPasswordRequestSerializer,
     UserLoginSerializer,
     UserLogoutSerializer,
     UserProfileSerializer,
     UserProfileUpdateSerializer,
+    UserResetPasswordSerializer,
     UserVerifyAccountSerializer,
 )
 from .messages import (
     ACCOUNT_VERIFIED,
     LOGOUT_SUCCESS,
     PASSWORD_CHANGED,
+    PASSWORD_RESET_LINK_SENT,
     PROFILE_UPDATED,
     VERIFICATION_EMAIL_SENT,
 )
@@ -194,3 +197,70 @@ class UserChangePasswordView(APIView):
 
             return Response({"message": PASSWORD_CHANGED}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserForgetPasswordRequestView(APIView):
+    """Forget Password Request View"""
+
+    permission_classes = [AllowAny]
+    serializer_class = UserForgetPasswordRequestSerializer
+    throttle_classes = [ForgetPasswordThrottle]
+
+    def post(self, request):
+        serializer = self.serializer_class(
+            data=request.data,
+            context={"request": request},
+        )
+        if serializer.is_valid(raise_exception=True):
+            validated_data = serializer.validated_data
+            email = validated_data["email"]
+            serializer.save()
+            response_message = PASSWORD_RESET_LINK_SENT.format(email=email)
+            return Response({"message": response_message}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserResetPasswordView(APIView):
+    """User Reset Password View"""
+
+    permission_classes = [AllowAny]
+    serializer_class = UserResetPasswordSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(
+            data=request.data,
+            context={"request": request},
+        )
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response({"message": PASSWORD_CHANGED}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserDeleteAccountView(generics.CreateAPIView):
+    """User Delete Account View"""
+
+    permission_classes = [IsAuthenticated]
+    http_method_names = ["post"]
+
+    def get_object(self):
+        return get_object_or_404(User, pk=self.request.user.pk)
+
+    @extend_schema(
+        responses={
+            200: {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string",
+                    },
+                },
+            },
+        },
+    )
+    def post(self, request, *args, **kwargs):
+        user = self.get_object()
+        user.is_archived = True
+        user.is_active = False
+        user.updated_at = timezone.now()
+        user.save()

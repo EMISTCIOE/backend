@@ -1,9 +1,7 @@
 from django.urls import include, path
-from rest_framework.routers import DefaultRouter
-
-router = DefaultRouter(trailing_slash=False)
+from rest_framework import routers
 
 
-urlpatterns = [
-    path("", include(router.urls)),
-]
+router = routers.DefaultRouter()
+
+urlpatterns = []

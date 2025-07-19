@@ -13,12 +13,77 @@ from rest_framework_simplejwt.tokens import RefreshToken
 # Project Imports
 from src.base.models import AuditInfoModel
 
-from src.base.constants import PUBLIC_USER_ROLE
+from .constants import PUBLIC_USER_ROLE, SYSTEM_USER_ROLE
 from .exceptions import RoleNotFound
 from .validators import validate_user_image
 
 
-class UserRole(AuditInfoModel):
+class MainModule(AuditInfoModel):
+    """Main Module to group permission categories"""
+
+    name = models.CharField(
+        _("name"),
+        max_length=50,
+        unique=True,
+        help_text="Max: 50 characters",
+    )
+    codename = models.CharField(
+        _("codename"),
+        max_length=50,
+        unique=True,
+        help_text="Max: 50 characters",
+    )
+
+    def __str__(self):
+        return f"id - {self.id} : {self.name}"
+
+
+class PermissionCategory(AuditInfoModel):
+    """Permission Category to group permissions"""
+
+    name = models.CharField(max_length=50, unique=True, help_text="Max: 50 characters")
+    main_module = models.ForeignKey(
+        MainModule,
+        on_delete=models.PROTECT,
+        related_name="permission_categories",
+    )
+
+    class Meta:
+        verbose_name = _("permission category")
+        verbose_name_plural = _("permission categories")
+
+    def __str__(self):
+        return f"id - {self.id} : {self.name} : {self.main_module.name}"
+
+
+class Permission(AuditInfoModel):
+    """
+    The permissions system provides a way to assign permissions to specific
+    users and roles of users.
+    """
+
+    name = models.CharField(_("name"), max_length=100)
+    codename = models.CharField(_("codename"), unique=True, max_length=100)
+    permission_category = models.ForeignKey(
+        PermissionCategory,
+        on_delete=models.PROTECT,
+        related_name="permissions",
+    )
+
+    class Meta:
+        verbose_name = _("permission")
+        verbose_name_plural = _("permissions")
+        ordering = [
+            "permission_category__main_module",
+            "permission_category",
+            "id",
+        ]
+
+    def __str__(self):
+        return f"{self.permission_category} : {self.name}"
+
+
+class Role(AuditInfoModel):
     """
     Role are a generic way of categorizing users to apply permissions, or
     some other label, to those users. A user can belong to any number of
@@ -27,10 +92,15 @@ class UserRole(AuditInfoModel):
 
     name = models.CharField(_("name"), max_length=50, unique=True)
     codename = models.CharField(_("codename"), max_length=50, unique=True)
-    is_cms_role = models.BooleanField(
-        _("Is CMS Role"),
+    permissions = models.ManyToManyField(
+        Permission,
+        verbose_name=_("permissions"),
+        blank=True,
+    )
+    is_system_managed = models.BooleanField(
+        _("System Managed"),
         default=False,
-        help_text=_("Is this role for CMS Users"),
+        help_text="Managed by system",
     )
 
     class Meta:
@@ -87,6 +157,14 @@ class UserManager(BaseUserManager):
         **extra_fields,
     ):
         user: User = self.create_user(username, email, password, **extra_fields)
+
+        try:
+            role = Role.objects.get(codename=SYSTEM_USER_ROLE)
+            user.roles.add(role)
+            user.save()
+        except Role.DoesNotExist as err:
+            role = "System User"
+            raise RoleNotFound(role) from err
         return user
 
     def create_public_user(
@@ -100,10 +178,10 @@ class UserManager(BaseUserManager):
         user: User = self.create_user(username, email, password, **extra_fields)
 
         try:
-            role = UserRole.objects.get(codename=PUBLIC_USER_ROLE)
+            role = Role.objects.get(codename=PUBLIC_USER_ROLE)
             user.roles.add(role)
             user.save()
-        except UserRole.DoesNotExist as err:
+        except Role.DoesNotExist as err:
             role = "Public User"
             raise RoleNotFound(role) from err
         return user
@@ -135,10 +213,16 @@ class User(AbstractUser):
         ),
     )
     roles = models.ManyToManyField(
-        UserRole,
+        Role,
         blank=True,
         verbose_name=_("roles"),
         help_text=_("Specific roles for this user"),
+    )
+    permissions = models.ManyToManyField(
+        Permission,
+        verbose_name=_("permissions"),
+        blank=True,
+        help_text=_("Specific permissions for this user."),
     )
     is_email_verified = models.BooleanField(default=False)
     is_phone_verified = models.BooleanField(default=False)
@@ -187,6 +271,39 @@ class User(AbstractUser):
     def tokens(self):
         refresh = RefreshToken.for_user(self)
         return {"refresh": str(refresh), "access": str(refresh.access_token)}
+
+    def get_all_permissions(self):
+        """
+        Returns a distinct set of permissions from roles and user-specific permissions.
+        """
+        # Permissions from roles
+        role_permissions = Permission.objects.filter(
+            role__in=self.roles.filter(is_active=True),
+            is_active=True,
+        ).distinct()
+
+        # User-specific permissions
+        user_permissions = self.permissions.filter(is_active=True)
+
+        # Combine and ensure distinct permissions
+        combined_permissions = set(list(role_permissions) + list(user_permissions))
+
+        return list(combined_permissions)
+
+
+class UserForgetPasswordRequest(models.Model):
+    """User Forget Password Requests"""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    token = models.CharField(max_length=256)
+    created_at = models.DateTimeField()
+    is_archived = models.BooleanField(default=False)
+
+    class Meta:
+        ordering = ["-id"]
+
+    def __str__(self):
+        return f"User Id: {self.user.id!s} + '-' + {self.token}"
 
 
 class UserAccountVerification(models.Model):

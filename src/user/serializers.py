@@ -3,12 +3,139 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
 # Project Imports
+from src.base.serializers import AbstractInfoRetrieveSerializer
 from src.libs.get_context import get_user_by_context
+from src.user.constants import SYSTEM_USER_ROLE
 
-from .messages import USER_CREATED, USER_ERRORS, USER_UPDATED
-from .models import UserRole, User
-from .utils.generators import generate_unique_user_username
+from .messages import (
+    USER_CREATED,
+    USER_ERRORS,
+    USER_ROLE_CREATED,
+    USER_ROLE_ERRORS,
+    USER_ROLE_UPDATED,
+    USER_UPDATED,
+)
+from .models import Permission, Role, User
+from .utils.generators import generate_role_codename, generate_unique_user_username
 from .validators import validate_user_image
+
+# User Role Serializers
+
+
+class GetPermissionForRoleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Permission
+        fields = ["id", "name", "codename", "permission_category"]
+
+
+class RoleListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Role
+        fields = ["id", "name", "codename", "is_active", "created_at"]
+
+
+class RoleRetrieveSerializer(AbstractInfoRetrieveSerializer):
+    permissions = serializers.SerializerMethodField()
+
+    class Meta(AbstractInfoRetrieveSerializer.Meta):
+        model = Role
+        fields = ["id", "name", "codename", "permissions"]
+
+        fields += AbstractInfoRetrieveSerializer.Meta.fields
+
+    def get_permissions(self, obj) -> list:
+        permissions = obj.permissions.filter(is_active=True)
+        serializer = GetPermissionForRoleSerializer(permissions, many=True)
+        return serializer.data
+
+
+class RoleCreateSerializer(serializers.ModelSerializer):
+    permissions = serializers.ListField(
+        child=serializers.PrimaryKeyRelatedField(
+            queryset=Permission.objects.filter(is_active=True),
+        ),
+        allow_empty=True,
+        required=False,
+    )
+
+    class Meta:
+        model = Role
+        fields = ["name", "permissions", "is_active"]
+
+    def validate_name(self, name):
+        name = name.title()
+
+        if Role.objects.filter(name__iexact=name).exists():
+            raise serializers.ValidationError(
+                USER_ROLE_ERRORS["ROLE_NAME"].format(name=name),
+            )
+        return name
+
+    def create(self, validated_data):
+        created_by = get_user_by_context(self.context)
+        # Get the permissions
+        permissions = validated_data.pop("permissions", [])
+
+        # Generate codename
+        name = validated_data.get("name")
+        codename = generate_role_codename(name)
+
+        # Create Role instance
+        role = Role.objects.create(
+            name=name.title(),
+            codename=codename,
+            created_by=created_by,
+        )
+        role.permissions.set(permissions)
+        role.save()
+        return role
+
+    def to_representation(self, instance):
+        return {"id": instance.id, "message": USER_ROLE_CREATED}
+
+
+class RolePatchSerializer(serializers.ModelSerializer):
+    permissions = serializers.ListField(
+        child=serializers.PrimaryKeyRelatedField(
+            queryset=Permission.objects.filter(is_active=True, is_archived=False),
+        ),
+        allow_empty=True,
+        required=False,
+    )
+
+    class Meta:
+        model = Role
+        fields = ["name", "permissions", "is_active"]
+
+    def validate_name(self, name):
+        name = name.title()
+
+        if Role.objects.filter(name__iexact=name).exclude(pk=self.instance.id).exists():
+            raise serializers.ValidationError(
+                USER_ROLE_ERRORS["ROLE_NAME"].format(name=name),
+            )
+
+        return name
+
+    def update(self, instance: Role, validated_data):
+        current_user = get_user_by_context(self.context)
+        name = validated_data.get("name", instance.name)
+        # Get the permissions
+        permissions = validated_data.get("permissions", [])
+
+        validated_data["codename"] = generate_role_codename(name)
+
+        instance.name = validated_data.get("name", instance.name).title()
+        instance.codename = validated_data.get("codename", instance.codename)
+        instance.is_active = validated_data.get("is_active", instance.is_active)
+        instance.updated_by = current_user
+        instance.permissions.set(permissions)
+        instance.save()
+
+        return instance
+
+    def to_representation(self, instance):
+        return {"id": instance.id, "message": USER_ROLE_UPDATED}
 
 
 # User Setup Serializers
@@ -16,7 +143,7 @@ from .validators import validate_user_image
 
 class GetUserRolesForUserListSerializer(serializers.ModelSerializer):
     class Meta:
-        model = UserRole
+        model = Role
         fields = ["id", "name", "codename"]
 
 
@@ -34,6 +161,7 @@ class UserListSerializer(serializers.ModelSerializer):
             "is_archived",
             "groups",
             "roles",
+            "permissions",
         ]
 
 
@@ -57,7 +185,7 @@ class UserRetrieveSerializer(serializers.ModelSerializer):
         """
         Return only active, non-archived, and non-system-managed roles.
         """
-        roles = obj.roles.filter(is_active=True, is_cms_role=True)
+        roles = obj.roles.filter(is_active=True, is_system_managed=False)
         serializer = GetUserRolesForUserListSerializer(roles, many=True)
         return serializer.data
 
@@ -75,7 +203,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         validators=[validate_user_image],
     )
     roles = serializers.PrimaryKeyRelatedField(
-        queryset=UserRole.objects.filter(is_active=True, is_cms_role=False),
+        queryset=Role.objects.filter(is_active=True, is_system_managed=False),
         many=True,
     )
     username = serializers.CharField(allow_blank=True)
@@ -125,7 +253,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
         if not username:
             username = generate_unique_user_username(
-                user_type="CMS",
+                user_type=SYSTEM_USER_ROLE,
                 email=email,
             )
 
@@ -171,7 +299,7 @@ class UserPatchSerializer(serializers.ModelSerializer):
     )
     phone_no = serializers.CharField(max_length=10, required=False, allow_blank=True)
     roles = serializers.PrimaryKeyRelatedField(
-        queryset=UserRole.objects.filter(is_active=True, is_cms_role=True),
+        queryset=Role.objects.filter(is_active=True, is_system_managed=False),
         many=True,
     )
 
@@ -227,8 +355,10 @@ class UserPatchSerializer(serializers.ModelSerializer):
                 )  # Delete the existing photo if photo is None
 
         if "roles" in validated_data:
+            system_roles = list(instance.roles.filter(is_system_managed=True))
             roles = validated_data.get("roles", [])
             instance.roles.set(roles)
+            instance.roles.add(*system_roles)
 
         instance.save()
         return instance

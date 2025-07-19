@@ -19,3 +19,4 @@ class UserLoginResponseSerializer(serializers.Serializer):
     email = serializers.EmailField(default="default@gmail.com")
     tokens = TokenSerializer()
     roles = serializers.ListField(child=serializers.CharField(), default=[])
+    permissions = serializers.ListField(child=serializers.CharField(), default=[])

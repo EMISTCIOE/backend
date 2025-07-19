@@ -19,6 +19,15 @@ USER_ERRORS = {
     "MISSING_ROLES": _("Please select at least one user ROLE."),
 }
 
+# User Role Validation Messages
+USER_ROLE_NOT_FOUND = _("User role not found.")
+USER_ROLE_ARCHIVED = _("User role archived successfully.")
+USER_ROLE_CREATED = _("User role registered successfully.")
+USER_ROLE_UPDATED = _("User role updated successfully.")
+USER_ROLE_ERRORS = {
+    "ROLE_NAME": _("User role with name {name} already exists."),
+}
+
 # flake8: noqa
 INVALID_PASSWORD = _("Incorrect password. Please try again.")
 ACCOUNT_DISABLED = _(
@@ -30,6 +39,9 @@ VERIFICATION_EMAIL_SENT = _(
 ACCOUNT_VERIFIED = _("Your Account Verified Successfully.")
 OTP_VERIFIED = _("Link Verified Successfully.")
 ACCOUNT_NOT_FOUND = _("Account with email {email} do not exists.")
+PASSWORD_RESET_LINK_SENT = _(
+    "A link has been sent to {email}. It is valid for 10 minutes."
+)
 PASSWORD_CHANGED = _("Password changed successfully.")
 OLD_PASSWORD_INCORRECT = _("Incorrect old password.")
 PASSWORDS_NOT_MATCH = _("New password and confirm password do not match.")

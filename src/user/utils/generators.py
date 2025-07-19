@@ -1,8 +1,13 @@
 import secrets
 import string
 
-from src.base.constants import PUBLIC_USER_ROLE
+from src.user.constants import PUBLIC_USER_ROLE, SYSTEM_USER_ROLE
 from src.user.models import User
+
+
+def generate_role_codename(user_group_name):
+    """Generate User Group Codename"""
+    return user_group_name.upper().replace(" ", "-")
 
 
 def generate_unique_user_username(user_type: str, email: str | None) -> str:
@@ -13,11 +18,11 @@ def generate_unique_user_username(user_type: str, email: str | None) -> str:
     """
 
     type_temp = user_type
-    if type_temp == "CMS":
+    if type_temp == SYSTEM_USER_ROLE:
         title = "SU"
     elif type_temp == PUBLIC_USER_ROLE:
         title = "PU"
-    else:  # Unknown
+    else:
         title = "UU"
 
     """Generate a unique username of 15 characters long."""
