@@ -4,154 +4,23 @@ from ckeditor.fields import RichTextField
 from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.utils.text import slugify
-from src.website.models import SocialMedia
+from django.utils.translation import gettext_lazy as _
 
-# Create your models here.
-
-departments_enum = [
-    ("Department of Electronics and Computer Engineering", "DOECE"),
-    ("Department of Civil Engineering", "DOCE"),
-    ("Department of Industrial Engineering", "DOIE"),
-    ("Department of AutoMobile and Mechanical Engineering", "DOAME"),
-    ("Department of Architecture", "DOARCH"),
-    ("Department of Applied Science", "DOAS"),
-    ("Administration", "Admninistration"),
-    ("Financial Administration Section", "Financial Administration Section"),
-    ("Planning Section", "Planning Section"),
-    ("General Administration Section", "General Administration Section"),
-    ("Personnel Administration Section", "Personnel Administration Section"),
-    (
-        "Academic Administration and Examination Section",
-        "Academic Administration and Examination Section",
-    ),
-    ("Store Section", "Store Section"),
-    ("Facilities Section", "Facilities Section"),
-    ("Library Section", "Library Section"),
-    (
-        "Education Management Information System Unit",
-        "Education Management Information System(EMIS) Unit",
-    ),
-    ("Research and Development Unit", "Research and Development Unit"),
-    ("Material Testing Laboratory", "Material Testing Laboratory"),
-    (
-        "Examination and Academic Administration",
-        "Examination and Academic Administration",
-    ),
-    ("Finance Administration Unit", "Finance Administration Unit"),
-    ("Main Store Unit", "Main Store Unit"),
-    ("Consultancy Services", "Consultancy Services"),
-]
+from src.base.models import AuditInfoModel
 
 
-designation_enums = [
-    ("CHIEF", "Campus Chief"),
-    ("ASSIST_CAMPUS_CHIEF_ADMIN", "Assistant Campus Chief (Administration)"),
-    ("ASSIST_CAMPUS_CHIEF_ACADEMIC", "Assistant Campus Chief (Academic)"),
-    (
-        "ASSIST_CAMPUS_CHIEF_PLANNING",
-        "Assistant Campus Chief (Planning and Resource Management)",
-    ),
-    ("ASSIST_CAMPUS_CHIEF", "Assistant Campus Chief"),
-    ("HOD", "Head of Department"),
-    ("DHOD", "Deputy Head of Department"),
-    (
-        "MSC_COORD_INFORMATION",
-        "Program Coordinator, M.Sc. in Informatics and Intelligent Systems Engineering",
-    ),
-    ("MSC_COORD_EARTHQUAKE", "Program Coordinator, M.Sc. in Earthquake Engineering"),
-    (
-        "MSC_COORD_DESIGN",
-        "Program Coordinator, M.Sc. in Mechanical Design and Manufacturing",
-    ),
-    ("EMIS_HEAD", "Head, Education Management Information Systems"),
-    ("RESEARCH_HEAD", "Head, Research and Development Unit"),
-    ("MATERIAL_HEAD", "Head, Material Testing Laboratory"),
-    ("CONSULTANCY_HEAD", "Head, Consultancy Services"),
-    ("EXAMS_ACADEMIC_HEAD", "Examination and Academic Administration Head"),
-    ("UNIT_HEAD", "Head, Unit"),
-    ("SECTION_HEAD", "Head, Section"),
-    ("UNIT_DEPUTY_HEAD", "Deputy Head, Unit"),
-    ("SECTION_DEPUTY_HEAD", "Deputy Head, Section"),
-    ("LIBRARY_HEAD", "Head, Library Section"),
-    ("FINANCE_HEAD", "Head, Financial Administation Section"),
-    ("PERSONNEL_HEAD", "Head, Personnel Section"),
-    ("GENERAL_HEAD", "Head, General Administration Section"),
-    ("PLANNING_HEAD", "Head, Planning Section"),
-    ("PROCUREMENT_HEAD", "Head, Procurement Section"),
-    ("SECURITY_HEAD", "Head, Security Section"),
-    ("REPAIR_HEAD", "Head, Repair and Maintenance Section"),
-    ("SPECIAL_SECTION_HEAD", "Head, Special Section"),
-    ("IQAC_HEAD", "Head, IQAC Section"),
-    ("SAT_HEAD", "Head, SAT Section"),
-    ("ADMINISTRATION_HEAD", "Head, Academic Administration and Exam Section"),
-    ("STORE_HEAD", "Head, Store Section"),
-    ("ACCOUNT_HEAD", "Head, Account Section"),
-    ("FACILITIES_HEAD", "Head, Facilities Section"),
-    ("LECTURER", "Lecturer"),
-    ("SENIOR_INSTRUCTOR", "Senior Instructor"),
-    ("TEACHING_ASSISTANCE", "Teaching Assistance"),
-    ("INSTRUCTOR", "Instructor"),
-    ("READER", "Reader"),
-    ("PROFESSOR", "Professor"),
-    ("ASSOCIATE_PROFESSOR", "Associate Professor"),
-    ("DEPUTY_INSTRUCTOR", "Deputy Instructor"),
-    ("ASSISTANT_INSTRUCTOR", "Assistant Instructor"),
-    ("ASSISTANT_PROFESSOR", "Assistant Professor"),
-    ("ASSISTANT_FINANCE_CONTROLLER", "Assistant Finance Controller"),
-    ("DEPUTY_ADM_OFFICER", "Deputy ADM Officer"),
-    ("DEPUTY_FINANCE_CONTROLLER", "Deputy Finance Controller"),
-    ("SECTION_OFFICER", "Section Officer"),
-    ("CHIEF_OFFICE_ASSISTANT", "Chief Office Assistant"),
-    ("HEAD_ACCOUNT_ASSISTANCE", "Head Account Assistance"),
-    ("LIBRARY_ASSISTANT", "Library Assistant"),
-    ("OFFICE_ASSISTANT", "Office Assistant"),
-    ("TECHNICAL_ASSISTANT", "Technical Assistant"),
-    ("DRIVER", "Driver"),
-    ("SENIOR_OFFICE_HELPER", "Senior Office Helper"),
-    ("OFFICE_HELPER", "Office Helper"),
-    ("HEAD_TECHNICAL_ASSISTANT", "Head Technical Assistant"),
-    ("ASSISTANT_STOREKEEPER", "Assistant Storekeeper"),
-    ("COMPUTER_OPERATOR", "Computer Operator"),
-    ("LIBRARIAN", "Librarian"),
-    ("LABORATORY_ASSISTANT", "Laboratory Assistant"),
-    ("ACCOUNT_OFFICER", "Account Officer"),
-    ("LIBRARY_INTERN", "Library Intern"),
-    ("SECURITY_GUARD", "Security Guard"),
-    ("SISTER", "Sister"),
-]
+class Department(AuditInfoModel):
+    """Represents the different departments of campus"""
 
-
-class Department(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(
-        max_length=100,
-        choices=(departments_enum),
-        default="DOECE",
-        unique=True,
+    name = models.CharField(_("Name"), max_length=100)
+    slug = models.SlugField(_("Slug"), max_length=255, blank=True, editable=False)
+    brief_description = models.TextField(_("Introduction"), blank=True)
+    detailed_description = RichTextField(_("Detailed Description"), blank=True)
+    phone_no = models.CharField(_("Phone"), max_length=15, blank=True)
+    email = models.EmailField(_("Email"), blank=True)
+    thumbnail = models.ImageField(
+        _("Department Thumbnail"), upload_to="media/profile/", null=True
     )
-    slug = models.SlugField(max_length=255, null=True, blank=True, editable=False)
-    introduction = RichTextField(null=True, blank=True)
-    description = RichTextField(null=True, blank=True)
-    social_media = models.ForeignKey(
-        SocialMedia,
-        on_delete=models.CASCADE,
-        related_name="department_social_media",
-        null=True,
-        blank=True,
-    )
-    phone = models.CharField(max_length=15)
-    email = models.EmailField()
-    routine = models.ImageField(upload_to="media/routine/", null=True, blank=True)
-    plans = models.ForeignKey(
-        "PlansPolicy",
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        related_name="department_plans",
-    )
-    profile = models.ImageField(upload_to="media/profile/", null=True, blank=True)
-
-    is_academic = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
@@ -328,13 +197,6 @@ class StaffMember(models.Model):
         related_name="associated_person",
     )
     is_key_official = models.BooleanField(default=False)
-    social_media = models.ForeignKey(
-        SocialMedia,
-        on_delete=models.SET_NULL,
-        related_name="socials",
-        null=True,
-        blank=True,
-    )
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
@@ -357,7 +219,6 @@ class StaffMember(models.Model):
 
 class Designation(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    designation = models.CharField(max_length=100, choices=designation_enums)
     rank = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
@@ -376,11 +237,6 @@ class Society(models.Model):
     description = models.TextField(null=False, blank=False)
     phone_number = models.CharField(max_length=20, null=True, blank=True)
     email = models.EmailField()
-    social_media = models.ForeignKey(
-        SocialMedia,
-        on_delete=models.CASCADE,
-        related_name="society_social_media",
-    )
     department_id = models.ForeignKey(
         Department,
         blank=False,
