@@ -73,7 +73,7 @@ class Department(AuditInfoModel):
         return self.name
 
 
-class SocialMediaLink(AuditInfoModel):
+class DepartmentSocialMedia(AuditInfoModel):
     """
     Model representing a social media links for a department.
     """
@@ -98,8 +98,8 @@ class SocialMediaLink(AuditInfoModel):
     )
 
     class Meta:
-        verbose_name = _("Social Media Link")
-        verbose_name_plural = _("Social Media Links")
+        verbose_name = _("Department Social Media")
+        verbose_name_plural = _("Department Social Medias")
 
     def __str__(self) -> str:
         return self.get_platform_display()
