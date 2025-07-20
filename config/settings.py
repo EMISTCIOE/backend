@@ -36,6 +36,7 @@ X_FRAME_OPTIONS = env("X_FRAME_OPTIONS", default="DENY")
 # APPS
 # ------------------------------------------------------------------------------
 DJANGO_APPS = [
+    "jazzmin",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -220,7 +221,6 @@ MEDIA_ROOT = str(BASE_DIR / "media")
 MEDIA_URL = "/media/"
 
 
-
 # LOGGING
 # ------------------------------------------------------------------------------
 LOGGING = {
@@ -312,3 +312,15 @@ SIMPLE_JWT = {
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 WEBSITE_MEDIA_MAX_UPLOAD_SIZE = int(env("WEBSITE_MEDIA_MAX_UPLOAD_SIZE"))
 AUTH_LINK_EXP_TIME = int(env("AUTH_LINK_EXP_TIME"))
+
+
+# Django Jazzmin
+# ------------------------------------------------------------------------------
+JAZZMIN_SETTINGS = {
+    "site_title": "TCIOE Developers",
+    "site_header": "Developers Panel",
+    "site_brand": "TCIOE Developers",
+    "site_logo": "images/logo.png",
+    "custom_css": "css/custom_jazzmin.css",
+    "custom_js": "js/custom_jazzmin.js",
+}
