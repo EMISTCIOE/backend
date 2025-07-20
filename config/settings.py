@@ -116,7 +116,8 @@ ADMINS = [("""TCIOE""", "tcioe@edu.np")]
 
 # Databases
 # ------------------------------------------------------------------------------
-LOCAL = env("LOCAL")
+LOCAL = env.bool("LOCAL")
+
 if not LOCAL:
     DATABASES = {
         "default": {
