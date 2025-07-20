@@ -13,7 +13,7 @@ env = environ.Env()
 environ.Env.read_env(str(BASE_DIR / ".env"))
 
 
-# GENERAL
+# SECURITY SETTINGS
 # ------------------------------------------------------------------------------
 DEBUG = env.bool("DEBUG", False)
 SECRET_KEY = env(
@@ -24,6 +24,13 @@ ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["*"])
 
 CORS_ALLOW_ALL_ORIGINS = env.bool("CORS_ALLOW_ALL_ORIGINS")
 CORS_ALLOWED_ORGINS = env.list("CORS_ALLOWED_ORIGINS")
+
+
+CSRF_TRUSTED_ORIGINS = env.list(
+    "CSRF_TRUSTED_ORIGINS", default=["https://api.tcioe.edu.np"]
+)
+
+X_FRAME_OPTIONS = env("X_FRAME_OPTIONS", default="DENY")
 
 
 # APPS
@@ -58,6 +65,9 @@ LOCAL_APPS = [
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
+
+# Middlewares
+# ------------------------------------------------------------------------------
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "corsheaders.middleware.CorsMiddleware",
@@ -71,17 +81,6 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "config.urls"
-
-CSRF_TRUSTED_ORIGINS = [
-    "http://notices.tcioe.edu.np",
-    "https://notices.tcioe.edu.np",
-    "http://www.notices.tcioe.edu.np",
-    "https://www.notices.tcioe.edu.np",
-]
-
-
-# X-Frame-Options
-X_FRAME_OPTIONS = "ALLOW-FROM https://www.tcioe.edu.np"
 
 
 # TEMPLATES
@@ -106,16 +105,16 @@ TEMPLATES = [
     },
 ]
 
+WSGI_APPLICATION = "config.wsgi.application"
+
+
 # ADMIN
 # ------------------------------------------------------------------------------
 ADMIN_URL = "admin/"
 ADMINS = [("""TCIOE""", "tcioe@edu.np")]
 
 
-WSGI_APPLICATION = "config.wsgi.application"
-
-
-# Database
+# Databases
 # ------------------------------------------------------------------------------
 LOCAL = env("LOCAL")
 if not LOCAL:
@@ -162,6 +161,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 ENCRYPTION_KEY = "UvWTfhGVR2iVUI15zKqF8t54cDu0B_pzyicdearnTDI="
+
 
 # FIXTURES
 # ------------------------------------------------------------------------------
@@ -219,7 +219,6 @@ MEDIA_ROOT = str(BASE_DIR / "media")
 MEDIA_URL = "/media/"
 
 
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # LOGGING
 # ------------------------------------------------------------------------------
@@ -276,6 +275,7 @@ NESTED_FORM_PARSER = {"OPTIONS": {"allow_empty": True, "allow_blank": True}}
 APPEND_SLASH = False
 CORS_URLS_REGEX = r"^/api/.*$"
 
+
 # API DOCUMENTATION
 # ------------------------------------------------------------------------------
 SPECTACULAR_SETTINGS = {
@@ -308,5 +308,6 @@ SIMPLE_JWT = {
 
 # Constants
 # ------------------------------------------------------------------------------
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 WEBSITE_MEDIA_MAX_UPLOAD_SIZE = int(env("WEBSITE_MEDIA_MAX_UPLOAD_SIZE"))
 AUTH_LINK_EXP_TIME = int(env("AUTH_LINK_EXP_TIME"))
