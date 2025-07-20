@@ -72,3 +72,35 @@ class DesignationChoices(BaseEnum):
     LIBRARY_INTERN = "LIBRARY_INTERN"
     SECURITY_GUARD = "SECURITY_GUARD"
     SISTER = "SISTER"
+
+
+class StaffMemberTitle(BaseEnum):
+    """Enumeration for staff member titles"""
+
+    ER = "ER"
+    PROF = "PROF"
+    DR = "DR"
+    MR = "MR"
+    MRS = "MRS"
+    MS = "MS"
+    ASSOC_PROF = "ASSOC_PROF"
+    ASST_PROF = "ASST_PROF"
+    LECTURER = "LECTURER"
+    TECHNICIAN = "TECHNICIAN"
+    OTHER = "OTHER"
+
+
+class SocialMediaPlatforms(BaseEnum):
+    FACEBOOK = "FACEBOOK"
+    TWITTER = "TWITTER"
+    INSTAGRAM = "INSTAGRAM"
+    LINKEDIN = "LINKEDIN"
+    YOUTUBE = "YOUTUBE"
+    GITHUB = "GITHUB"
+    WEBSITE = "WEBSITE"
+    OTHER = "OTHER"
+
+
+class AcademicProgramTypes(BaseEnum):
+    BACHELORS = "BACHELORS"
+    MASTERS = "MASTERS"

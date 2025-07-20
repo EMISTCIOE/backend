@@ -4,7 +4,7 @@ from ckeditor.fields import RichTextField
 # Project Imports
 from src.base.models import AuditInfoModel
 from django.db import models
-from src.core.constants import DesignationChoices
+from src.core.constants import AcademicProgramTypes, DesignationChoices, SocialMediaPlatforms, StaffMemberTitle
 from src.core.models import FiscalSessionBS
 from src.website.constants import (
     ACADEMIC_CALENDER_FILE_PATH,
@@ -13,10 +13,8 @@ from src.website.constants import (
     CAMPUS_REPORT_FILE_PATH,
     CAMPUS_UNION_FILE_PATH,
     STUDENT_CLUB_FILE_PATH,
-    AcademicProgramTypes,
     CampusEventTypes,
     ReportTypes,
-    SocialMediaPlatforms,
 )
 
 
@@ -71,6 +69,7 @@ class CampusKeyOfficial(AuditInfoModel):
 
     title_prefix = models.CharField(
         _("Title Prefix"),
+        choices=StaffMemberTitle.choices(),
         max_length=10,
         help_text=_("E.g., ER, DR, Mr., Ms."),
     )

@@ -9,22 +9,6 @@ CAMPUS_UNION_FILE_PATH = "website/unions"
 CAMPUS_KEY_OFFICIAL_FILE_PATH = "website/key-officials"
 
 
-class SocialMediaPlatforms(BaseEnum):
-    FACEBOOK = "FACEBOOK"
-    TWITTER = "TWITTER"
-    INSTAGRAM = "INSTAGRAM"
-    LINKEDIN = "LINKEDIN"
-    YOUTUBE = "YOUTUBE"
-    GITHUB = "GITHUB"
-    WEBSITE = "WEBSITE"
-    OTHER = "OTHER"
-
-
-class AcademicProgramTypes(BaseEnum):
-    BACHELORS = "BACHELORS"
-    MASTERS = "MASTERS"
-
-
 class ReportTypes(BaseEnum):
     SELF_STUDY = "SELF_STUDY"
     ANNUAL = "ANNUAL"
