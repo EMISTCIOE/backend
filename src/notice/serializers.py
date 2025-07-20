@@ -4,6 +4,7 @@ from rest_framework import serializers
 from src.base.serializers import AbstractInfoRetrieveSerializer
 from src.department.models import Department
 from src.libs.get_context import get_user_by_context
+from src.notice.constants import NoticeStatus
 from src.notice.listing_apis.serializers import (
     CategoryForNoticeListSerializer,
     DepartmentForNoticeListSerializer,
@@ -37,6 +38,8 @@ class NoticeListSerializer(serializers.ModelSerializer):
             "slug",
             "thumbnail",
             "is_featured",
+            "department",
+            "category",
             "department_name",
             "category_name",
             "published_at",
@@ -97,6 +100,7 @@ class NoticeCreateSerializer(serializers.ModelSerializer):
     category = serializers.PrimaryKeyRelatedField(
         queryset=NoticeCategory.objects.filter(is_active=True),
     )
+    is_draft = serializers.BooleanField(default=False, write_only=True)
 
     class Meta:
         model = Notice
@@ -105,7 +109,7 @@ class NoticeCreateSerializer(serializers.ModelSerializer):
             "department",
             "category",
             "thumbnail",
-            "status",
+            "is_draft",
             "is_featured",
             "description",
             "medias",
@@ -132,9 +136,14 @@ class NoticeCreateSerializer(serializers.ModelSerializer):
             department=validated_data["department"],
             is_featured=validated_data["is_featured"],
             category=validated_data["category"],
-            status=validated_data["status"],
             created_by=user,
         )
+
+        if validated_data["is_draft"]:
+            notice.status = NoticeStatus.DRAFT.value
+        else:
+            notice.status = NoticeStatus.PENDING.value
+        notice.save()
 
         notice_medias = [
             NoticeMedia(notice=notice, created_by=user, **media_data)
@@ -159,6 +168,7 @@ class NoticePatchSerializer(serializers.ModelSerializer):
         queryset=NoticeCategory.objects.filter(is_active=True),
         required=False,
     )
+    is_draft = serializers.BooleanField(default=False, write_only=True)
 
     class Meta:
         model = Notice
@@ -167,7 +177,7 @@ class NoticePatchSerializer(serializers.ModelSerializer):
             "department",
             "category",
             "thumbnail",
-            "status",
+            "is_draft",
             "is_featured",
             "description",
             "medias",
@@ -190,6 +200,11 @@ class NoticePatchSerializer(serializers.ModelSerializer):
         for attr, value in validated_data.items():
             setattr(instance, attr, value.strip() if isinstance(value, str) else value)
 
+        if validated_data.get("is_draft", False):
+            instance.status = NoticeStatus.DRAFT.value
+        else:
+            instance.status = NoticeStatus.PENDING.value
+        
         # Update audit info
         instance.updated_by = user
         instance.save()
