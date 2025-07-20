@@ -91,7 +91,8 @@ class NoticeCreateSerializer(serializers.ModelSerializer):
 
     medias = NoticeMediaSerializerForNoticeCreateSerializer(many=True, required=False)
     department = serializers.PrimaryKeyRelatedField(
-        queryset=Department.objects.all(),  # FIXME Active only
+        queryset=Department.objects.filter(is_active=True),
+        allow_null=True,  
     )
     category = serializers.PrimaryKeyRelatedField(
         queryset=NoticeCategory.objects.filter(is_active=True),
@@ -150,8 +151,9 @@ class NoticeCreateSerializer(serializers.ModelSerializer):
 class NoticePatchSerializer(serializers.ModelSerializer):
     medias = NoticeMediaSerializerForNoticeCreateSerializer(many=True, required=False)
     department = serializers.PrimaryKeyRelatedField(
-        queryset=Department.objects.all(),  # FIXME Active only
+        queryset=Department.objects.filter(is_active=True),  
         required=False,
+        allow_null=True,
     )
     category = serializers.PrimaryKeyRelatedField(
         queryset=NoticeCategory.objects.filter(is_active=True),

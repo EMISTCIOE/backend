@@ -17,7 +17,7 @@ from src.notice.listing_apis.serializers import (
 
 class DepartmentForNoticeListAPIView(ListAPIView):
     permission_classes = [UserSetupPermission]
-    queryset = Department.objects.all()  # FIXME active filter
+    queryset = Department.objects.filter(is_active=True)  
     serializer_class = DepartmentForNoticeListSerializer
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
     filter_fields = ["id", "name"]

@@ -17,7 +17,7 @@ class PublicDepartmentForNoticeSerializerListSerializer(serializers.ModelSeriali
 
     class Meta:
         model = Department
-        fields = ["id", "name"] # FIXME: uuid
+        fields = ["uuid", "name"] 
 
 
 class PublicCategoryForNoticeSerializerListSerializer(serializers.ModelSerializer):
