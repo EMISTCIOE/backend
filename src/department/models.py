@@ -26,6 +26,14 @@ class Department(AuditInfoModel):
         max_length=100,
         help_text=_("Official name of the department."),
     )
+    short_name = models.CharField(
+        _("Short Name"),
+        max_length=50,
+        blank=True,
+        help_text=_(
+            "Short name or acronym for the Department. (e.g. DOEC, DOME, DOCE)"
+        ),
+    )
     slug = models.SlugField(
         _("Slug"),
         max_length=255,
@@ -221,11 +229,6 @@ class StaffMember(AuditInfoModel):
         verbose_name=_("Academic Program"),
         help_text=_("Academic program the staff member is part of, if any."),
     )
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super().save(*args, **kwargs)
 
     def __str__(self) -> str:
         return self.name
