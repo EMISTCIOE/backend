@@ -14,7 +14,7 @@ router.register("notices", NoticeViewSet, basename="notices")
 
 
 urlpatterns = [
-    path("notices/deparments", DepartmentForNoticeListAPIView.as_view()),
+    path("notices/departments", DepartmentForNoticeListAPIView.as_view()),
     path("notices/categories", CategoryForNoticeListAPIView.as_view()),
     path("notices/authors", AuthorForNoticeListAPIView.as_view()),
     path("", include(router.urls)),
