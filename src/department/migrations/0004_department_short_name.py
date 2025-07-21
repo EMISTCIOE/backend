@@ -6,13 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('department', '0003_academicprogram_alter_department_options_and_more'),
+        ("department", "0003_academicprogram_alter_department_options_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='department',
-            name='short_name',
-            field=models.CharField(blank=True, help_text='Short name or acronym for the Department. (e.g. DOEC, DOME, DOCE)', max_length=50, verbose_name='Short Name'),
+            model_name="department",
+            name="short_name",
+            field=models.CharField(
+                blank=True,
+                help_text="Short name or acronym for the Department. (e.g. DOEC, DOME, DOCE)",
+                max_length=50,
+                verbose_name="Short Name",
+            ),
         ),
     ]

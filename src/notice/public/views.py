@@ -2,14 +2,13 @@ import django_filters
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext as _
 from django_filters.filterset import FilterSet
+from django_filters.rest_framework import DjangoFilterBackend
 
 # Rest Framework Imports
-from rest_framework import status
-from rest_framework import generics
-from rest_framework.response import Response
+from rest_framework import generics, status
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import AllowAny
-from rest_framework.filters import SearchFilter, OrderingFilter
-from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.response import Response
 
 # Project Imports
 from src.notice.constants import NoticeStatus
@@ -36,7 +35,8 @@ class PublicNoticeCategoryListAPIView(generics.ListAPIView):
 
 class FilterForPublicNoticeListAPIView(FilterSet):
     department = django_filters.UUIDFilter(
-        field_name="department__id", label="Department"
+        field_name="department__id",
+        label="Department",
     )
     category = django_filters.UUIDFilter(field_name="category__uuid", label="Category")
 
@@ -69,7 +69,10 @@ class PublicNoticeRetrieveAPIView(generics.RetrieveAPIView):
     def get_object(self) -> Notice:
         notice_id = self.kwargs.get("notice_id")
         return get_object_or_404(
-            Notice, uuid=notice_id, is_active=True, status=NoticeStatus.APPROVED.value
+            Notice,
+            uuid=notice_id,
+            is_active=True,
+            status=NoticeStatus.APPROVED.value,
         )
 
 

@@ -10,29 +10,95 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Department',
+            name="Department",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, help_text='Represents unique uuid.', unique=True, verbose_name='uuid')),
-                ('created_at', models.DateTimeField(default=django.utils.timezone.now, editable=False, verbose_name='created date')),
-                ('updated_at', models.DateTimeField(auto_now=True, verbose_name='date updated')),
-                ('is_active', models.BooleanField(default=True, help_text='Designates whether this object should be treated as active. Unselect this instead of deleting instances.', verbose_name='active')),
-                ('is_archived', models.BooleanField(default=False, help_text='Designates whether this object should be treated as delected. Unselect this instead of deleting instances.', verbose_name='archived')),
-                ('name', models.CharField(max_length=100, verbose_name='Name')),
-                ('slug', models.SlugField(blank=True, editable=False, max_length=255, verbose_name='Slug')),
-                ('brief_description', models.TextField(blank=True, verbose_name='Introduction')),
-                ('detailed_description', ckeditor.fields.RichTextField(blank=True, verbose_name='Detailed Description')),
-                ('phone_no', models.CharField(blank=True, max_length=15, verbose_name='Phone')),
-                ('email', models.EmailField(blank=True, max_length=254, verbose_name='Email')),
-                ('thumbnail', models.ImageField(null=True, upload_to='media/profile/', verbose_name='Department Thumbnail')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "uuid",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        help_text="Represents unique uuid.",
+                        unique=True,
+                        verbose_name="uuid",
+                    ),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        default=django.utils.timezone.now,
+                        editable=False,
+                        verbose_name="created date",
+                    ),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(auto_now=True, verbose_name="date updated"),
+                ),
+                (
+                    "is_active",
+                    models.BooleanField(
+                        default=True,
+                        help_text="Designates whether this object should be treated as active. Unselect this instead of deleting instances.",
+                        verbose_name="active",
+                    ),
+                ),
+                (
+                    "is_archived",
+                    models.BooleanField(
+                        default=False,
+                        help_text="Designates whether this object should be treated as delected. Unselect this instead of deleting instances.",
+                        verbose_name="archived",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100, verbose_name="Name")),
+                (
+                    "slug",
+                    models.SlugField(
+                        blank=True, editable=False, max_length=255, verbose_name="Slug"
+                    ),
+                ),
+                (
+                    "brief_description",
+                    models.TextField(blank=True, verbose_name="Introduction"),
+                ),
+                (
+                    "detailed_description",
+                    ckeditor.fields.RichTextField(
+                        blank=True, verbose_name="Detailed Description"
+                    ),
+                ),
+                (
+                    "phone_no",
+                    models.CharField(blank=True, max_length=15, verbose_name="Phone"),
+                ),
+                (
+                    "email",
+                    models.EmailField(blank=True, max_length=254, verbose_name="Email"),
+                ),
+                (
+                    "thumbnail",
+                    models.ImageField(
+                        null=True,
+                        upload_to="media/profile/",
+                        verbose_name="Department Thumbnail",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
     ]

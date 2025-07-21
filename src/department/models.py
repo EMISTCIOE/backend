@@ -1,5 +1,5 @@
-from django.db import models
 from ckeditor.fields import RichTextField
+from django.db import models
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
@@ -7,14 +7,17 @@ from django.utils.translation import gettext_lazy as _
 from src.base.models import AuditInfoModel
 from src.core.constants import (
     AcademicProgramTypes,
-    DesignationChoices,
     SocialMediaPlatforms,
     StaffMemberTitle,
 )
 from src.department.constants import (
+    DEPARTMENT_DOWNLOADS_FILE_PATH,
+    DEPARTMENT_EVENT_FILE_PATH,
     DEPARTMENT_PROGRAM_THUMBNAIL_PATH,
     DEPARTMENT_STAFF_PHOTO_PATH,
     DEPARTMENT_THUMBNAIL_PATH,
+    DepartmentDesignationChoices,
+    DepartmentEventTypes,
 )
 
 
@@ -31,7 +34,7 @@ class Department(AuditInfoModel):
         max_length=50,
         blank=True,
         help_text=_(
-            "Short name or acronym for the Department. (e.g. DOEC, DOME, DOCE)"
+            "Short name or acronym for the Department. (e.g. DOEC, DOME, DOCE)",
         ),
     )
     slug = models.SlugField(
@@ -187,7 +190,7 @@ class StaffMember(AuditInfoModel):
     designation = models.CharField(
         _("Designation"),
         max_length=100,
-        choices=DesignationChoices.choices(),
+        choices=DepartmentDesignationChoices.choices(),
         blank=True,
         help_text=_("Official designation or position."),
     )
@@ -236,3 +239,110 @@ class StaffMember(AuditInfoModel):
     class Meta:
         verbose_name = _("Staff Member")
         verbose_name_plural = _("Staff Members")
+
+
+class DepartmentDownload(AuditInfoModel):
+    """
+    Downloadable forms and documents for students or faculty,
+    such as ID request forms or certificates.
+    """
+
+    title = models.CharField(
+        _("Title"),
+        max_length=100,
+        help_text=_("E.g. Student ID Form, Character Certificate, etc."),
+    )
+    file = models.FileField(
+        _("File"),
+        upload_to=DEPARTMENT_DOWNLOADS_FILE_PATH,
+        null=True,
+        help_text=_("Upload the form or downloadable file."),
+    )
+    description = RichTextField(_("Description"), blank=True)
+
+    class Meta:
+        verbose_name = _("Campus Download")
+        verbose_name_plural = _("Campus Downloads")
+
+    def __str__(self) -> str:
+        return self.title
+
+
+class DepartmentEvent(AuditInfoModel):
+    """
+    Represents a major Department-level event or festival
+    (e.g. Yathartha, Utsarga, Music Fest).
+    """
+
+    title = models.CharField(
+        _("Title"),
+        max_length=200,
+        help_text=_("Name of the event or festival."),
+    )
+    description_short = models.TextField(
+        _("Short Description"),
+        max_length=500,
+        help_text=_("Brief summary of the event."),
+    )
+    description_detailed = RichTextField(
+        _("Detailed Description"),
+        blank=True,
+        help_text=_("Detailed information, agenda, and activities."),
+    )
+    event_type = models.CharField(
+        _("Event Type"),
+        max_length=20,
+        choices=DepartmentEventTypes.choices(),
+        default=DepartmentEventTypes.OTHER,
+        help_text=_("Type of the event."),
+    )
+    event_start_date = models.DateField(
+        _("Date"),
+        null=True,
+        help_text=_("Date the event start."),
+    )
+    event_end_date = models.DateField(
+        _("Date"),
+        null=True,
+        help_text=_("Date the event end."),
+    )
+    thumbnail = models.ImageField(
+        _("Thumbnail"),
+        upload_to=DEPARTMENT_EVENT_FILE_PATH,
+        null=True,
+        help_text=_("Main image for the event."),
+    )
+
+    class Meta:
+        verbose_name = _("Department Event")
+        verbose_name_plural = _("Department Events")
+
+    def __str__(self):
+        return self.title
+
+
+class DepartmentEventGallery(AuditInfoModel):
+    """
+    Images related to a Department-wide event.
+    """
+
+    event = models.ForeignKey(
+        DepartmentEvent,
+        on_delete=models.CASCADE,
+        related_name="gallery",
+        verbose_name=_("Department Event"),
+    )
+    image = models.ImageField(_("Image"), upload_to=DEPARTMENT_EVENT_FILE_PATH)
+    caption = models.CharField(
+        _("Caption"),
+        max_length=255,
+        blank=True,
+        help_text=_("Optional caption for the image."),
+    )
+
+    class Meta:
+        verbose_name = _("Department Event Image")
+        verbose_name_plural = _("Department Event Gallery")
+
+    def __str__(self):
+        return self.caption or f"{self.event.title} Image"

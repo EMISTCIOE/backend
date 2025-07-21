@@ -18,7 +18,7 @@ We value collaboration, respect, and quality contributions. This code of conduct
    - Use meaningful branch names with prefixes:
      - `feature/<feature-name>` for new features.
      - `bugfix/<bug-description>` for bug fixes.
-     - `docs/<update-name>` for documentation updates.  
+     - `docs/<update-name>` for documentation updates.
        Example: `feature/add-navbar-component`
 
 2. **Pull Requests (PRs)**

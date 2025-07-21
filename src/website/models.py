@@ -1,10 +1,14 @@
-from django.utils.translation import gettext_lazy as _
 from ckeditor.fields import RichTextField
+from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 # Project Imports
 from src.base.models import AuditInfoModel
-from django.db import models
-from src.core.constants import AcademicProgramTypes, DesignationChoices, SocialMediaPlatforms, StaffMemberTitle
+from src.core.constants import (
+    AcademicProgramTypes,
+    SocialMediaPlatforms,
+    StaffMemberTitle,
+)
 from src.core.models import FiscalSessionBS
 from src.website.constants import (
     ACADEMIC_CALENDER_FILE_PATH,
@@ -13,6 +17,7 @@ from src.website.constants import (
     CAMPUS_REPORT_FILE_PATH,
     CAMPUS_UNION_FILE_PATH,
     STUDENT_CLUB_FILE_PATH,
+    CampusDesignationChoices,
     CampusEventTypes,
     ReportTypes,
 )
@@ -79,9 +84,9 @@ class CampusKeyOfficial(AuditInfoModel):
     )
     designation = models.CharField(
         _("Designation"),
-        choices=DesignationChoices.choices(),
+        choices=CampusDesignationChoices.choices(),
         max_length=100,
-        help_text=_("Role or position, e.g., Head of Department."),
+        help_text=_("Role or position, e.g., Campus Chief."),
     )
     photo = models.ImageField(
         _("Photo"),
@@ -193,7 +198,8 @@ class CampusReport(AuditInfoModel):
 
 class CampusDownload(AuditInfoModel):
     """
-    Downloadable forms and documents for students or faculty, such as ID request forms or certificates.
+    Downloadable forms and documents for
+    students or faculty, such as ID request forms or certificates.
     """
 
     title = models.CharField(
@@ -219,7 +225,8 @@ class CampusDownload(AuditInfoModel):
 
 class CampusEvent(AuditInfoModel):
     """
-    Represents a major campus-level event or festival (e.g. Saraswati Puja, Yathartha, Utsarga, Music Fest).
+    Represents a major campus-level event or festival
+    (e.g. Saraswati Puja, Yathartha, Utsarga, Music Fest).
     """
 
     title = models.CharField(
@@ -244,10 +251,15 @@ class CampusEvent(AuditInfoModel):
         default=CampusEventTypes.OTHER,
         help_text=_("Type of the event."),
     )
-    event_date = models.DateField(
+    event_start_date = models.DateField(
         _("Date"),
         null=True,
-        help_text=_("Date the event took place."),
+        help_text=_("Date the event start."),
+    )
+    event_end_date = models.DateField(
+        _("Date"),
+        null=True,
+        help_text=_("Date the event end."),
     )
     thumbnail = models.ImageField(
         _("Thumbnail"),
@@ -321,7 +333,8 @@ class CampusUnion(AuditInfoModel):
 
 class CampusUnionMember(AuditInfoModel):
     """
-    Represents an individual member of a campus union, including their name and designation.
+    Represents an individual member of a campus union,
+    including their name and designation.
     """
 
     union = models.ForeignKey(
@@ -376,7 +389,7 @@ class StudentClub(AuditInfoModel):
         _("Detailed Description"),
         blank=True,
         help_text=_(
-            "In-depth overview about the club's mission, activities, and history."
+            "In-depth overview about the club's mission, activities, and history.",
         ),
     )
     thumbnail = models.ImageField(
@@ -511,7 +524,7 @@ class CampusFeedback(AuditInfoModel):
 
     full_name = models.CharField(_("Full Name"), max_length=100)
     roll_number = models.CharField(_("Roll Number"), max_length=30, blank=True)
-    email = models.EmailField(_("Email"), blank=True, null=True)
+    email = models.EmailField(_("Email"), blank=True)
     message = models.TextField(_("Feedback or Suggestion"))
     is_resolved = models.BooleanField(_("Resolved"), default=False)
 

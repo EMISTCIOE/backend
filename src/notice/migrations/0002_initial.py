@@ -10,67 +10,116 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('department', '0002_initial'),
+        ("department", "0002_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('notice', '0001_initial'),
+        ("notice", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='noticemedia',
-            name='created_by',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='%(class)s_created_by', to=settings.AUTH_USER_MODEL),
+            model_name="noticemedia",
+            name="created_by",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="%(class)s_created_by",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='noticemedia',
-            name='notice',
-            field=models.ForeignKey(help_text='The notice this media is associated with.', on_delete=django.db.models.deletion.CASCADE, related_name='medias', to='notice.notice'),
+            model_name="noticemedia",
+            name="notice",
+            field=models.ForeignKey(
+                help_text="The notice this media is associated with.",
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="medias",
+                to="notice.notice",
+            ),
         ),
         migrations.AddField(
-            model_name='noticemedia',
-            name='updated_by',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, related_name='%(class)s_updated_by', to=settings.AUTH_USER_MODEL),
+            model_name="noticemedia",
+            name="updated_by",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="%(class)s_updated_by",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='noticecategory',
-            name='created_by',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='%(class)s_created_by', to=settings.AUTH_USER_MODEL),
+            model_name="noticecategory",
+            name="created_by",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="%(class)s_created_by",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='noticecategory',
-            name='updated_by',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, related_name='%(class)s_updated_by', to=settings.AUTH_USER_MODEL),
+            model_name="noticecategory",
+            name="updated_by",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="%(class)s_updated_by",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='notice',
-            name='category',
-            field=models.ForeignKey(help_text='Category to which this notice belongs.', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='category_notices', to='notice.noticecategory', verbose_name='Notice Category'),
+            model_name="notice",
+            name="category",
+            field=models.ForeignKey(
+                help_text="Category to which this notice belongs.",
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="category_notices",
+                to="notice.noticecategory",
+                verbose_name="Notice Category",
+            ),
         ),
         migrations.AddField(
-            model_name='notice',
-            name='created_by',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='%(class)s_created_by', to=settings.AUTH_USER_MODEL),
+            model_name="notice",
+            name="created_by",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="%(class)s_created_by",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='notice',
-            name='department',
-            field=models.ForeignKey(help_text='Department associated with this notice.', null=True, on_delete=django.db.models.deletion.SET_NULL, to='department.department', verbose_name='Department'),
+            model_name="notice",
+            name="department",
+            field=models.ForeignKey(
+                help_text="Department associated with this notice.",
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                to="department.department",
+                verbose_name="Department",
+            ),
         ),
         migrations.AddField(
-            model_name='notice',
-            name='updated_by',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, related_name='%(class)s_updated_by', to=settings.AUTH_USER_MODEL),
+            model_name="notice",
+            name="updated_by",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="%(class)s_updated_by",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddIndex(
-            model_name='notice',
-            index=models.Index(fields=['category'], name='notice_noti_categor_67231f_idx'),
+            model_name="notice",
+            index=models.Index(
+                fields=["category"], name="notice_noti_categor_67231f_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='notice',
-            index=models.Index(fields=['department'], name='notice_noti_departm_fd174d_idx'),
+            model_name="notice",
+            index=models.Index(
+                fields=["department"], name="notice_noti_departm_fd174d_idx"
+            ),
         ),
         migrations.AddIndex(
-            model_name='notice',
-            index=models.Index(fields=['slug'], name='notice_noti_slug_7db744_idx'),
+            model_name="notice",
+            index=models.Index(fields=["slug"], name="notice_noti_slug_7db744_idx"),
         ),
     ]

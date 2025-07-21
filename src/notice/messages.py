@@ -11,5 +11,5 @@ NOTICE_DELETED_SUCCESS = _("Notice deleted successfully.")
 MEDIA_DELETED_SUCCESS = _("File deleted successfully.")
 
 TITLE_OR_MEDIA_REQUIRED = _(
-    "A notice must have either a title or at least one media file."
+    "A notice must have either a title or at least one media file.",
 )

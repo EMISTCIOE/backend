@@ -1,3 +1,4 @@
+# ruff: noqa
 import os
 
 os.system("python manage.py loaddata main_module")

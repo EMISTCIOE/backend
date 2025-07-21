@@ -33,7 +33,6 @@ urlpatterns = [
         name="public_notice_share",
     ),
     path("", include(router.urls)),
-
     # Listing APIs
     path(
         "notices/categories",

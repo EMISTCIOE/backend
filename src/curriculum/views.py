@@ -35,7 +35,6 @@ class DepartmentSubjects(ListAPIView):
 def suggestion_create_view(request):
     if request.method == "POST":
         data = JSONParser().parse(request)
-        print(data)
         serializer = SuggestionSerializer(data=data)
 
         if serializer.is_valid():

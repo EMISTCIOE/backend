@@ -20,25 +20,29 @@ def create_article(sender, instance, created, **kwargs):
             url_id=data["url_id"] if data["url_id"] != "" else None,
             title=data["title"] if data["title"] != "" else None,
             genre=data["genre"] if data["genre"] != "" else None,
-            date_published=data["date_published"]
-            if data["date_published"] != ""
-            else None,
+            date_published=(
+                data["date_published"] if data["date_published"] != "" else None
+            ),
             doi_id=data["doi_id"] if data["doi_id"] != "" else None,
             abstract=data["abstract"] if data["abstract"] != "" else None,
             # if keywords is in list then join them with comma and if already in string then just set it to string
-            keywords=", ".join(data["keywords"])
-            if type(data["keywords"]) == list
-            else data["keywords"]
-            if data["keywords"] != ""
-            else None,
-            discipline=", ".join(data["discipline"])
-            if type(data["discipline"]) == list
-            else data["discipline"]
-            if data["discipline"] != ""
-            else None,
-            submission_id=data["submission_id"]
-            if data["submission_id"] != ""
-            else None,
+            keywords=(
+                ", ".join(data["keywords"])
+                if type(data["keywords"]) == list
+                else data["keywords"]
+                if data["keywords"] != ""
+                else None
+            ),
+            discipline=(
+                ", ".join(data["discipline"])
+                if type(data["discipline"]) == list
+                else data["discipline"]
+                if data["discipline"] != ""
+                else None
+            ),
+            submission_id=(
+                data["submission_id"] if data["submission_id"] != "" else None
+            ),
             volume=data["volume"] if data["volume"] != "" else None,
             number=data["number"] if data["number"] != "" else None,
             year=data["year"] if data["year"] != "" else None,
@@ -49,15 +53,15 @@ def create_article(sender, instance, created, **kwargs):
             for author in authors:
                 # get only with name  or create new author
                 author = Author.objects.get_or_create(
-                    given_name=author["given_name"]
-                    if author["given_name"] != ""
-                    else None,
-                    family_name=author["family_name"]
-                    if author["family_name"] != ""
-                    else None,
-                    affiliation=author["affiliation"]
-                    if author["affiliation"] != ""
-                    else None,
+                    given_name=(
+                        author["given_name"] if author["given_name"] != "" else None
+                    ),
+                    family_name=(
+                        author["family_name"] if author["family_name"] != "" else None
+                    ),
+                    affiliation=(
+                        author["affiliation"] if author["affiliation"] != "" else None
+                    ),
                     country=author["country"] if author["country"] != "" else None,
                     email=author["email"] if author["email"] != "" else None,
                     bio=author["bio"] if author["bio"] != "" else None,

@@ -37,17 +37,21 @@ def authorsList(data):
             out.append(
                 {
                     "given_name": author["givenname"]["#text"],
-                    "family_name": author["familyname"]["#text"]
-                    if "familyname" in author
-                    else "",
-                    "affiliation": author["affiliation"]["#text"]
-                    if "affiliation" in author
-                    else "",
+                    "family_name": (
+                        author["familyname"]["#text"] if "familyname" in author else ""
+                    ),
+                    "affiliation": (
+                        author["affiliation"]["#text"]
+                        if "affiliation" in author
+                        else ""
+                    ),
                     "country": author["country"],
                     "email": author["email"],
-                    "bio": BeautifulSoup(author["biography"]["#text"], "lxml").text
-                    if "biography" in author
-                    else "",
+                    "bio": (
+                        BeautifulSoup(author["biography"]["#text"], "lxml").text
+                        if "biography" in author
+                        else ""
+                    ),
                 },
             )
     else:
@@ -55,14 +59,16 @@ def authorsList(data):
             {
                 "given_name": lst["givenname"]["#text"],
                 "family_name": lst["familyname"]["#text"],
-                "affiliation": lst["affiliation"]["#text"]
-                if "affiliation" in lst
-                else "",
+                "affiliation": (
+                    lst["affiliation"]["#text"] if "affiliation" in lst else ""
+                ),
                 "country": lst["country"] if "country" in lst else "",
                 "email": lst["email"] if "email" in lst else "",
-                "bio": BeautifulSoup(lst["biography"]["#text"], "lxml").text
-                if "biography" in lst
-                else "",
+                "bio": (
+                    BeautifulSoup(lst["biography"]["#text"], "lxml").text
+                    if "biography" in lst
+                    else ""
+                ),
             },
         )
     return out
@@ -84,42 +90,58 @@ def format(data):
     doid = f"10.3126/jiee.v{volume}i{number}.{first}"
 
     return {
-        "url_id": str(
-            data["id"]["#text"]
-            + "/"
-            + selectLatest(data)["article_galley"]["id"]["#text"],
-        )
-        if isinstance(selectLatest(data)["id"], list)
-        else str(
-            selectLatest(data)["id"]["#text"]
-            + "/"
-            + selectLatest(data)["article_galley"]["id"]["#text"],
+        "url_id": (
+            str(
+                data["id"]["#text"]
+                + "/"
+                + selectLatest(data)["article_galley"]["id"]["#text"],
+            )
+            if isinstance(selectLatest(data)["id"], list)
+            else str(
+                selectLatest(data)["id"]["#text"]
+                + "/"
+                + selectLatest(data)["article_galley"]["id"]["#text"],
+            )
         ),
         "title": selectLatest(data)["title"]["#text"],
         "doi_id": doid,
-        "genre": data["submission_file"][0]["@genre"]
-        if isinstance(data["submission_file"], list)
-        else data["submission_file"]["@genre"],
-        "date_published": selectLatest(data)["@date_published"]
-        if "@date_published" in selectLatest(data)
-        else "",
-        "abstract": BeautifulSoup(selectLatest(data)["abstract"]["#text"], "lxml").text
-        if "abstract" in selectLatest(data)
-        else "",
-        "keywords": selectLatest(data)["keywords"]["keyword"]
-        if "keywords" in selectLatest(data)
-        else "",
-        "discipline": selectLatest(data)["disciplines"]["discipline"]
-        if "disciplines" in selectLatest(data)
-        else "",
+        "genre": (
+            data["submission_file"][0]["@genre"]
+            if isinstance(data["submission_file"], list)
+            else data["submission_file"]["@genre"]
+        ),
+        "date_published": (
+            selectLatest(data)["@date_published"]
+            if "@date_published" in selectLatest(data)
+            else ""
+        ),
+        "abstract": (
+            BeautifulSoup(selectLatest(data)["abstract"]["#text"], "lxml").text
+            if "abstract" in selectLatest(data)
+            else ""
+        ),
+        "keywords": (
+            selectLatest(data)["keywords"]["keyword"]
+            if "keywords" in selectLatest(data)
+            else ""
+        ),
+        "discipline": (
+            selectLatest(data)["disciplines"]["discipline"]
+            if "disciplines" in selectLatest(data)
+            else ""
+        ),
         "authors": authorsList(data),
-        "submission_id": data["submission_file"][0]["@id"]
-        if isinstance(data["submission_file"], list)
-        else data["submission_file"]["@id"],
+        "submission_id": (
+            data["submission_file"][0]["@id"]
+            if isinstance(data["submission_file"], list)
+            else data["submission_file"]["@id"]
+        ),
         "volume": volume,
         "number": number,
-        "year": selectLatest(data)["issue_identification"]["year"]
-        if "year" in selectLatest(data)["issue_identification"]
-        else "",
+        "year": (
+            selectLatest(data)["issue_identification"]["year"]
+            if "year" in selectLatest(data)["issue_identification"]
+            else ""
+        ),
         "pages": selectLatest(data)["pages"] if "pages" in selectLatest(data) else "",
     }

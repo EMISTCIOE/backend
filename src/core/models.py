@@ -2,12 +2,13 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from src.base.models import AuditInfoModel
-from src.core.constants import EMAIL_TYPES
+from src.core.constants import EmailTypes
 
 
 class FiscalSessionBS(AuditInfoModel):
     """
-    Represents a fiscal session in Bikram Sambat (BS), used across campus reports and other resources.
+    Represents a fiscal session in Bikram Sambat (BS),
+    used across campus reports and other resources.
     E.g., session_full: "2079/2080", session_short: "079/80"
     """
 
@@ -36,7 +37,7 @@ class EmailConfig(AuditInfoModel):
     """Model to store email configuration settings."""
 
     email_type = models.CharField(
-        choices=EMAIL_TYPES.choices(),
+        choices=EmailTypes.choices(),
         max_length=20,
         unique=True,
         default="INFO",

@@ -1,14 +1,15 @@
+from ckeditor.fields import RichTextField
 from django.db import models
 from django.utils import timezone
-from ckeditor.fields import RichTextField
-from django.utils.translation import gettext_lazy as _
 from django.utils.text import slugify as django_slugify
+from django.utils.translation import gettext_lazy as _
 
 # Project Imports
 from src.base.models import AuditInfoModel
 from src.department.models import Department
 from src.notice.utils import notice_media_upload_path
 from src.notice.validators import validate_notice_media_file
+
 from .constants import NOTICE_THUMBNAIL_PATH, MediaType, NoticeStatus
 
 

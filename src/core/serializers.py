@@ -4,7 +4,6 @@ from django.utils.translation import gettext as _
 from rest_framework import serializers
 
 from src.base.serializers import AbstractInfoRetrieveSerializer
-
 from src.core.messages import (
     EMAIL_CONFIG_CREATE_SUCCESS,
     EMAIL_CONFIG_UPDATE_SUCCESS,

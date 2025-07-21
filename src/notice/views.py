@@ -1,28 +1,29 @@
 # Django Imports
 import django_filters
+from django.core.files.storage import default_storage
 from django.db import transaction
 from django_filters.filterset import FilterSet
 from django_filters.rest_framework import DjangoFilterBackend
-from django.core.files.storage import default_storage
+from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.response import Response
 
 # Rest Framework Imports
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework import status
 
 # Project Imports
 from src.libs.utils import set_binary_files_null_if_empty
+
+from .messages import MEDIA_DELETED_SUCCESS, MEDIA_NOT_FOUND, NOTICE_DELETED_SUCCESS
+from .models import Notice, NoticeMedia
+from .permissions import NoticePermission
 from .serializers import (
     NoticeCreateSerializer,
     NoticeListSerializer,
     NoticePatchSerializer,
     NoticeRetrieveSerializer,
 )
-from .models import Notice, NoticeMedia
-from .permissions import NoticePermission
-from .messages import NOTICE_DELETED_SUCCESS, MEDIA_DELETED_SUCCESS, MEDIA_NOT_FOUND
 
 
 class FilterForNoticeViewSet(FilterSet):
@@ -85,8 +86,10 @@ class NoticeViewSet(ModelViewSet):
     @transaction.atomic
     def destroy(self, request, *args, **kwargs):
         """
-        Delete the notice along with all associated media files from storage and database.
+        Delete the notice along with all associated
+        media files from storage and database.
         """
+
         instance = self.get_object()
         medias = instance.medias.all()
 
@@ -120,7 +123,8 @@ class NoticeViewSet(ModelViewSet):
             media = notice.medias.get(id=media_id, is_active=True)
         except NoticeMedia.DoesNotExist:
             return Response(
-                {"detail": MEDIA_NOT_FOUND}, status=status.HTTP_404_NOT_FOUND
+                {"detail": MEDIA_NOT_FOUND},
+                status=status.HTTP_404_NOT_FOUND,
             )
 
         if media.file and default_storage.exists(media.file.name):
@@ -129,5 +133,6 @@ class NoticeViewSet(ModelViewSet):
         media.delete()
 
         return Response(
-            {"detail": MEDIA_DELETED_SUCCESS}, status=status.HTTP_204_NO_CONTENT
+            {"detail": MEDIA_DELETED_SUCCESS},
+            status=status.HTTP_204_NO_CONTENT,
         )

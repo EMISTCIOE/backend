@@ -26,8 +26,8 @@ class CSPMiddleware:
 
         # Add CSP headers to API responses
         if request.path.startswith("/api/"):
-            response["Content-Security-Policy"] = (
-                "default-src 'self' https://notices.tcioe.edu.np https://docs.google.com https://google.com"
-            )
+            response[
+                "Content-Security-Policy"
+            ] = "default-src 'self' https://notices.tcioe.edu.np"
 
         return response

@@ -10,12 +10,13 @@ from src.notice.listing_apis.serializers import (
     DepartmentForNoticeListSerializer,
     UserForNoticeListSerializer,
 )
-from src.notice.validators import validate_notice_media_file
 from src.notice.messages import (
     NOTICE_CREATE_SUCCESS,
     NOTICE_UPDATE_SUCCESS,
     TITLE_OR_MEDIA_REQUIRED,
 )
+from src.notice.validators import validate_notice_media_file
+
 from .models import Notice, NoticeCategory, NoticeMedia
 
 
@@ -163,7 +164,7 @@ class NoticeMediaSerializerForNoticePatchSerializer(serializers.ModelSerializer)
     """Serializer for NoticeMedia model for patch."""
 
     id = serializers.PrimaryKeyRelatedField(
-        queryset=NoticeMedia.objects.filter(is_active=True)
+        queryset=NoticeMedia.objects.filter(is_active=True),
     )
 
     class Meta:

@@ -1,3 +1,4 @@
+# ruff: noqa
 """
 Django settings for tcioe project.
 """
@@ -27,7 +28,8 @@ CORS_ALLOWED_ORGINS = env.list("CORS_ALLOWED_ORIGINS")
 
 
 CSRF_TRUSTED_ORIGINS = env.list(
-    "CSRF_TRUSTED_ORIGINS", default=["https://api.tcioe.edu.np"]
+    "CSRF_TRUSTED_ORIGINS",
+    default=["https://api.tcioe.edu.np"],
 )
 
 X_FRAME_OPTIONS = env("X_FRAME_OPTIONS", default="DENY")

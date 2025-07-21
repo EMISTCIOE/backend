@@ -1,5 +1,5 @@
-from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
+from rest_framework import serializers
 
 # Project Imports
 from src.department.models import Department
@@ -14,14 +14,12 @@ class PublicNoticeMediaSerializerForNoticeListSerializer(serializers.ModelSerial
 
 
 class PublicDepartmentForNoticeSerializerListSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Department
-        fields = ["uuid", "name"] 
+        fields = ["uuid", "name"]
 
 
 class PublicCategoryForNoticeSerializerListSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = NoticeCategory
         fields = ["uuid", "name"]

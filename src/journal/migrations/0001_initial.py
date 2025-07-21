@@ -9,80 +9,180 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='ArticleXml',
+            name="ArticleXml",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('article_name', models.CharField(blank=True, max_length=500, null=True, unique=True)),
-                ('xml_file', models.FileField(blank=True, null=True, upload_to='xmls/articles/', validators=[django.core.validators.FileExtensionValidator(['xml'])])),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "article_name",
+                    models.CharField(
+                        blank=True, max_length=500, null=True, unique=True
+                    ),
+                ),
+                (
+                    "xml_file",
+                    models.FileField(
+                        blank=True,
+                        null=True,
+                        upload_to="xmls/articles/",
+                        validators=[
+                            django.core.validators.FileExtensionValidator(["xml"])
+                        ],
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Article XML',
-                'ordering': ['-article_name'],
+                "verbose_name": "Article XML",
+                "ordering": ["-article_name"],
             },
         ),
         migrations.CreateModel(
-            name='Author',
+            name="Author",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('given_name', models.CharField(max_length=200, verbose_name='Given Name')),
-                ('family_name', models.CharField(blank=True, max_length=200, null=True, verbose_name='Family Name')),
-                ('affiliation', models.CharField(blank=True, max_length=500, null=True)),
-                ('country', models.CharField(blank=True, max_length=200, null=True)),
-                ('email', models.EmailField(blank=True, max_length=254, null=True)),
-                ('bio', models.TextField(blank=True, null=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "given_name",
+                    models.CharField(max_length=200, verbose_name="Given Name"),
+                ),
+                (
+                    "family_name",
+                    models.CharField(
+                        blank=True,
+                        max_length=200,
+                        null=True,
+                        verbose_name="Family Name",
+                    ),
+                ),
+                (
+                    "affiliation",
+                    models.CharField(blank=True, max_length=500, null=True),
+                ),
+                ("country", models.CharField(blank=True, max_length=200, null=True)),
+                ("email", models.EmailField(blank=True, max_length=254, null=True)),
+                ("bio", models.TextField(blank=True, null=True)),
             ],
             options={
-                'ordering': ['family_name', 'given_name'],
+                "ordering": ["family_name", "given_name"],
             },
         ),
         migrations.CreateModel(
-            name='BoardMember',
+            name="BoardMember",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('name', models.CharField(max_length=200)),
-                ('image', models.ImageField(blank=True, null=True, upload_to='media/editorial_board/images')),
-                ('role', models.CharField(max_length=200)),
-                ('rank', models.IntegerField(blank=True, null=True)),
-                ('designation', models.CharField(max_length=200)),
-                ('department', models.CharField(max_length=500)),
-                ('organization', models.CharField(max_length=500)),
-                ('email', models.EmailField(max_length=254)),
-                ('orcid_id', models.CharField(blank=True, max_length=50, null=True, verbose_name='ORCID iD')),
-                ('google_scholar_link', models.URLField(blank=True, null=True, verbose_name='Google Scholar Profile')),
-                ('research_gate_link', models.URLField(blank=True, null=True, verbose_name='Research Gate Profile')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("name", models.CharField(max_length=200)),
+                (
+                    "image",
+                    models.ImageField(
+                        blank=True, null=True, upload_to="media/editorial_board/images"
+                    ),
+                ),
+                ("role", models.CharField(max_length=200)),
+                ("rank", models.IntegerField(blank=True, null=True)),
+                ("designation", models.CharField(max_length=200)),
+                ("department", models.CharField(max_length=500)),
+                ("organization", models.CharField(max_length=500)),
+                ("email", models.EmailField(max_length=254)),
+                (
+                    "orcid_id",
+                    models.CharField(
+                        blank=True, max_length=50, null=True, verbose_name="ORCID iD"
+                    ),
+                ),
+                (
+                    "google_scholar_link",
+                    models.URLField(
+                        blank=True, null=True, verbose_name="Google Scholar Profile"
+                    ),
+                ),
+                (
+                    "research_gate_link",
+                    models.URLField(
+                        blank=True, null=True, verbose_name="Research Gate Profile"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Board Member',
-                'ordering': ['-rank', 'designation'],
+                "verbose_name": "Board Member",
+                "ordering": ["-rank", "designation"],
             },
         ),
         migrations.CreateModel(
-            name='Article',
+            name="Article",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('url_id', models.CharField(max_length=50)),
-                ('title', models.CharField(max_length=500)),
-                ('genre', models.CharField(max_length=500)),
-                ('date_published', models.DateField(blank=True, null=True, verbose_name='Published Date')),
-                ('doi_id', models.CharField(blank=True, max_length=500, null=True, verbose_name='DOI ID')),
-                ('abstract', models.TextField()),
-                ('keywords', models.CharField(blank=True, max_length=500, null=True)),
-                ('discipline', models.CharField(blank=True, max_length=500, null=True)),
-                ('submission_id', models.IntegerField(blank=True, null=True, verbose_name='Submission ID')),
-                ('volume', models.IntegerField(blank=True, null=True)),
-                ('number', models.IntegerField(blank=True, null=True)),
-                ('year', models.IntegerField(blank=True, null=True)),
-                ('pages', models.CharField(blank=True, max_length=40, null=True)),
-                ('authors', models.ManyToManyField(related_name='article_author', to='journal.author')),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("url_id", models.CharField(max_length=50)),
+                ("title", models.CharField(max_length=500)),
+                ("genre", models.CharField(max_length=500)),
+                (
+                    "date_published",
+                    models.DateField(
+                        blank=True, null=True, verbose_name="Published Date"
+                    ),
+                ),
+                (
+                    "doi_id",
+                    models.CharField(
+                        blank=True, max_length=500, null=True, verbose_name="DOI ID"
+                    ),
+                ),
+                ("abstract", models.TextField()),
+                ("keywords", models.CharField(blank=True, max_length=500, null=True)),
+                ("discipline", models.CharField(blank=True, max_length=500, null=True)),
+                (
+                    "submission_id",
+                    models.IntegerField(
+                        blank=True, null=True, verbose_name="Submission ID"
+                    ),
+                ),
+                ("volume", models.IntegerField(blank=True, null=True)),
+                ("number", models.IntegerField(blank=True, null=True)),
+                ("year", models.IntegerField(blank=True, null=True)),
+                ("pages", models.CharField(blank=True, max_length=40, null=True)),
+                (
+                    "authors",
+                    models.ManyToManyField(
+                        related_name="article_author", to="journal.author"
+                    ),
+                ),
             ],
             options={
-                'ordering': ['title'],
-                'unique_together': {('url_id',)},
+                "ordering": ["title"],
+                "unique_together": {("url_id",)},
             },
         ),
     ]

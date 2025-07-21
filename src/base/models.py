@@ -9,7 +9,8 @@ class AuditInfoModel(models.Model):
     """
     Audit Created Info Model
 
-    All the Models should inherit from this model rather than repeating same fields in each tables.
+    All the Models should inherit from this model
+    rather than repeating same fields in each tables.
     """
 
     uuid = models.UUIDField(

@@ -15,178 +15,626 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('auth', '0012_alter_user_first_name_max_length'),
+        ("auth", "0012_alter_user_first_name_max_length"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='User',
+            name="User",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('password', models.CharField(max_length=128, verbose_name='password')),
-                ('last_login', models.DateTimeField(blank=True, null=True, verbose_name='last login')),
-                ('is_superuser', models.BooleanField(default=False, help_text='Designates that this user has all permissions without explicitly assigning them.', verbose_name='superuser status')),
-                ('username', models.CharField(error_messages={'unique': 'A user with that username already exists.'}, help_text='Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.', max_length=150, unique=True, validators=[django.contrib.auth.validators.UnicodeUsernameValidator()], verbose_name='username')),
-                ('first_name', models.CharField(blank=True, max_length=150, verbose_name='first name')),
-                ('last_name', models.CharField(blank=True, max_length=150, verbose_name='last name')),
-                ('email', models.EmailField(blank=True, max_length=254, verbose_name='email address')),
-                ('is_staff', models.BooleanField(default=False, help_text='Designates whether the user can log into this admin site.', verbose_name='staff status')),
-                ('is_active', models.BooleanField(default=True, help_text='Designates whether this user should be treated as active. Unselect this instead of deleting accounts.', verbose_name='active')),
-                ('date_joined', models.DateTimeField(default=django.utils.timezone.now, verbose_name='date joined')),
-                ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, unique=True)),
-                ('phone_no', models.CharField(blank=True, max_length=15, verbose_name='phone number')),
-                ('photo', models.ImageField(blank=True, default='', null=True, upload_to='', validators=[src.user.validators.validate_user_image])),
-                ('is_archived', models.BooleanField(default=False, help_text='Designates whether this user should be treated as delected. Unselect this instead of deleting users.', verbose_name='archived')),
-                ('is_email_verified', models.BooleanField(default=False)),
-                ('is_phone_verified', models.BooleanField(default=False)),
-                ('updated_at', models.DateTimeField(auto_now=True, verbose_name='date updated')),
-                ('created_by', models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
-                ('groups', models.ManyToManyField(blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.', related_name='user_set', related_query_name='user', to='auth.group', verbose_name='groups')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("password", models.CharField(max_length=128, verbose_name="password")),
+                (
+                    "last_login",
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name="last login"
+                    ),
+                ),
+                (
+                    "is_superuser",
+                    models.BooleanField(
+                        default=False,
+                        help_text="Designates that this user has all permissions without explicitly assigning them.",
+                        verbose_name="superuser status",
+                    ),
+                ),
+                (
+                    "username",
+                    models.CharField(
+                        error_messages={
+                            "unique": "A user with that username already exists."
+                        },
+                        help_text="Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.",
+                        max_length=150,
+                        unique=True,
+                        validators=[
+                            django.contrib.auth.validators.UnicodeUsernameValidator()
+                        ],
+                        verbose_name="username",
+                    ),
+                ),
+                (
+                    "first_name",
+                    models.CharField(
+                        blank=True, max_length=150, verbose_name="first name"
+                    ),
+                ),
+                (
+                    "last_name",
+                    models.CharField(
+                        blank=True, max_length=150, verbose_name="last name"
+                    ),
+                ),
+                (
+                    "email",
+                    models.EmailField(
+                        blank=True, max_length=254, verbose_name="email address"
+                    ),
+                ),
+                (
+                    "is_staff",
+                    models.BooleanField(
+                        default=False,
+                        help_text="Designates whether the user can log into this admin site.",
+                        verbose_name="staff status",
+                    ),
+                ),
+                (
+                    "is_active",
+                    models.BooleanField(
+                        default=True,
+                        help_text="Designates whether this user should be treated as active. Unselect this instead of deleting accounts.",
+                        verbose_name="active",
+                    ),
+                ),
+                (
+                    "date_joined",
+                    models.DateTimeField(
+                        default=django.utils.timezone.now, verbose_name="date joined"
+                    ),
+                ),
+                (
+                    "uuid",
+                    models.UUIDField(default=uuid.uuid4, editable=False, unique=True),
+                ),
+                (
+                    "phone_no",
+                    models.CharField(
+                        blank=True, max_length=15, verbose_name="phone number"
+                    ),
+                ),
+                (
+                    "photo",
+                    models.ImageField(
+                        blank=True,
+                        default="",
+                        null=True,
+                        upload_to="",
+                        validators=[src.user.validators.validate_user_image],
+                    ),
+                ),
+                (
+                    "is_archived",
+                    models.BooleanField(
+                        default=False,
+                        help_text="Designates whether this user should be treated as delected. Unselect this instead of deleting users.",
+                        verbose_name="archived",
+                    ),
+                ),
+                ("is_email_verified", models.BooleanField(default=False)),
+                ("is_phone_verified", models.BooleanField(default=False)),
+                (
+                    "updated_at",
+                    models.DateTimeField(auto_now=True, verbose_name="date updated"),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "groups",
+                    models.ManyToManyField(
+                        blank=True,
+                        help_text="The groups this user belongs to. A user will get all permissions granted to each of their groups.",
+                        related_name="user_set",
+                        related_query_name="user",
+                        to="auth.group",
+                        verbose_name="groups",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'user',
-                'verbose_name_plural': 'users',
-                'ordering': ['-id'],
+                "verbose_name": "user",
+                "verbose_name_plural": "users",
+                "ordering": ["-id"],
             },
             managers=[
-                ('objects', src.user.models.UserManager()),
+                ("objects", src.user.models.UserManager()),
             ],
         ),
         migrations.CreateModel(
-            name='MainModule',
+            name="MainModule",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, help_text='Represents unique uuid.', unique=True, verbose_name='uuid')),
-                ('created_at', models.DateTimeField(default=django.utils.timezone.now, editable=False, verbose_name='created date')),
-                ('updated_at', models.DateTimeField(auto_now=True, verbose_name='date updated')),
-                ('is_active', models.BooleanField(default=True, help_text='Designates whether this object should be treated as active. Unselect this instead of deleting instances.', verbose_name='active')),
-                ('is_archived', models.BooleanField(default=False, help_text='Designates whether this object should be treated as delected. Unselect this instead of deleting instances.', verbose_name='archived')),
-                ('name', models.CharField(help_text='Max: 50 characters', max_length=50, unique=True, verbose_name='name')),
-                ('codename', models.CharField(help_text='Max: 50 characters', max_length=50, unique=True, verbose_name='codename')),
-                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='%(class)s_created_by', to=settings.AUTH_USER_MODEL)),
-                ('updated_by', models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, related_name='%(class)s_updated_by', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "uuid",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        help_text="Represents unique uuid.",
+                        unique=True,
+                        verbose_name="uuid",
+                    ),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        default=django.utils.timezone.now,
+                        editable=False,
+                        verbose_name="created date",
+                    ),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(auto_now=True, verbose_name="date updated"),
+                ),
+                (
+                    "is_active",
+                    models.BooleanField(
+                        default=True,
+                        help_text="Designates whether this object should be treated as active. Unselect this instead of deleting instances.",
+                        verbose_name="active",
+                    ),
+                ),
+                (
+                    "is_archived",
+                    models.BooleanField(
+                        default=False,
+                        help_text="Designates whether this object should be treated as delected. Unselect this instead of deleting instances.",
+                        verbose_name="archived",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(
+                        help_text="Max: 50 characters",
+                        max_length=50,
+                        unique=True,
+                        verbose_name="name",
+                    ),
+                ),
+                (
+                    "codename",
+                    models.CharField(
+                        help_text="Max: 50 characters",
+                        max_length=50,
+                        unique=True,
+                        verbose_name="codename",
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="%(class)s_created_by",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "updated_by",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="%(class)s_updated_by",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='Permission',
+            name="Permission",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, help_text='Represents unique uuid.', unique=True, verbose_name='uuid')),
-                ('created_at', models.DateTimeField(default=django.utils.timezone.now, editable=False, verbose_name='created date')),
-                ('updated_at', models.DateTimeField(auto_now=True, verbose_name='date updated')),
-                ('is_active', models.BooleanField(default=True, help_text='Designates whether this object should be treated as active. Unselect this instead of deleting instances.', verbose_name='active')),
-                ('is_archived', models.BooleanField(default=False, help_text='Designates whether this object should be treated as delected. Unselect this instead of deleting instances.', verbose_name='archived')),
-                ('name', models.CharField(max_length=100, verbose_name='name')),
-                ('codename', models.CharField(max_length=100, unique=True, verbose_name='codename')),
-                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='%(class)s_created_by', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "uuid",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        help_text="Represents unique uuid.",
+                        unique=True,
+                        verbose_name="uuid",
+                    ),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        default=django.utils.timezone.now,
+                        editable=False,
+                        verbose_name="created date",
+                    ),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(auto_now=True, verbose_name="date updated"),
+                ),
+                (
+                    "is_active",
+                    models.BooleanField(
+                        default=True,
+                        help_text="Designates whether this object should be treated as active. Unselect this instead of deleting instances.",
+                        verbose_name="active",
+                    ),
+                ),
+                (
+                    "is_archived",
+                    models.BooleanField(
+                        default=False,
+                        help_text="Designates whether this object should be treated as delected. Unselect this instead of deleting instances.",
+                        verbose_name="archived",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100, verbose_name="name")),
+                (
+                    "codename",
+                    models.CharField(
+                        max_length=100, unique=True, verbose_name="codename"
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="%(class)s_created_by",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'permission',
-                'verbose_name_plural': 'permissions',
-                'ordering': ['permission_category__main_module', 'permission_category', 'id'],
+                "verbose_name": "permission",
+                "verbose_name_plural": "permissions",
+                "ordering": [
+                    "permission_category__main_module",
+                    "permission_category",
+                    "id",
+                ],
             },
         ),
         migrations.CreateModel(
-            name='UserForgetPasswordRequest',
+            name="UserForgetPasswordRequest",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('token', models.CharField(max_length=256)),
-                ('created_at', models.DateTimeField()),
-                ('is_archived', models.BooleanField(default=False)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("token", models.CharField(max_length=256)),
+                ("created_at", models.DateTimeField()),
+                ("is_archived", models.BooleanField(default=False)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-id'],
+                "ordering": ["-id"],
             },
         ),
         migrations.CreateModel(
-            name='UserAccountVerification',
+            name="UserAccountVerification",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('token', models.CharField(max_length=256)),
-                ('created_at', models.DateTimeField()),
-                ('is_archived', models.BooleanField(default=False)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("token", models.CharField(max_length=256)),
+                ("created_at", models.DateTimeField()),
+                ("is_archived", models.BooleanField(default=False)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-id'],
+                "ordering": ["-id"],
             },
         ),
         migrations.CreateModel(
-            name='Role',
+            name="Role",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, help_text='Represents unique uuid.', unique=True, verbose_name='uuid')),
-                ('created_at', models.DateTimeField(default=django.utils.timezone.now, editable=False, verbose_name='created date')),
-                ('updated_at', models.DateTimeField(auto_now=True, verbose_name='date updated')),
-                ('is_active', models.BooleanField(default=True, help_text='Designates whether this object should be treated as active. Unselect this instead of deleting instances.', verbose_name='active')),
-                ('is_archived', models.BooleanField(default=False, help_text='Designates whether this object should be treated as delected. Unselect this instead of deleting instances.', verbose_name='archived')),
-                ('name', models.CharField(max_length=50, unique=True, verbose_name='name')),
-                ('codename', models.CharField(max_length=50, unique=True, verbose_name='codename')),
-                ('is_system_managed', models.BooleanField(default=False, help_text='Managed by system', verbose_name='System Managed')),
-                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='%(class)s_created_by', to=settings.AUTH_USER_MODEL)),
-                ('permissions', models.ManyToManyField(blank=True, to='user.permission', verbose_name='permissions')),
-                ('updated_by', models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, related_name='%(class)s_updated_by', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "uuid",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        help_text="Represents unique uuid.",
+                        unique=True,
+                        verbose_name="uuid",
+                    ),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        default=django.utils.timezone.now,
+                        editable=False,
+                        verbose_name="created date",
+                    ),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(auto_now=True, verbose_name="date updated"),
+                ),
+                (
+                    "is_active",
+                    models.BooleanField(
+                        default=True,
+                        help_text="Designates whether this object should be treated as active. Unselect this instead of deleting instances.",
+                        verbose_name="active",
+                    ),
+                ),
+                (
+                    "is_archived",
+                    models.BooleanField(
+                        default=False,
+                        help_text="Designates whether this object should be treated as delected. Unselect this instead of deleting instances.",
+                        verbose_name="archived",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(max_length=50, unique=True, verbose_name="name"),
+                ),
+                (
+                    "codename",
+                    models.CharField(
+                        max_length=50, unique=True, verbose_name="codename"
+                    ),
+                ),
+                (
+                    "is_system_managed",
+                    models.BooleanField(
+                        default=False,
+                        help_text="Managed by system",
+                        verbose_name="System Managed",
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="%(class)s_created_by",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "permissions",
+                    models.ManyToManyField(
+                        blank=True, to="user.permission", verbose_name="permissions"
+                    ),
+                ),
+                (
+                    "updated_by",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="%(class)s_updated_by",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'user role',
-                'verbose_name_plural': 'user roles',
+                "verbose_name": "user role",
+                "verbose_name_plural": "user roles",
             },
         ),
         migrations.CreateModel(
-            name='PermissionCategory',
+            name="PermissionCategory",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('uuid', models.UUIDField(default=uuid.uuid4, editable=False, help_text='Represents unique uuid.', unique=True, verbose_name='uuid')),
-                ('created_at', models.DateTimeField(default=django.utils.timezone.now, editable=False, verbose_name='created date')),
-                ('updated_at', models.DateTimeField(auto_now=True, verbose_name='date updated')),
-                ('is_active', models.BooleanField(default=True, help_text='Designates whether this object should be treated as active. Unselect this instead of deleting instances.', verbose_name='active')),
-                ('is_archived', models.BooleanField(default=False, help_text='Designates whether this object should be treated as delected. Unselect this instead of deleting instances.', verbose_name='archived')),
-                ('name', models.CharField(help_text='Max: 50 characters', max_length=50, unique=True)),
-                ('created_by', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='%(class)s_created_by', to=settings.AUTH_USER_MODEL)),
-                ('main_module', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='permission_categories', to='user.mainmodule')),
-                ('updated_by', models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, related_name='%(class)s_updated_by', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "uuid",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        help_text="Represents unique uuid.",
+                        unique=True,
+                        verbose_name="uuid",
+                    ),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        default=django.utils.timezone.now,
+                        editable=False,
+                        verbose_name="created date",
+                    ),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(auto_now=True, verbose_name="date updated"),
+                ),
+                (
+                    "is_active",
+                    models.BooleanField(
+                        default=True,
+                        help_text="Designates whether this object should be treated as active. Unselect this instead of deleting instances.",
+                        verbose_name="active",
+                    ),
+                ),
+                (
+                    "is_archived",
+                    models.BooleanField(
+                        default=False,
+                        help_text="Designates whether this object should be treated as delected. Unselect this instead of deleting instances.",
+                        verbose_name="archived",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(
+                        help_text="Max: 50 characters", max_length=50, unique=True
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="%(class)s_created_by",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "main_module",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="permission_categories",
+                        to="user.mainmodule",
+                    ),
+                ),
+                (
+                    "updated_by",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="%(class)s_updated_by",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'permission category',
-                'verbose_name_plural': 'permission categories',
+                "verbose_name": "permission category",
+                "verbose_name_plural": "permission categories",
             },
         ),
         migrations.AddField(
-            model_name='permission',
-            name='permission_category',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='permissions', to='user.permissioncategory'),
+            model_name="permission",
+            name="permission_category",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="permissions",
+                to="user.permissioncategory",
+            ),
         ),
         migrations.AddField(
-            model_name='permission',
-            name='updated_by',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, related_name='%(class)s_updated_by', to=settings.AUTH_USER_MODEL),
+            model_name="permission",
+            name="updated_by",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="%(class)s_updated_by",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='user',
-            name='permissions',
-            field=models.ManyToManyField(blank=True, help_text='Specific permissions for this user.', to='user.permission', verbose_name='permissions'),
+            model_name="user",
+            name="permissions",
+            field=models.ManyToManyField(
+                blank=True,
+                help_text="Specific permissions for this user.",
+                to="user.permission",
+                verbose_name="permissions",
+            ),
         ),
         migrations.AddField(
-            model_name='user',
-            name='roles',
-            field=models.ManyToManyField(blank=True, help_text='Specific roles for this user', to='user.role', verbose_name='roles'),
+            model_name="user",
+            name="roles",
+            field=models.ManyToManyField(
+                blank=True,
+                help_text="Specific roles for this user",
+                to="user.role",
+                verbose_name="roles",
+            ),
         ),
         migrations.AddField(
-            model_name='user',
-            name='updated_by',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, related_name='editor_user', to=settings.AUTH_USER_MODEL),
+            model_name="user",
+            name="updated_by",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="editor_user",
+                to=settings.AUTH_USER_MODEL,
+            ),
         ),
         migrations.AddField(
-            model_name='user',
-            name='user_permissions',
-            field=models.ManyToManyField(blank=True, help_text='Specific permissions for this user.', related_name='user_set', related_query_name='user', to='auth.permission', verbose_name='user permissions'),
+            model_name="user",
+            name="user_permissions",
+            field=models.ManyToManyField(
+                blank=True,
+                help_text="Specific permissions for this user.",
+                related_name="user_set",
+                related_query_name="user",
+                to="auth.permission",
+                verbose_name="user permissions",
+            ),
         ),
         migrations.AddConstraint(
-            model_name='user',
-            constraint=models.UniqueConstraint(condition=models.Q(('is_archived', False)), fields=('email',), name='unique_email_active_user'),
+            model_name="user",
+            constraint=models.UniqueConstraint(
+                condition=models.Q(("is_archived", False)),
+                fields=("email",),
+                name="unique_email_active_user",
+            ),
         ),
     ]
