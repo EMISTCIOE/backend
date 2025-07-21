@@ -14,12 +14,12 @@ class NoticePermission(BasePermission):
 
         return validate_permissions(request, user_permissions_dict)
 
-class CanUpdateNoticeStatus(BasePermission):
+class NoticeStatusUpdatePermission(BasePermission):
     """Permission class specifically for notice status updates."""
     
     def has_permission(self, request, view):
         user_permissions_dict = {
-            "PATCH": "edit_notice",
-            "PUT": "edit_notice",
+            "PATCH": "edit_notice_status",
+            "PUT":   "edit_notice_status",
         }
         return validate_permissions(request, user_permissions_dict)

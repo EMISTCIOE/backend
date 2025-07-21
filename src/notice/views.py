@@ -17,7 +17,7 @@ from src.libs.utils import set_binary_files_null_if_empty
 
 from .messages import MEDIA_DELETED_SUCCESS, MEDIA_NOT_FOUND, NOTICE_DELETED_SUCCESS
 from .models import Notice, NoticeMedia
-from .permissions import NoticePermission,CanUpdateNoticeStatus
+from .permissions import NoticePermission,NoticeStatusUpdatePermission
 from .serializers import (
     NoticeCreateSerializer,
     NoticeListSerializer,
@@ -112,7 +112,7 @@ class NoticeViewSet(ModelViewSet):
         detail=True,
         methods=['patch','put'],
         url_path='update-status',
-        permission_classes=[CanUpdateNoticeStatus],
+        permission_classes=[NoticeStatusUpdatePermission],
         serializer_class=NoticeStatusUpdateSerializer
     )
     def update_status(self, request, pk=None):
