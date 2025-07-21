@@ -262,3 +262,19 @@ class NoticePatchSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance) -> dict[str, str]:
         return {"message": NOTICE_UPDATE_SUCCESS}
+
+
+class NoticeStatusUpdateSerializer(serializers.ModelSerializer):
+    """Serializer for updating notice status only."""
+    
+    status = serializers.ChoiceField(choices=NoticeStatus.choices(), required=True)
+    
+    class Meta:
+        model = Notice
+        fields = ['status', 'updated_at', 'updated_by']
+        read_only_fields = ['updated_at', 'updated_by']
+    
+    def update(self, instance, validated_data):
+        user = get_user_by_context(self.context)
+        validated_data['updated_by'] = user
+        return super().update(instance, validated_data)
