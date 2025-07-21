@@ -20,7 +20,7 @@ from src.notice.validators import validate_notice_media_file
 from .models import Notice, NoticeCategory, NoticeMedia
 
 
-class NoticeMediaSerializerForNoticeListSerializer(serializers.ModelSerializer):
+class NoticeMediaForNoticeListSerializer(serializers.ModelSerializer):
     class Meta:
         model = NoticeMedia
         fields = ["id", "file", "caption", "media_type"]
@@ -58,7 +58,7 @@ class NoticeListSerializer(serializers.ModelSerializer):
 class NoticeRetrieveSerializer(AbstractInfoRetrieveSerializer):
     department = DepartmentForNoticeListSerializer()
     category = CategoryForNoticeListSerializer()
-    medias = NoticeMediaSerializerForNoticeListSerializer(many=True)
+    medias = NoticeMediaForNoticeListSerializer(many=True)
     author = UserForNoticeListSerializer(source="created_by")
 
     class Meta(AbstractInfoRetrieveSerializer.Meta):
@@ -80,7 +80,7 @@ class NoticeRetrieveSerializer(AbstractInfoRetrieveSerializer):
         fields += AbstractInfoRetrieveSerializer.Meta.fields
 
 
-class NoticeMediaSerializerForNoticeCreateSerializer(serializers.ModelSerializer):
+class NoticeMediaForNoticeCreateSerializer(serializers.ModelSerializer):
     """Serializer for NoticeMedia model."""
 
     class Meta:
@@ -101,7 +101,7 @@ class NoticeMediaSerializerForNoticeCreateSerializer(serializers.ModelSerializer
 class NoticeCreateSerializer(serializers.ModelSerializer):
     """Serializer for Notice model, supporting media uploads."""
 
-    medias = NoticeMediaSerializerForNoticeCreateSerializer(many=True, required=False)
+    medias = NoticeMediaForNoticeCreateSerializer(many=True, required=False)
     department = serializers.PrimaryKeyRelatedField(
         queryset=Department.objects.filter(is_active=True),
         allow_null=True,
@@ -166,7 +166,7 @@ class NoticeCreateSerializer(serializers.ModelSerializer):
         return {"message": NOTICE_CREATE_SUCCESS}
 
 
-class NoticeMediaSerializerForNoticePatchSerializer(serializers.ModelSerializer):
+class NoticeMediaForNoticePatchSerializer(serializers.ModelSerializer):
     """Serializer for NoticeMedia model for patch."""
 
     id = serializers.PrimaryKeyRelatedField(
@@ -189,7 +189,7 @@ class NoticeMediaSerializerForNoticePatchSerializer(serializers.ModelSerializer)
 
 
 class NoticePatchSerializer(serializers.ModelSerializer):
-    medias = NoticeMediaSerializerForNoticePatchSerializer(many=True, required=False)
+    medias = NoticeMediaForNoticePatchSerializer(many=True, required=False)
     department = serializers.PrimaryKeyRelatedField(
         queryset=Department.objects.filter(is_active=True),
         required=False,

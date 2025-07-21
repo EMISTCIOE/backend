@@ -15,7 +15,7 @@ from src.notice.constants import NoticeStatus
 from src.notice.models import Notice, NoticeCategory
 from src.notice.public.messages import SUCCESS_MESSAGE
 from src.notice.public.serializers import (
-    PublicCategoryForNoticeSerializerListSerializer,
+    PublicCategoryForNoticeListSerializer,
     PublicNoticeListSerializer,
 )
 
@@ -25,7 +25,7 @@ class PublicNoticeCategoryListAPIView(generics.ListAPIView):
 
     permission_classes = [AllowAny]
     queryset = NoticeCategory.objects.filter(is_active=True)
-    serializer_class = PublicCategoryForNoticeSerializerListSerializer
+    serializer_class = PublicCategoryForNoticeListSerializer
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
     filter_fields = ["id"]
     search_fields = ["name"]

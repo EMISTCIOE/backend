@@ -41,10 +41,8 @@ class AuthorForNoticeListAPIView(ListAPIView):
     permission_classes = [UserSetupPermission]
     serializer_class = UserForNoticeListSerializer
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
+    queryset = User.objects.filter(is_active=True)
     filter_fields = ["id", "email"]
     search_fields = ["id", "email"]
     ordering_fields = ["id", "email"]
     ordering = ["-id"]
-
-    def get_queryset(self):
-        return User.objects.filter(is_active=True)

@@ -7,19 +7,19 @@ from src.notice.models import Notice, NoticeCategory, NoticeMedia
 from src.user.models import User
 
 
-class PublicNoticeMediaSerializerForNoticeListSerializer(serializers.ModelSerializer):
+class PublicNoticeMediaForNoticeListSerializer(serializers.ModelSerializer):
     class Meta:
         model = NoticeMedia
         fields = ["uuid", "file", "caption", "media_type"]
 
 
-class PublicDepartmentForNoticeSerializerListSerializer(serializers.ModelSerializer):
+class PublicDepartmentForNoticeListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
         fields = ["uuid", "name"]
 
 
-class PublicCategoryForNoticeSerializerListSerializer(serializers.ModelSerializer):
+class PublicCategoryForNoticeListSerializer(serializers.ModelSerializer):
     class Meta:
         model = NoticeCategory
         fields = ["uuid", "name"]
@@ -34,9 +34,9 @@ class PublicUserForNoticeListSerializer(serializers.ModelSerializer):
 
 
 class PublicNoticeListSerializer(serializers.ModelSerializer):
-    department = PublicDepartmentForNoticeSerializerListSerializer()
-    category = PublicCategoryForNoticeSerializerListSerializer()
-    medias = PublicNoticeMediaSerializerForNoticeListSerializer(many=True)
+    department = PublicDepartmentForNoticeListSerializer()
+    category = PublicCategoryForNoticeListSerializer()
+    medias = PublicNoticeMediaForNoticeListSerializer(many=True)
     author = PublicUserForNoticeListSerializer(source="created_by")
 
     class Meta:
