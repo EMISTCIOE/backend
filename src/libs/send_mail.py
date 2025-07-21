@@ -24,7 +24,7 @@ def get_basic_urls(request):
         "facebook_icon": "",
         "instagram_icon": "",
         "linkedin_icon": "",
-        "youtube_icon": "",
+        "twitter_icon": "",
     }
 
     try:
@@ -41,7 +41,7 @@ def get_basic_urls(request):
         basic_urls["facebook_icon"] = f"{base_static_url}/icons/facebook.png"
         basic_urls["instagram_icon"] = f"{base_static_url}/icons/instagram.png"
         basic_urls["linkedin_icon"] = f"{base_static_url}/icons/linkedin.png"
-        basic_urls["youtube_icon"] = f"{base_static_url}/icons/twitter.png"
+        basic_urls["twitter_icon"] = f"{base_static_url}/icons/twitter.png"
         basic_urls["origin_url"] = origin_url
 
         if not current_site or not current_site.domain:

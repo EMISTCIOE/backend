@@ -1,0 +1,32 @@
+{% extends "user/base_email.html" %} {% block content %}
+<table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr>
+    <td style="padding-bottom: 16px;">
+      <h2 style="color: #003366; font-size: 1.5rem; margin: 0;">Account Verification</h2>
+    </td>
+  </tr>
+  <tr>
+    <td style="font-size: 1rem; padding-bottom: 16px;">Hello,</td>
+  </tr>
+  <tr>
+    <td style="font-size: 1rem; padding-bottom: 16px;">
+      Thank you for registering. Please verify your account by clicking the link below:
+    </td>
+  </tr>
+  <tr>
+    <td style="padding: 24px 0;">
+      <a href="{{ redirect_url }}" style="display: inline-block; background: #003366; color: #fff; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-size: 1rem; font-weight: bold;">Verify Account</a>
+    </td>
+  </tr>
+  <tr>
+    <td style="font-size: 1rem; padding-bottom: 16px;">
+      If you did not request this, you can ignore this email.
+    </td>
+  </tr>
+  <tr>
+    <td style="font-size: 1rem;">
+      Best regards,<br />Institute of Engineering<br />Thapathali Campus
+    </td>
+  </tr>
+</table>
+{% endblock %}
