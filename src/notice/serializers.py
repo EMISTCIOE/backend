@@ -239,10 +239,6 @@ class NoticePatchSerializer(serializers.ModelSerializer):
                 media_instance = media_data.pop("id", None)
 
                 if media_instance:
-                    # Update existing media
-                    # media_instance = NoticeMedia.objects.get(
-                    #     notice=instance, id=media_instance
-                    # )
                     for key, value in media_data.items():
                         setattr(media_instance, key, value)
                     media_instance.updated_by = user
