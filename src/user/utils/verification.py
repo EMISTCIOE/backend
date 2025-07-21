@@ -19,7 +19,7 @@ def send_user_forget_password_email(
     try:
         subject = "Forget Password"
         body = "Account Information"
-        email_template_name = "emails/forget_password"
+        email_template_name = "user/forget_password"
         verification_url = f"{origin_url}/{redirect_url}/{token}"
 
         email_context = {
@@ -53,7 +53,7 @@ def send_user_account_verification_email(
     try:
         subject = "Account Verification"
         body = "Account Information"
-        email_template_name = "emails/account_verification"
+        email_template_name = "user/account_verification"
         verification_url = f"{origin_url}/{redirect_url}/{token}"
 
         email_context = {

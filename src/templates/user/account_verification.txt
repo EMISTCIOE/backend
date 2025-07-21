@@ -1,0 +1,12 @@
+Account Verification
+
+Hello,
+
+Thank you for registering. Please verify your account by clicking the link below:
+{{ redirect_url }}
+
+If you did not request this, you can ignore this email.
+
+Best regards,
+Institute of Engineering
+Thapathali Campus 
