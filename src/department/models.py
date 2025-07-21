@@ -368,3 +368,37 @@ class DepartmentEventGallery(AuditInfoModel):
 
     def __str__(self):
         return self.caption or f"{self.event.title} Image"
+
+
+class DepartmentPlanAndPolicy(AuditInfoModel):
+    """
+    Represents an individual plan or policy associated with a department.
+    """
+
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.CASCADE,
+        related_name="plans_and_policies",
+        verbose_name=_("Department"),
+        db_index=True,
+        help_text=_("The department this plan or policy belongs to."),
+    )
+    title = models.CharField(
+        max_length=255,
+        blank=True,
+        verbose_name=_("Title"),
+        help_text=_("Title of the plan or policy."),
+    )
+    description = RichTextField(
+        blank=True,
+        verbose_name=_("Description"),
+        help_text=_("Detailed description of the plan or policy."),
+    )
+
+    class Meta:
+        verbose_name = _("Plan and Policy")
+        verbose_name_plural = _("Plans and Policies")
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return self.title or _("(Untitled)")
