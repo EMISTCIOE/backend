@@ -119,6 +119,7 @@ class UserViewSet(ModelViewSet):
     http_method_names = ["options", "head", "get", "patch", "post"]
 
     def get_queryset(self):
+
         system_user_role = get_object_or_404(Role, codename=SYSTEM_USER_ROLE)
         return User.objects.filter(
             is_superuser=False,

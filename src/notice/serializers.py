@@ -183,7 +183,7 @@ class NoticeMediaSerializerForNoticePatchSerializer(serializers.ModelSerializer)
 
 
 class NoticePatchSerializer(serializers.ModelSerializer):
-    medias = NoticeMediaSerializerForNoticeCreateSerializer(many=True, required=False)
+    medias = NoticeMediaSerializerForNoticePatchSerializer(many=True, required=False)
     department = serializers.PrimaryKeyRelatedField(
         queryset=Department.objects.filter(is_active=True),
         required=False,
@@ -236,13 +236,13 @@ class NoticePatchSerializer(serializers.ModelSerializer):
 
         if medias_data is not None:
             for media_data in medias_data:
-                media_id = media_data.get("id", None)
+                media_instance = media_data.pop("id", None)
 
-                if media_id:
+                if media_instance:
                     # Update existing media
-                    media_instance = NoticeMedia.objects.get(
-                        notice=instance, id=media_id.id
-                    )
+                    # media_instance = NoticeMedia.objects.get(
+                    #     notice=instance, id=media_instance
+                    # )
                     for key, value in media_data.items():
                         setattr(media_instance, key, value)
                     media_instance.updated_by = user
