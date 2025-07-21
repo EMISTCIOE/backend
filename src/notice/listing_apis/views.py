@@ -47,4 +47,4 @@ class AuthorForNoticeListAPIView(ListAPIView):
     ordering = ["-id"]
 
     def get_queryset(self):
-        return User.objects.filter(is_active=True, roles__is_cms_role=True).distinct()
+        return User.objects.filter(is_active=True)
