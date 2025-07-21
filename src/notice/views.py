@@ -17,12 +17,13 @@ from src.libs.utils import set_binary_files_null_if_empty
 
 from .messages import MEDIA_DELETED_SUCCESS, MEDIA_NOT_FOUND, NOTICE_DELETED_SUCCESS
 from .models import Notice, NoticeMedia
-from .permissions import NoticePermission
+from .permissions import NoticePermission,NoticeStatusUpdatePermission
 from .serializers import (
     NoticeCreateSerializer,
     NoticeListSerializer,
     NoticePatchSerializer,
     NoticeRetrieveSerializer,
+    NoticeStatusUpdateSerializer,
 )
 
 
@@ -106,6 +107,28 @@ class NoticeViewSet(ModelViewSet):
         instance.delete()
 
         return Response({"detail": NOTICE_DELETED_SUCCESS}, status=status.HTTP_200_OK)
+
+    @action(
+        detail=True,
+        methods=['patch','put'],
+        url_path='update-status',
+        permission_classes=[NoticeStatusUpdatePermission],
+        serializer_class=NoticeStatusUpdateSerializer
+    )
+    def update_status(self, request, pk=None):
+        """Update notice status: PENDING ↔ APPROVED/REJECTED."""
+        notice = self.get_object()
+        serializer = self.get_serializer(notice, data=request.data, partial=True)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response({
+                'message': 'Status updated successfully',
+                'status': serializer.data['status'],
+                'updated_at': serializer.data['updated_at'],
+                'updated_by': request.user.username
+            })
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(
         detail=True,
