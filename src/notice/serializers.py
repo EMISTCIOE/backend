@@ -78,7 +78,7 @@ class NoticeMediaSerializerForNoticeCreateSerializer(serializers.ModelSerializer
 
     class Meta:
         model = NoticeMedia
-        fields = ["id", "file", "caption", "media_type"]
+        fields = ["file", "caption", "media_type"]
 
     def validate(self, data):
         """Validate media file type."""
@@ -97,7 +97,7 @@ class NoticeCreateSerializer(serializers.ModelSerializer):
     medias = NoticeMediaSerializerForNoticeCreateSerializer(many=True, required=False)
     department = serializers.PrimaryKeyRelatedField(
         queryset=Department.objects.filter(is_active=True),
-        allow_null=True,  
+        allow_null=True,
     )
     category = serializers.PrimaryKeyRelatedField(
         queryset=NoticeCategory.objects.filter(is_active=True),
@@ -159,10 +159,32 @@ class NoticeCreateSerializer(serializers.ModelSerializer):
         return {"message": NOTICE_CREATE_SUCCESS}
 
 
+class NoticeMediaSerializerForNoticePatchSerializer(serializers.ModelSerializer):
+    """Serializer for NoticeMedia model for patch."""
+
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=NoticeMedia.objects.filter(is_active=True)
+    )
+
+    class Meta:
+        model = NoticeMedia
+        fields = ["id", "file", "caption", "media_type"]
+
+    def validate(self, data):
+        """Validate media file type."""
+        file = data.get("file")
+        media_type = data.get("media_type")
+
+        if file and media_type:
+            validate_notice_media_file(file, media_type)
+
+        return data
+
+
 class NoticePatchSerializer(serializers.ModelSerializer):
     medias = NoticeMediaSerializerForNoticeCreateSerializer(many=True, required=False)
     department = serializers.PrimaryKeyRelatedField(
-        queryset=Department.objects.filter(is_active=True),  
+        queryset=Department.objects.filter(is_active=True),
         required=False,
         allow_null=True,
     )
@@ -206,18 +228,34 @@ class NoticePatchSerializer(serializers.ModelSerializer):
             instance.status = NoticeStatus.DRAFT.value
         else:
             instance.status = NoticeStatus.PENDING.value
-        
+
         # Update audit info
         instance.updated_by = user
         instance.save()
 
-        if medias_data:
-            NoticeMedia.objects.filter(notice=instance).delete()
-            media_instances = [
-                NoticeMedia(notice=instance, created_by=user, **media)
-                for media in medias_data
-            ]
-            NoticeMedia.objects.bulk_create(media_instances)
+        if medias_data is not None:
+            existing_medias = instance.medias.filter(is_active=True)
+            incoming_ids = []
+
+            for media_data in medias_data:
+                media_id = media_data.get("id")
+
+                if media_id:
+                    # Update existing media
+                    media_instance = existing_medias.filter(id=media_id.id).first()
+                    if media_instance:
+                        incoming_ids.append(media_instance.id)
+                        for key, value in media_data.items():
+                            setattr(media_instance, key, value)
+                        media_instance.updated_by = user
+                        media_instance.save()
+                else:
+                    # Create new media
+                    NoticeMedia.objects.create(
+                        notice=instance,
+                        created_by=user,
+                        **media_data,
+                    )
 
         return instance
 
