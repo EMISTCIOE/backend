@@ -27,7 +27,7 @@ class FilterForNoticeViewSet(FilterSet):
 
     class Meta:
         model = Notice
-        fields = ["id", "is_active", "department", "category", "is_featured", "date"]
+        fields = ["id", "status", "department", "category", "is_featured", "date"]
 
 
 class NoticeViewSet(ModelViewSet):
