@@ -1,4 +1,4 @@
-from django.urls import include, path
+from django.urls import path
 from rest_framework.routers import DefaultRouter
 
 from .listing_apis.views import (
@@ -15,13 +15,12 @@ router.register("notices", NoticeViewSet, basename="notices")
 
 urlpatterns = [
     path("notices/<int:id>/update-status", NoticeStatusUpdateAPIView.as_view()),
-    path("", include(router.urls)),
 ]
 
-list_apis = [
+list_urls = [
     path("notices/departments", DepartmentForNoticeListAPIView.as_view()),
     path("notices/categories", CategoryForNoticeListAPIView.as_view()),
     path("notices/authors", AuthorForNoticeListAPIView.as_view()),
 ]
 
-urlpatterns += list_apis
+urlpatterns = [*list_urls, *router.urls]
