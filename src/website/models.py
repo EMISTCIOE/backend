@@ -61,7 +61,7 @@ class CampusInfo(AuditInfoModel):
 
     class Meta:
         verbose_name = _("Campus Info")
-        verbose_name_plural = _("Campus Infos")
+        verbose_name_plural = _("Campus Info")
 
     def __str__(self):
         return self.name
@@ -127,7 +127,7 @@ class SocialMediaLink(AuditInfoModel):
         help_text=_("Select the social media platform."),
     )
     url = models.URLField(
-        _("Profile URL"),
+        _("Platform URL"),
         help_text=_("URL to the respective social media profile."),
     )
 

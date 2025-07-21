@@ -1,26 +1,28 @@
 # Rest Framework Imports
+from rest_framework import status
 from rest_framework.generics import RetrieveAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework import status
-
 
 # Project Imports
 from src.website.models import CampusInfo
-from src.website.serializer import PublicCampusInfoSerializer
 from src.website.public.messages import CAMPUS_INFO_NOT_FOUND
+from .serializer import PublicCampusInfoSerializer
 
 
 class PublicCampusInfoRetrieveAPIView(RetrieveAPIView):
+    """Campus Information API"""
+
     permission_classes = [AllowAny]
     serializer_class = PublicCampusInfoSerializer
 
-    def get(self, request, *args, **kwargs):
-        campus = CampusInfo.objects.first()
+    def get(self, request):
+        campus = CampusInfo.objects.filter(is_active=True).first()
         if not campus:
             return Response(
-                {"detail": "Campus info not found"},
+                {"detail": CAMPUS_INFO_NOT_FOUND},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        serializer = self.serializer_class(campus)
+
+        serializer = self.serializer_class(campus, context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)

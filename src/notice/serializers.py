@@ -49,10 +49,10 @@ class NoticeListSerializer(serializers.ModelSerializer):
         ]
 
     def get_department_name(self, obj) -> str:
-        return obj.department.name if obj.department else ''
+        return obj.department.name if obj.department else ""
 
     def get_author_name(self, obj) -> str:
-        return obj.created_by.get_full_name() if obj.created_by else ''
+        return obj.created_by.get_full_name() if obj.created_by else ""
 
 
 class NoticeRetrieveSerializer(AbstractInfoRetrieveSerializer):
