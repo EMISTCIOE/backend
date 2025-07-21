@@ -9,6 +9,7 @@ NOTICE_CREATE_SUCCESS = _("Notice created successfully.")
 NOTICE_UPDATE_SUCCESS = _("Notice updated successfully.")
 NOTICE_DELETED_SUCCESS = _("Notice deleted successfully.")
 MEDIA_DELETED_SUCCESS = _("File deleted successfully.")
+NOTICE_STATUS_UPDATE_SUCCESS = _("Notice status updated successfully.")
 
 TITLE_OR_MEDIA_REQUIRED = _(
     "A notice must have either a title or at least one media file.",

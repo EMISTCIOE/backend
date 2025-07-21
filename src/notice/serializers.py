@@ -12,6 +12,7 @@ from src.notice.listing_apis.serializers import (
 )
 from src.notice.messages import (
     NOTICE_CREATE_SUCCESS,
+    NOTICE_STATUS_UPDATE_SUCCESS,
     NOTICE_UPDATE_SUCCESS,
     TITLE_OR_MEDIA_REQUIRED,
 )
@@ -265,19 +266,18 @@ class NoticePatchSerializer(serializers.ModelSerializer):
 
 class NoticeStatusUpdateSerializer(serializers.ModelSerializer):
     """Serializer for updating notice status only."""
-    
+
     status = serializers.ChoiceField(choices=NoticeStatus.choices())
-    
+
     class Meta:
         model = Notice
-        fields = ["status"]         
-        read_only_fields = []      
+        fields = ["status"]
 
     def update(self, instance, validated_data):
         instance.status = validated_data["status"]
-        instance.updated_by = get_user_by_context(self.context) 
+        instance.updated_by = get_user_by_context(self.context)
         instance.save(update_fields=["status", "updated_by"])
         return instance
 
-    def to_representation(self, instance):
+    def to_representation(self, instance) -> dict[str, str]:
         return {"message": NOTICE_STATUS_UPDATE_SUCCESS}

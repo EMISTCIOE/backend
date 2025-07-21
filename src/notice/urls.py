@@ -6,7 +6,7 @@ from .listing_apis.views import (
     CategoryForNoticeListAPIView,
     DepartmentForNoticeListAPIView,
 )
-from .views import NoticeViewSet
+from .views import NoticeStatusUpdateAPIView, NoticeViewSet
 
 router = DefaultRouter(trailing_slash=False)
 
@@ -14,8 +14,14 @@ router.register("notices", NoticeViewSet, basename="notices")
 
 
 urlpatterns = [
+    path("notices/<int:id>/update-status", NoticeStatusUpdateAPIView.as_view()),
+    path("", include(router.urls)),
+]
+
+list_apis = [
     path("notices/departments", DepartmentForNoticeListAPIView.as_view()),
     path("notices/categories", CategoryForNoticeListAPIView.as_view()),
     path("notices/authors", AuthorForNoticeListAPIView.as_view()),
-    path("", include(router.urls)),
 ]
+
+urlpatterns += list_apis

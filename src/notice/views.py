@@ -1,23 +1,24 @@
 # Django Imports
 import django_filters
-from django.core.files.storage import default_storage
 from django.db import transaction
+from django.core.files.storage import default_storage
 from django_filters.filterset import FilterSet
 from django_filters.rest_framework import DjangoFilterBackend
+from django.shortcuts import get_object_or_404
+
+# Rest Framework Imports
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
-
-# Rest Framework Imports
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.generics import UpdateAPIView
 
 # Project Imports
 from src.libs.utils import set_binary_files_null_if_empty
-
 from .messages import MEDIA_DELETED_SUCCESS, MEDIA_NOT_FOUND, NOTICE_DELETED_SUCCESS
 from .models import Notice, NoticeMedia
-from .permissions import NoticePermission,NoticeStatusUpdatePermission
+from .permissions import NoticePermission, NoticeStatusUpdatePermission
 from .serializers import (
     NoticeCreateSerializer,
     NoticeListSerializer,
@@ -110,28 +111,6 @@ class NoticeViewSet(ModelViewSet):
 
     @action(
         detail=True,
-        methods=['patch','put'],
-        url_path='update-status',
-        permission_classes=[NoticeStatusUpdatePermission],
-        serializer_class=NoticeStatusUpdateSerializer
-    )
-    def update_status(self, request, pk=None):
-        """Update notice status: PENDING ↔ APPROVED/REJECTED."""
-        notice = self.get_object()
-        serializer = self.get_serializer(notice, data=request.data, partial=True)
-        
-        if serializer.is_valid():
-            serializer.save()
-            return Response({
-                'message': 'Status updated successfully',
-                'status': serializer.data['status'],
-                'updated_at': serializer.data['updated_at'],
-                'updated_by': request.user.username
-            })
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    @action(
-        detail=True,
         methods=["delete"],
         url_path="media/(?P<media_id>[^/.]+)",
         name="Delete Notice Media",
@@ -159,3 +138,16 @@ class NoticeViewSet(ModelViewSet):
             {"detail": MEDIA_DELETED_SUCCESS},
             status=status.HTTP_204_NO_CONTENT,
         )
+
+
+class NoticeStatusUpdateAPIView(UpdateAPIView):
+    """Update notice status: PENDING ↔ APPROVED/REJECTED."""
+
+    queryset = Notice.objects.filter(is_archived=False)
+    serializer_class = NoticeStatusUpdateSerializer
+    permission_classes = [NoticeStatusUpdatePermission]
+    lookup_field = "id"
+    http_method_names = ["patch"]
+
+    def get_object(self):
+        return get_object_or_404(Notice, is_archived=False, pk=self.kwargs["id"])
