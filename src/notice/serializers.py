@@ -28,8 +28,8 @@ class NoticeMediaSerializerForNoticeListSerializer(serializers.ModelSerializer):
 
 class NoticeListSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source="category.name")
-    department_name = serializers.CharField(source="department.name")
-    author_name = serializers.CharField(source="created_by.get_full_name")
+    department_name = serializers.SerializerMethodField()
+    author_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Notice
@@ -47,6 +47,12 @@ class NoticeListSerializer(serializers.ModelSerializer):
             "published_at",
             "author_name",
         ]
+
+    def get_department_name(self, obj) -> str:
+        return obj.department.name if obj.department else ''
+
+    def get_author_name(self, obj) -> str:
+        return obj.created_by.get_full_name() if obj.created_by else ''
 
 
 class NoticeRetrieveSerializer(AbstractInfoRetrieveSerializer):
