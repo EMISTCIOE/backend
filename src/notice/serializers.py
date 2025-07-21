@@ -235,21 +235,18 @@ class NoticePatchSerializer(serializers.ModelSerializer):
         instance.save()
 
         if medias_data is not None:
-            existing_medias = instance.medias.filter(is_active=True)
-            incoming_ids = []
-
             for media_data in medias_data:
-                media_id = media_data.get("id")
+                media_id = media_data.get("id", None)
 
                 if media_id:
                     # Update existing media
-                    media_instance = existing_medias.filter(id=media_id.id).first()
-                    if media_instance:
-                        incoming_ids.append(media_instance.id)
-                        for key, value in media_data.items():
-                            setattr(media_instance, key, value)
-                        media_instance.updated_by = user
-                        media_instance.save()
+                    media_instance = NoticeMedia.objects.get(
+                        notice=instance, id=media_id.id
+                    )
+                    for key, value in media_data.items():
+                        setattr(media_instance, key, value)
+                    media_instance.updated_by = user
+                    media_instance.save()
                 else:
                     # Create new media
                     NoticeMedia.objects.create(
