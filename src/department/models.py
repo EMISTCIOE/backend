@@ -1,4 +1,5 @@
 from ckeditor.fields import RichTextField
+
 from django.db import models
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
@@ -194,6 +195,11 @@ class StaffMember(AuditInfoModel):
         blank=True,
         help_text=_("Official designation or position."),
     )
+    display_order = models.PositiveSmallIntegerField(
+        _("Display Order"),
+        default=1,
+        help_text=_("Display Order (ranking) of staffs to display in website."),
+    )
     photo = models.ImageField(
         _("Photo"),
         upload_to=DEPARTMENT_STAFF_PHOTO_PATH,
@@ -247,6 +253,14 @@ class DepartmentDownload(AuditInfoModel):
     such as ID request forms or certificates.
     """
 
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.CASCADE,
+        related_name="downloads",
+        verbose_name=_("Department"),
+        db_index=True,
+        help_text=_("Department the download file is associated with."),
+    )
     title = models.CharField(
         _("Title"),
         max_length=100,
@@ -274,6 +288,14 @@ class DepartmentEvent(AuditInfoModel):
     (e.g. Yathartha, Utsarga, Music Fest).
     """
 
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.CASCADE,
+        related_name="events",
+        verbose_name=_("Department"),
+        db_index=True,
+        help_text=_("Department the event is associated with."),
+    )
     title = models.CharField(
         _("Title"),
         max_length=200,
