@@ -2,7 +2,7 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 # Project Imports
-from src.website.models import CampusInfo, SocialMediaLink
+from src.website.models import CampusInfo, SocialMediaLink, CampusDownload
 
 
 class PublicSocialMediaLinkForCampusInfoSerializer(serializers.ModelSerializer):
@@ -30,3 +30,9 @@ class PublicCampusInfoSerializer(serializers.ModelSerializer):
         return PublicSocialMediaLinkForCampusInfoSerializer(
             SocialMediaLink.objects.filter(is_active=True), many=True
         ).data
+
+
+class PublicCampusDownloadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusDownload
+        fields = ["id", "title", "description", "file", "created_at"]

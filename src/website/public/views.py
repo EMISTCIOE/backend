@@ -1,13 +1,13 @@
 # Rest Framework Imports
 from rest_framework import status
-from rest_framework.generics import RetrieveAPIView
+from rest_framework.generics import RetrieveAPIView, ListAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 # Project Imports
-from src.website.models import CampusInfo
+from src.website.models import CampusInfo, CampusDownload
 from src.website.public.messages import CAMPUS_INFO_NOT_FOUND
-from .serializer import PublicCampusInfoSerializer
+from .serializer import PublicCampusInfoSerializer, PublicCampusDownloadSerializer
 
 
 class PublicCampusInfoRetrieveAPIView(RetrieveAPIView):
@@ -26,3 +26,13 @@ class PublicCampusInfoRetrieveAPIView(RetrieveAPIView):
 
         serializer = self.serializer_class(campus, context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class PublicCampusDownloadListAPIView(ListAPIView):
+    """Campus Download Listing API"""
+
+    serializer_class = PublicCampusDownloadSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        return CampusDownload.objects.filter(is_active=True)
