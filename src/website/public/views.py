@@ -5,13 +5,19 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 # Project Imports
-from src.website.models import CampusInfo, CampusDownload, CampusEvent
+from src.website.models import (
+    CampusInfo,
+    CampusDownload,
+    CampusEvent,
+    CampusKeyOfficial,
+)
 from src.website.public.messages import CAMPUS_INFO_NOT_FOUND
 from .serializer import (
     PublicCampusInfoSerializer,
     PublicCampusDownloadSerializer,
     PublicCampusEventListSerializer,
     PublicCampusEventRetrieveSerializer,
+    PublicCampusKeyOfficialSerializer,
 )
 
 
@@ -58,3 +64,17 @@ class PublicCampusEventRetrieveAPIView(RetrieveAPIView):
     serializer_class = PublicCampusEventRetrieveSerializer
     permission_classes = [AllowAny]
     lookup_field = "uuid"
+
+
+class PublicCampusKeyOfficialListAPIView(ListAPIView):
+    """Campus Key Officials List API"""
+
+    serializer_class = PublicCampusKeyOfficialSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        queryset = CampusKeyOfficial.objects.all()
+        designation = self.request.query_params.get("designation")
+        if designation:
+            queryset = queryset.filter(designation__iexact=designation)
+        return queryset

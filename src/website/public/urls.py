@@ -7,6 +7,7 @@ from src.website.public.views import (
     PublicCampusDownloadListAPIView,
     PublicCampusEventListAPIView,
     PublicCampusEventRetrieveAPIView,
+    PublicCampusKeyOfficialListAPIView,
 )
 
 router = DefaultRouter()
@@ -28,5 +29,6 @@ urlpatterns = [
         PublicCampusEventRetrieveAPIView.as_view(),
         name="public-campus-event-detail",
     ),
+    path("campus-key-officials", PublicCampusKeyOfficialListAPIView.as_view()),
     path("", include(router.urls)),
 ]
