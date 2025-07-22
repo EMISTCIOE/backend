@@ -5,6 +5,8 @@ from rest_framework.routers import DefaultRouter
 from src.website.public.views import (
     PublicCampusInfoRetrieveAPIView,
     PublicCampusDownloadListAPIView,
+    PublicCampusEventListAPIView,
+    PublicCampusEventRetrieveAPIView,
 )
 
 router = DefaultRouter()
@@ -15,6 +17,16 @@ urlpatterns = [
         "campus-downloads",
         PublicCampusDownloadListAPIView.as_view(),
         name="public-campus-downloads",
+    ),
+    path(
+        "campus-events",
+        PublicCampusEventListAPIView.as_view(),
+        name="public-campus-event-list",
+    ),
+    path(
+        "campus-events/<uuid:uuid>",
+        PublicCampusEventRetrieveAPIView.as_view(),
+        name="public-campus-event-detail",
     ),
     path("", include(router.urls)),
 ]
