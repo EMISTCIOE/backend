@@ -47,11 +47,9 @@ class NoticeViewSet(ModelViewSet):
     filterset_class = FilterForNoticeViewSet
     filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
     search_fields = ["title"]
+    queryset = Notice.objects.filter(is_archived=False)
     ordering_fields = ["-created_at", "published_at"]
     http_method_names = ["options", "head", "get", "patch", "delete", "post"]
-
-    def get_queryset(self):
-        return Notice.objects.filter(is_archived=False)
 
     def get_serializer_class(self):
         serializer_class = None
