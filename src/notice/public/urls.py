@@ -3,6 +3,7 @@ from rest_framework import routers
 
 from .views import (
     PublicNoticeCategoryListAPIView,
+    PublicNoticeDepartmentListAPIView,
     PublicNoticeListAPIView,
     PublicNoticeRetrieveAPIView,
     PublicNoticeSetSharedAPIView,
@@ -38,5 +39,10 @@ urlpatterns = [
         "notices/categories",
         PublicNoticeCategoryListAPIView.as_view(),
         name="public_list_notice_categories",
+    ),
+    path(
+        "notices/departments",
+        PublicNoticeDepartmentListAPIView.as_view(),
+        name="public_list_notice_departments",
     ),
 ]

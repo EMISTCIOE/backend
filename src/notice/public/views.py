@@ -11,11 +11,13 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 # Project Imports
+from src.department.models import Department
 from src.notice.constants import NoticeStatus
 from src.notice.models import Notice, NoticeCategory
 from src.notice.public.messages import SUCCESS_MESSAGE
 from src.notice.public.serializers import (
     PublicCategoryForNoticeListSerializer,
+    PublicDepartmentForNoticeListSerializer,
     PublicNoticeListSerializer,
 )
 
@@ -27,7 +29,20 @@ class PublicNoticeCategoryListAPIView(generics.ListAPIView):
     queryset = NoticeCategory.objects.filter(is_active=True)
     serializer_class = PublicCategoryForNoticeListSerializer
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
-    filter_fields = ["id"]
+    filter_fields = ["uuid"]
+    search_fields = ["name"]
+    ordering_fields = ["created_at"]
+    ordering = ["-created_at"]
+
+
+class PublicNoticeDepartmentListAPIView(generics.ListAPIView):
+    """API view to list notices departments."""
+
+    permission_classes = [AllowAny]
+    queryset = Department.objects.filter(is_active=True)
+    serializer_class = PublicDepartmentForNoticeListSerializer
+    filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
+    filter_fields = ["uuid"]
     search_fields = ["name"]
     ordering_fields = ["created_at"]
     ordering = ["-created_at"]
@@ -35,7 +50,7 @@ class PublicNoticeCategoryListAPIView(generics.ListAPIView):
 
 class FilterForPublicNoticeListAPIView(FilterSet):
     department = django_filters.UUIDFilter(
-        field_name="department__id",
+        field_name="department__uuid",
         label="Department",
     )
     category = django_filters.UUIDFilter(field_name="category__uuid", label="Category")
