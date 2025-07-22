@@ -1,11 +1,12 @@
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 
-from .models import CampusInfo
+from .models import CampusInfo,CampusKeyOfficial
 from .serializers import (
     CampusInfoCreateSerializer,
     CampusInfoListSerializer,
     CampusInfoRetrieveSerializer,
+    CampusKeyOfficialSerializer,
 )
 from .permissions import CampusInfoPermission
 
@@ -31,3 +32,10 @@ class CampusInfoViewSet(viewsets.ModelViewSet):
             )
         return super().create(request, *args, **kwargs)
 
+
+class CampusKeyOfficialViewSet(viewsets.ModelViewSet):
+    queryset = CampusKeyOfficial.objects.all()
+    serializer_class = CampusKeyOfficialSerializer
+    permission_classes = [CampusInfoPermission]
+    http_method_names = ["get", "post", "put", "patch", "delete", "head", "options"]
+   
