@@ -548,23 +548,3 @@ class CampusFeedback(AuditInfoModel):
 
     def __str__(self):
         return f"{self.full_name} - Feedback"
-
-
-@receiver(pre_delete, sender=CampusKeyOfficial)
-def delete_photo_file_on_delete(sender, instance, **kwargs):
-    if instance.photo and instance.photo.name:
-        instance.photo.delete(save=False)
-
-
-@receiver(pre_save, sender=CampusKeyOfficial)
-def delete_old_photo_on_change(sender, instance, **kwargs):
-    if not instance.pk:
-        return
-    try:
-        old_instance = CampusKeyOfficial.objects.get(pk=instance.pk)
-    except CampusKeyOfficial.DoesNotExist:
-        return
-    old_file = old_instance.photo
-    new_file = instance.photo
-    if old_file and old_file != new_file:
-        old_file.delete(save=False)
