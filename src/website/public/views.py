@@ -65,9 +65,9 @@ class PublicCampusEventListAPIView(ListAPIView):
 class PublicCampusEventRetrieveAPIView(RetrieveAPIView):
     """Specific Campus Event API"""
 
+    permission_classes = [AllowAny]
     queryset = CampusEvent.objects.filter(is_active=True)
     serializer_class = PublicCampusEventRetrieveSerializer
-    permission_classes = [AllowAny]
     lookup_field = "uuid"
 
 
