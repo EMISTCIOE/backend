@@ -108,12 +108,12 @@ class PublicCampusFeedbackSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CampusFeedback
-        fields = (
+        fields = [
             "full_name",
             "roll_number",
             "email",
             "message",
-        )
+        ]
 
     def validate_full_name(self, value):
         cleaned_value = value.strip()
