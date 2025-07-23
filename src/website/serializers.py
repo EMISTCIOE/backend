@@ -55,6 +55,29 @@ class SocialMediaLinkPatchSerializer(serializers.ModelSerializer):
         model = SocialMediaLink
         fields = ["id", "platform", "url", "is_active"]
 
+        extra_kwargs = {"platform": {"validators": []}}
+
+    def validate(self, attrs):
+        """Custom validation jasle uniqueness manyally handle garcha"""
+        platform = attrs.get("platform")
+        link_id = attrs.get("id", None)
+        campus_info = self.context.get("campus_info")
+
+        if platform and campus_info:
+            social_media_query_set = SocialMediaLink.objects.filter(
+                platform=platform,
+                campus_info=campus_info,
+                is_archived=False,
+            )
+            if link_id:
+                social_media_query_set = social_media_query_set.exclude(pk=link_id)
+            if social_media_query_set.exists():
+                raise serializers.ValidationError(
+                    {"platform": "Social Media Link with this Platform already exists."}
+                )
+
+        return attrs
+
 
 class CampusInfoPatchSerializer(serializers.ModelSerializer):
     social_links = SocialMediaLinkPatchSerializer(many=True)
