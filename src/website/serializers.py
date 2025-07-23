@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CampusInfo, SocialMediaLink, CampusKeyOfficial
+from .models import CampusInfo, SocialMediaLink, CampusKeyOfficial, CampusDownload
 from src.libs.get_context import get_user_by_context
 
 class SocialMediaLinkSerializer(serializers.ModelSerializer):
@@ -52,6 +52,19 @@ class CampusKeyOfficialSerializer(serializers.ModelSerializer):
         validated_data['created_by'] = get_user_by_context(self.context)
         return super().create(validated_data)
     
+    def update(self, instance, validated_data):
+        validated_data['updated_by'] = get_user_by_context(self.context)
+        return super().update(instance, validated_data)
+
+class CampusDownloadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusDownload
+        fields = "__all__"
+
+    def create(self, validated_data):
+        validated_data['created_by'] = get_user_by_context(self.context)
+        return super().create(validated_data)
+
     def update(self, instance, validated_data):
         validated_data['updated_by'] = get_user_by_context(self.context)
         return super().update(instance, validated_data)

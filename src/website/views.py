@@ -1,12 +1,13 @@
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 
-from .models import CampusInfo,CampusKeyOfficial
+from .models import CampusInfo,CampusKeyOfficial,CampusDownload
 from .serializers import (
     CampusInfoCreateSerializer,
     CampusInfoListSerializer,
     CampusInfoRetrieveSerializer,
     CampusKeyOfficialSerializer,
+    CampusDownloadSerializer,
 )
 from .permissions import CampusInfoPermission
 
@@ -39,3 +40,8 @@ class CampusKeyOfficialViewSet(viewsets.ModelViewSet):
     permission_classes = [CampusInfoPermission]
     http_method_names = ["get", "post", "put", "patch", "delete", "head", "options"]
    
+class CampusDownloadViewSet(viewsets.ModelViewSet):
+    queryset = CampusDownload.objects.all()
+    serializer_class = CampusDownloadSerializer
+    permission_classes = [CampusInfoPermission]
+    http_method_names = ["get", "post", "put", "patch", "delete", "head", "options"]
