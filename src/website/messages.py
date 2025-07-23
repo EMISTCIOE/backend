@@ -1,6 +1,5 @@
 from django.utils.translation import gettext_lazy as _
 
-
 ONLY_ONE_CAMPUS_INFO_ALLOWED = _("Only one active CampusInfo instance is allowed.")
 CAMPUS_INFO_NOT_FOUND = _("CampusInfo not found.")
 
@@ -10,3 +9,5 @@ SOCIAL_MEDIA_DELETED_SUCCESS = _("Social media link deleted successfully.")
 
 CAMPUS_KEY_OFFICIAL_CREATE_SUCCESS = _("Key official created successfully")
 CAMPUS_KEY_OFFICIAL_UPDATE_SUCCESS = _("Key official updated successfully")
+
+SOCIAL_MEDIA_ALREADY_EXISTS = _("This social media already exists for the campus.")

@@ -1,18 +1,21 @@
-from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_field
+from rest_framework import serializers
+
+from src.base.serializers import AbstractInfoRetrieveSerializer
 
 # Project Imports
 from src.libs.get_context import get_user_by_context
-from src.base.serializers import AbstractInfoRetrieveSerializer
+from src.libs.validators import validate_unique_fields
 from src.user.validators import validate_user_image
+
 from .constants import CAMPUS_KEY_OFFICIAL_FILE_PATH
 from .messages import (
     CAMPUS_INFO_UPDATED_SUCCESS,
     CAMPUS_KEY_OFFICIAL_CREATE_SUCCESS,
     CAMPUS_KEY_OFFICIAL_UPDATE_SUCCESS,
+    SOCIAL_MEDIA_ALREADY_EXISTS,
 )
 from .models import CampusInfo, CampusKeyOfficial, SocialMediaLink
-
 
 # Campus Info Serializers
 # ---------------------------------------------------------------------------------------------------
@@ -48,35 +51,22 @@ class CampusInfoRetrieveSerializer(serializers.ModelSerializer):
 
 class SocialMediaLinkPatchSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(
-        queryset=SocialMediaLink.objects.filter(is_archived=False), required=False
+        queryset=SocialMediaLink.objects.filter(is_archived=False),
+        required=False,
     )
 
     class Meta:
         model = SocialMediaLink
         fields = ["id", "platform", "url", "is_active"]
 
-        extra_kwargs = {"platform": {"validators": []}}
-
     def validate(self, attrs):
-        """Custom validation jasle uniqueness manyally handle garcha"""
-        platform = attrs.get("platform")
-        link_id = attrs.get("id", None)
-        campus_info = self.context.get("campus_info")
-
-        if platform and campus_info:
-            social_media_query_set = SocialMediaLink.objects.filter(
-                platform=platform,
-                campus_info=campus_info,
-                is_archived=False,
-            )
-            if link_id:
-                social_media_query_set = social_media_query_set.exclude(pk=link_id)
-            if social_media_query_set.exists():
-                raise serializers.ValidationError(
-                    {"platform": "Social Media Link with this Platform already exists."}
-                )
-
-        return attrs
+        return validate_unique_fields(
+            model=SocialMediaLink,
+            attrs=attrs,
+            fields=["platform"],
+            instance=self.instance or attrs.get("id"),
+            error_messages={"platform": SOCIAL_MEDIA_ALREADY_EXISTS},
+        )
 
 
 class CampusInfoPatchSerializer(serializers.ModelSerializer):

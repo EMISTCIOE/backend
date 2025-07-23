@@ -23,4 +23,4 @@ list_urls = [
     path("notices/authors", AuthorForNoticeListAPIView.as_view()),
 ]
 
-urlpatterns = [*list_urls, *router.urls]
+urlpatterns += [*list_urls, *router.urls]

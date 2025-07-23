@@ -17,12 +17,6 @@ from src.website.public.messages import (
 )
 
 
-class PublicEventGallerySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CampusEventGallery
-        fields = ["id", "image", "caption"]
-
-
 class PublicSocialMediaLinkForCampusInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = SocialMediaLink
@@ -71,8 +65,14 @@ class PublicCampusEventListSerializer(serializers.ModelSerializer):
         ]
 
 
+class PublicEventGalleryListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusEventGallery
+        fields = ["uuid", "image", "caption"]
+
+
 class PublicCampusEventRetrieveSerializer(serializers.ModelSerializer):
-    gallery = PublicEventGallerySerializer(many=True, read_only=True)
+    gallery = PublicEventGalleryListSerializer(many=True)
 
     class Meta:
         model = CampusEvent
