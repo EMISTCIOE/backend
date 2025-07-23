@@ -20,13 +20,12 @@ class SocialMediaLinkListSerializer(serializers.ModelSerializer):
         fields = ["id", "platform", "url", "is_active"]
 
 
-class CampusInfoRetrieveSerializer(AbstractInfoRetrieveSerializer):
+class CampusInfoRetrieveSerializer(serializers.ModelSerializer):
     social_links = serializers.SerializerMethodField()
 
-    class Meta(AbstractInfoRetrieveSerializer.Meta):
+    class Meta:
         model = CampusInfo
         fields = [
-            "id",
             "name",
             "phone_number",
             "email",
@@ -34,8 +33,6 @@ class CampusInfoRetrieveSerializer(AbstractInfoRetrieveSerializer):
             "organization_chart",
             "social_links",
         ]
-
-        fields += AbstractInfoRetrieveSerializer.Meta.fields
 
     @extend_schema_field(SocialMediaLinkListSerializer(many=True))
     def get_social_links(self, obj):
@@ -46,13 +43,17 @@ class CampusInfoRetrieveSerializer(AbstractInfoRetrieveSerializer):
 
 
 class SocialMediaLinkPatchSerializer(serializers.ModelSerializer):
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=SocialMediaLink.objects.filter(is_archived=False), required=False
+    )
+
     class Meta:
         model = SocialMediaLink
         fields = ["id", "platform", "url", "is_active"]
 
 
 class CampusInfoPatchSerializer(serializers.ModelSerializer):
-    social_links = SocialMediaLinkPatchSerializer(many=True, allow_null=True)
+    social_links = SocialMediaLinkPatchSerializer(many=True)
 
     class Meta:
         model = CampusInfo
@@ -74,8 +75,18 @@ class CampusInfoPatchSerializer(serializers.ModelSerializer):
             setattr(instance, key, val)
 
         for social_link in social_links:
-            SocialMediaLink.objects.create(**social_link, created_by=user)
-            
+            if "id" in social_link:
+                sl = social_link.pop("id")
+                # Update the social media link instance
+                for key, val in social_link.items():
+                    setattr(sl, key, val)
+                sl.updated_by = user
+                sl.save()
+            else:
+                # Create new social media link
+                SocialMediaLink.objects.create(**social_link, created_by=user)
+
+        instance.updated_by = user
         instance.save()
         return instance
 

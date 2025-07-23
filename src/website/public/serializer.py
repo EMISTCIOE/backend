@@ -14,7 +14,7 @@ from src.website.models import (
 class PublicSocialMediaLinkForCampusInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = SocialMediaLink
-        fields = ["platform", "url"]
+        fields = ["uuid", "platform", "url"]
 
 
 class PublicCampusInfoSerializer(serializers.ModelSerializer):

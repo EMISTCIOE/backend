@@ -1,12 +1,18 @@
+from django.db import transaction
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status, viewsets
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
-
+from rest_framework.views import APIView
 
 # Project Imports
-from src.website.messages import CAMPUS_INFO_NOT_FOUND, ONLY_ONE_CAMPUS_INFO_ALLOWED
-from .models import CampusInfo, CampusKeyOfficial
-from .permissions import CampusInfoPermission
+from src.website.messages import (
+    CAMPUS_INFO_NOT_FOUND,
+    SOCIAL_MEDIA_DELETED_SUCCESS,
+    SOCIAL_MEDIA_NOT_FOUND,
+)
+from .models import CampusInfo, CampusKeyOfficial, SocialMediaLink
+from .permissions import CampusInfoPermission, CampusKeyOfficialPermission
 from .serializers import (
     CampusInfoPatchSerializer,
     CampusInfoRetrieveSerializer,
@@ -18,6 +24,8 @@ from .serializers import (
 
 
 class CampusInfoAPIView(generics.GenericAPIView):
+    """Campus Info Retrive and Update APIs"""
+
     permission_classes = [CampusInfoPermission]
     serializer_class = CampusInfoRetrieveSerializer
 
@@ -34,6 +42,7 @@ class CampusInfoAPIView(generics.GenericAPIView):
         serializer = self.get_serializer(instance, context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @transaction.atomic
     def patch(self, request, *args, **kwargs):
         instance = self.get_object()
         if not instance:
@@ -51,14 +60,36 @@ class CampusInfoAPIView(generics.GenericAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class CampusKeyOfficialViewSet(viewsets.ModelViewSet):
-    queryset = CampusKeyOfficial.objects.filter(is_archived=False)
+class SocialMediaLinkDeleteAPIView(APIView):
     permission_classes = [CampusInfoPermission]
+
+    def delete(self, request, pk):
+        try:
+            link = SocialMediaLink.objects.get(pk=pk)
+        except SocialMediaLink.DoesNotExist:
+            return Response(
+                {"detail": SOCIAL_MEDIA_NOT_FOUND},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        link.delete()
+        return Response(
+            {"message": SOCIAL_MEDIA_DELETED_SUCCESS},
+            status=status.HTTP_204_NO_CONTENT,
+        )
+
+
+class CampusKeyOfficialViewSet(viewsets.ModelViewSet):
+    """Campus Key Officials CRUD APIs"""
+
+    permission_classes = [CampusKeyOfficialPermission]
+    queryset = CampusKeyOfficial.objects.filter(is_archived=False)
+    filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
+    search_fields = ["full_name", "designation", "email"]
+    ordering_fields = ["full_name", "created_at", "display_order"]
+    ordering = ["display_order", "-created_at"]
+    filterset_fields = ["designation", "is_active"]
     http_method_names = ["get", "post", "patch", "delete", "head", "options"]
-    filter_backends = [SearchFilter, OrderingFilter]
-    search_fields = ["full_name"]
-    ordering_fields = ["full_name", "created_at"]
-    ordering = ["-created_at"]
 
     def get_serializer_class(self):
         if self.request.method == "GET":
@@ -72,3 +103,12 @@ class CampusKeyOfficialViewSet(viewsets.ModelViewSet):
             return CampusKeyOfficialPatchSerializer
 
         return CampusKeyOfficialListSerializer
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+
+        # Delete associated file if exists
+        if instance.photo:
+            instance.photo.delete(save=False)
+
+        return super().destroy(request, *args, **kwargs)
