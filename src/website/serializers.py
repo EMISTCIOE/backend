@@ -6,7 +6,11 @@ from src.libs.get_context import get_user_by_context
 from src.base.serializers import AbstractInfoRetrieveSerializer
 from src.user.validators import validate_user_image
 from .constants import CAMPUS_KEY_OFFICIAL_FILE_PATH
-from .messages import CAMPUS_INFO_UPDATED_SUCCESS
+from .messages import (
+    CAMPUS_INFO_UPDATED_SUCCESS,
+    CAMPUS_KEY_OFFICIAL_CREATE_SUCCESS,
+    CAMPUS_KEY_OFFICIAL_UPDATE_SUCCESS,
+)
 from .models import CampusInfo, CampusKeyOfficial, SocialMediaLink
 
 
@@ -124,7 +128,6 @@ class CampusKeyOfficialRetrieveSerializer(AbstractInfoRetrieveSerializer):
             "photo",
             "email",
             "phone_number",
-            "is_active",
         ]
 
         fields += AbstractInfoRetrieveSerializer.Meta.fields
@@ -152,6 +155,9 @@ class CampusKeyOfficialCreateSerializer(serializers.ModelSerializer):
 
         return CampusKeyOfficial.objects.create(**validated_data)
 
+    def to_representation(self, instance):
+        return {"message": CAMPUS_KEY_OFFICIAL_CREATE_SUCCESS}
+
 
 class CampusKeyOfficialPatchSerializer(serializers.ModelSerializer):
     class Meta:
@@ -166,7 +172,7 @@ class CampusKeyOfficialPatchSerializer(serializers.ModelSerializer):
             "is_active",
         ]
 
-    def update(self, instance, validated_data):
+    def update(self, instance: CampusKeyOfficial, validated_data):
         updated_by = get_user_by_context(self.context)
         validated_data["full_name"] = validated_data.pop("full_name").title()
         photo = validated_data.pop("photo", None)
@@ -190,3 +196,6 @@ class CampusKeyOfficialPatchSerializer(serializers.ModelSerializer):
         instance.updated_by = updated_by
         instance.save()
         return instance
+
+    def to_representation(self, instance):
+        return {"message": CAMPUS_KEY_OFFICIAL_UPDATE_SUCCESS}
