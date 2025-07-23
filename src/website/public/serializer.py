@@ -14,7 +14,7 @@ from src.website.models import (
 class PublicSocialMediaLinkForCampusInfoSerializer(serializers.ModelSerializer):
     class Meta:
         model = SocialMediaLink
-        fields = ["platform", "url"]
+        fields = ["uuid", "platform", "url"]
 
 
 class PublicCampusInfoSerializer(serializers.ModelSerializer):
@@ -34,7 +34,8 @@ class PublicCampusInfoSerializer(serializers.ModelSerializer):
     @extend_schema_field(PublicSocialMediaLinkForCampusInfoSerializer(many=True))
     def get_social_links(self, obj):
         return PublicSocialMediaLinkForCampusInfoSerializer(
-            SocialMediaLink.objects.filter(is_active=True), many=True
+            SocialMediaLink.objects.filter(is_active=True),
+            many=True,
         ).data
 
 
@@ -47,16 +48,41 @@ class PublicCampusDownloadSerializer(serializers.ModelSerializer):
 class PublicCampusEventListSerializer(serializers.ModelSerializer):
     class Meta:
         model = CampusEvent
-        exclude = ["description_detailed"]
+        fields = [
+            "uuid",
+            "title",
+            "description_short",
+            "event_type",
+            "event_start_date",
+            "event_end_date",
+            "thumbnail",
+        ]
 
 
 class PublicCampusEventRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = CampusEvent
-        fields = "__all__"
+        fields = [
+            "uuid",
+            "title",
+            "description_short",
+            "description_detailed",
+            "event_type",
+            "event_start_date",
+            "event_end_date",
+            "thumbnail",
+        ]
 
 
 class PublicCampusKeyOfficialSerializer(serializers.ModelSerializer):
     class Meta:
         model = CampusKeyOfficial
-        fields = "__all__"
+        fields = [
+            "uuid",
+            "title_prefix",
+            "full_name",
+            "designation",
+            "photo",
+            "email",
+            "phone_number",
+        ]

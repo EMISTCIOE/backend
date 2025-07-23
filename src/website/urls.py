@@ -1,11 +1,25 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from .views import CampusInfoViewSet,CampusKeyOfficialViewSet, CampusDownloadViewSet
+
+from .views import (
+    CampusInfoAPIView,
+    CampusKeyOfficialViewSet,
+    SocialMediaLinkDeleteAPIView,
+)
 
 router = DefaultRouter()
-router.register("campus-info", CampusInfoViewSet, basename="campus-info")
-router.register("campus-key-officials", CampusKeyOfficialViewSet, basename="campus-key-official")
-router.register("campus-downloads", CampusDownloadViewSet, basename="campus-download")
+
+router.register(
+    "campus-key-officials",
+    CampusKeyOfficialViewSet,
+    basename="campus-key-official",
+)
+
 urlpatterns = [
+    path("campus-info", CampusInfoAPIView.as_view(), name="campus-info"),
+    path(
+        "campus-info/social-media-links/<int:pk>/delete",
+        SocialMediaLinkDeleteAPIView.as_view(),
+    ),
     path("", include(router.urls)),
 ]

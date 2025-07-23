@@ -22,5 +22,5 @@ class NoticeStatusUpdatePermission(BasePermission):
         user_permissions_dict = {
             "PATCH": "edit_notice_status",
         }
-        
+
         return validate_permissions(request, user_permissions_dict)

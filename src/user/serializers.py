@@ -119,15 +119,15 @@ class RolePatchSerializer(serializers.ModelSerializer):
 
     def update(self, instance: Role, validated_data):
         current_user = get_user_by_context(self.context)
-        name = validated_data.get("name", instance.name)
+        name = validated_data.get("name")
         # Get the permissions
-        permissions = validated_data.get("permissions", [])
+        permissions = validated_data.get("permissions")
 
         validated_data["codename"] = generate_role_codename(name)
 
-        instance.name = validated_data.get("name", instance.name).title()
-        instance.codename = validated_data.get("codename", instance.codename)
-        instance.is_active = validated_data.get("is_active", instance.is_active)
+        instance.name = validated_data.get("name").title()
+        instance.codename = validated_data.get("codename")
+        instance.is_active = validated_data.get("is_active")
         instance.updated_by = current_user
         instance.permissions.set(permissions)
         instance.save()
@@ -246,9 +246,9 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         email = validated_data["email"]
-        photo = validated_data.get("photo", None)
+        photo = validated_data.get("photo")
 
-        username = validated_data.get("username", "")
+        username = validated_data.get("username")
         roles = validated_data.pop("roles", [])
 
         if not username:
@@ -329,16 +329,13 @@ class UserPatchSerializer(serializers.ModelSerializer):
 
     def update(self, instance: User, validated_data):
         current_user = get_user_by_context(self.context)
-        photo = validated_data.get("photo", None)
+        photo = validated_data.get("photo")
 
-        instance.first_name = validated_data.get(
-            "first_name",
-            instance.first_name,
-        ).title()
-        instance.last_name = validated_data.get("last_name", instance.last_name).title()
-        instance.is_active = validated_data.get("is_active", instance.is_active)
+        instance.first_name = validated_data.get("first_name").title()
+        instance.last_name = validated_data.get("last_name").title()
+        instance.is_active = validated_data.get("is_active")
 
-        instance.phone_no = validated_data.get("phone_no", instance.phone_no)
+        instance.phone_no = validated_data.get("phone_no")
         instance.updated_by = current_user
 
         if "photo" in validated_data:
@@ -356,7 +353,7 @@ class UserPatchSerializer(serializers.ModelSerializer):
 
         if "roles" in validated_data:
             system_roles = list(instance.roles.filter(is_system_managed=True))
-            roles = validated_data.get("roles", [])
+            roles = validated_data.get("roles")
             instance.roles.set(roles)
             instance.roles.add(*system_roles)
 

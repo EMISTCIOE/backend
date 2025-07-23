@@ -128,8 +128,8 @@ class NoticeCreateSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         """Ensure notice has either a title or at least one media."""
 
-        title = attrs.get("title", "").strip()
-        medias = attrs.get("medias", [])
+        title = attrs.get("title").strip()
+        medias = attrs.get("medias")
 
         if not title and not medias:
             raise serializers.ValidationError({"title": TITLE_OR_MEDIA_REQUIRED})
@@ -141,8 +141,8 @@ class NoticeCreateSerializer(serializers.ModelSerializer):
         medias_data = validated_data.pop("medias", [])
 
         notice = Notice.objects.create(
-            title=validated_data.get("title", "").strip(),
-            description=validated_data.get("description", "").strip(),
+            title=validated_data.get("title").strip(),
+            description=validated_data.get("description").strip(),
             department=validated_data["department"],
             is_featured=validated_data["is_featured"],
             category=validated_data["category"],
@@ -217,8 +217,8 @@ class NoticePatchSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         """Ensure notice has either a title or at least one media."""
-        title = attrs.get("title", "").strip()
-        medias = attrs.get("medias", [])
+        title = attrs.get("title").strip()
+        medias = attrs.get("medias")
 
         if not title and not medias:
             raise serializers.ValidationError({"title": TITLE_OR_MEDIA_REQUIRED})
@@ -232,7 +232,7 @@ class NoticePatchSerializer(serializers.ModelSerializer):
         for attr, value in validated_data.items():
             setattr(instance, attr, value.strip() if isinstance(value, str) else value)
 
-        if validated_data.get("is_draft", False):
+        if validated_data.get("is_draft"):
             instance.status = NoticeStatus.DRAFT.value
         else:
             instance.status = NoticeStatus.PENDING.value
