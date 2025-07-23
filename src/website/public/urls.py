@@ -3,10 +3,10 @@ from rest_framework.routers import DefaultRouter
 
 # Project Imports
 from src.website.public.views import (
-    PublicCampusInfoRetrieveAPIView,
     PublicCampusDownloadListAPIView,
     PublicCampusEventListAPIView,
     PublicCampusEventRetrieveAPIView,
+    PublicCampusInfoRetrieveAPIView,
     PublicCampusKeyOfficialListAPIView,
 )
 

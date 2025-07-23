@@ -2,11 +2,11 @@
 from django.contrib import admin
 
 from .models import (
+    CampusEvent,
+    CampusEventGallery,
     CampusInfo,
     CampusKeyOfficial,
     SocialMediaLink,
-    CampusEvent,
-    CampusEventGallery,
 )
 
 admin.site.register(CampusEvent)

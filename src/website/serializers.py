@@ -1,11 +1,13 @@
-from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_field
+from rest_framework import serializers
+
+from src.base.serializers import AbstractInfoRetrieveSerializer
 
 # Project Imports
 from src.libs.get_context import get_user_by_context
-from src.base.serializers import AbstractInfoRetrieveSerializer
 from src.libs.validators import validate_unique_fields
 from src.user.validators import validate_user_image
+
 from .constants import CAMPUS_KEY_OFFICIAL_FILE_PATH
 from .messages import (
     CAMPUS_INFO_UPDATED_SUCCESS,
@@ -14,7 +16,6 @@ from .messages import (
     SOCIAL_MEDIA_ALREADY_EXISTS,
 )
 from .models import CampusInfo, CampusKeyOfficial, SocialMediaLink
-
 
 # Campus Info Serializers
 # ---------------------------------------------------------------------------------------------------
@@ -50,7 +51,8 @@ class CampusInfoRetrieveSerializer(serializers.ModelSerializer):
 
 class SocialMediaLinkPatchSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(
-        queryset=SocialMediaLink.objects.filter(is_archived=False), required=False
+        queryset=SocialMediaLink.objects.filter(is_archived=False),
+        required=False,
     )
 
     class Meta:

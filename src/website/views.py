@@ -11,6 +11,7 @@ from src.website.messages import (
     SOCIAL_MEDIA_DELETED_SUCCESS,
     SOCIAL_MEDIA_NOT_FOUND,
 )
+
 from .models import CampusInfo, CampusKeyOfficial, SocialMediaLink
 from .permissions import CampusInfoPermission, CampusKeyOfficialPermission
 from .serializers import (
@@ -51,7 +52,8 @@ class CampusInfoAPIView(generics.GenericAPIView):
         instance = self.get_object()
         if not instance:
             return Response(
-                {"detail": CAMPUS_INFO_NOT_FOUND}, status=status.HTTP_404_NOT_FOUND
+                {"detail": CAMPUS_INFO_NOT_FOUND},
+                status=status.HTTP_404_NOT_FOUND,
             )
         serializer = CampusInfoPatchSerializer(
             instance,

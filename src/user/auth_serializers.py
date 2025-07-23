@@ -412,7 +412,7 @@ class UserResetPasswordSerializer(serializers.Serializer):
     def create(self, validated_data):
         new_password = validated_data["new_password"]
         forget_password_request: UserForgetPasswordRequest = validated_data.get(
-            "forget_password_request"
+            "forget_password_request",
         )
 
         user: User = validated_data["user"]

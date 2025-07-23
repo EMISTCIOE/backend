@@ -3,12 +3,12 @@ from rest_framework import serializers
 
 # Project Imports
 from src.website.models import (
-    CampusInfo,
-    SocialMediaLink,
     CampusDownload,
     CampusEvent,
-    CampusKeyOfficial,
     CampusEventGallery,
+    CampusInfo,
+    CampusKeyOfficial,
+    SocialMediaLink,
 )
 
 
