@@ -3,12 +3,17 @@ from rest_framework import serializers
 
 # Project Imports
 from src.website.models import (
-    CampusInfo,
-    SocialMediaLink,
     CampusDownload,
     CampusEvent,
-    CampusKeyOfficial,
     CampusEventGallery,
+    CampusFeedback,
+    CampusInfo,
+    CampusKeyOfficial,
+    SocialMediaLink,
+)
+from src.website.public.messages import (
+    FEEDBACK_FULL_NAME_REQUIRED,
+    FEEDBACK_MESSAGE_TOO_SHORT,
 )
 
 
@@ -96,3 +101,34 @@ class PublicCampusKeyOfficialSerializer(serializers.ModelSerializer):
             "email",
             "phone_number",
         ]
+
+
+class PublicCampusFeedbackSerializer(serializers.ModelSerializer):
+    MIN_MESSAGE_LENGTH = 10
+
+    class Meta:
+        model = CampusFeedback
+        fields = (
+            "full_name",
+            "roll_number",
+            "email",
+            "message",
+        )
+
+    def validate_full_name(self, value):
+        cleaned_value = value.strip()
+        if not cleaned_value:
+            raise serializers.ValidationError(FEEDBACK_FULL_NAME_REQUIRED)
+        return cleaned_value
+
+    def validate_message(self, value):
+        cleaned_value = value.strip()
+        if len(cleaned_value) < self.MIN_MESSAGE_LENGTH:
+            raise serializers.ValidationError(
+                FEEDBACK_MESSAGE_TOO_SHORT.format(min_length=self.MIN_MESSAGE_LENGTH),
+            )
+        return cleaned_value
+
+    def create(self, validated_data):
+        validated_data["is_resolved"] = False
+        return super().create(validated_data)

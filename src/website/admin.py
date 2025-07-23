@@ -2,11 +2,12 @@
 from django.contrib import admin
 
 from .models import (
+    CampusEvent,
+    CampusEventGallery,
+    CampusFeedback,
     CampusInfo,
     CampusKeyOfficial,
     SocialMediaLink,
-    CampusEvent,
-    CampusEventGallery,
 )
 
 admin.site.register(CampusEvent)
@@ -35,3 +36,6 @@ class CampusKeyOfficialAdmin(admin.ModelAdmin):
     )
     search_fields = ("full_name", "designation", "email")
     list_filter = ("designation", "is_active")
+
+
+admin.site.register(CampusFeedback)

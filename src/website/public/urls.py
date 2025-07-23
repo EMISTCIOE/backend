@@ -3,10 +3,11 @@ from rest_framework.routers import DefaultRouter
 
 # Project Imports
 from src.website.public.views import (
-    PublicCampusInfoRetrieveAPIView,
     PublicCampusDownloadListAPIView,
     PublicCampusEventListAPIView,
     PublicCampusEventRetrieveAPIView,
+    PublicCampusFeedbackCreateAPIView,
+    PublicCampusInfoRetrieveAPIView,
     PublicCampusKeyOfficialListAPIView,
 )
 
@@ -30,5 +31,10 @@ urlpatterns = [
         name="public-campus-event-detail",
     ),
     path("campus-key-officials", PublicCampusKeyOfficialListAPIView.as_view()),
+    path(
+        "submit-feedback",
+        PublicCampusFeedbackCreateAPIView.as_view(),
+        name="submit-feedback",
+    ),
     path("", include(router.urls)),
 ]
