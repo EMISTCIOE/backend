@@ -1,7 +1,18 @@
 #!/usr/bin/env python
 from django.contrib import admin
 
-from .models import CampusInfo, SocialMediaLink
+from .models import CampusInfo, SocialMediaLink, CampusKeyOfficial
 
-admin.site.register(CampusInfo)
-admin.site.register(SocialMediaLink)
+@admin.register(CampusInfo)
+class CampusInfoAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(SocialMediaLink)
+class SocialMediaLinkAdmin(admin.ModelAdmin):
+    list_display = ["platform", "url", "is_active"]
+
+@admin.register(CampusKeyOfficial)
+class CampusKeyOfficialAdmin(admin.ModelAdmin):
+    list_display = ("title_prefix", "full_name", "designation", "email", "phone_number", "is_active")
+    search_fields = ("full_name", "designation", "email")
+    list_filter = ("designation", "is_active")
