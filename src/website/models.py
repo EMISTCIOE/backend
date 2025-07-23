@@ -100,6 +100,11 @@ class CampusKeyOfficial(AuditInfoModel):
         max_length=100,
         help_text=_("Role or position, e.g., Campus Chief."),
     )
+    display_order = models.PositiveSmallIntegerField(
+        _("Display Order"),
+        default=1,
+        help_text=_("Display Order (ranking) of staffs to display in website."),
+    )
     photo = models.ImageField(
         _("Photo"),
         upload_to=CAMPUS_KEY_OFFICIAL_FILE_PATH,

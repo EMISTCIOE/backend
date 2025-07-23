@@ -2,13 +2,13 @@ from rest_framework import generics, status, viewsets
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
 
-from src.website.messages import CAMPUS_INFO_NOT_FOUND, ONLY_ONE_CAMPUS_INFO_ALLOWED
 
 # Project Imports
+from src.website.messages import CAMPUS_INFO_NOT_FOUND, ONLY_ONE_CAMPUS_INFO_ALLOWED
 from .models import CampusInfo, CampusKeyOfficial
 from .permissions import CampusInfoPermission
 from .serializers import (
-    CampusInfoCreateSerializer,
+    CampusInfoPatchSerializer,
     CampusInfoRetrieveSerializer,
     CampusKeyOfficialCreateSerializer,
     CampusKeyOfficialListSerializer,
@@ -34,28 +34,13 @@ class CampusInfoAPIView(generics.GenericAPIView):
         serializer = self.get_serializer(instance, context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    def post(self, request, *args, **kwargs):
-        if CampusInfo.objects.filter(is_active=True, is_archived=False).exists():
-            return Response(
-                {"detail": ONLY_ONE_CAMPUS_INFO_ALLOWED},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        serializer = CampusInfoCreateSerializer(
-            data=request.data,
-            context={"request": request},
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
     def patch(self, request, *args, **kwargs):
         instance = self.get_object()
         if not instance:
             return Response(
-                {"detail": CAMPUS_INFO_NOT_FOUND},
-                status=status.HTTP_404_NOT_FOUND,
+                {"detail": CAMPUS_INFO_NOT_FOUND}, status=status.HTTP_404_NOT_FOUND
             )
-        serializer = CampusInfoCreateSerializer(
+        serializer = CampusInfoPatchSerializer(
             instance,
             data=request.data,
             partial=True,

@@ -1,21 +1,29 @@
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
 
+# Project Imports
 from src.libs.get_context import get_user_by_context
-
-from ..base.serializers import AbstractInfoRetrieveSerializer
-from ..user.validators import validate_user_image
+from src.base.serializers import AbstractInfoRetrieveSerializer
+from src.user.validators import validate_user_image
 from .constants import CAMPUS_KEY_OFFICIAL_FILE_PATH
+from .messages import CAMPUS_INFO_UPDATED_SUCCESS
 from .models import CampusInfo, CampusKeyOfficial, SocialMediaLink
 
 
-class SocialMediaLinkSerializer(serializers.ModelSerializer):
+# Campus Info Serializers
+# ---------------------------------------------------------------------------------------------------
+
+
+class SocialMediaLinkListSerializer(serializers.ModelSerializer):
     class Meta:
         model = SocialMediaLink
         fields = ["id", "platform", "url", "is_active"]
 
 
-class CampusInfoListSerializer(serializers.ModelSerializer):
-    class Meta:
+class CampusInfoRetrieveSerializer(AbstractInfoRetrieveSerializer):
+    social_links = serializers.SerializerMethodField()
+
+    class Meta(AbstractInfoRetrieveSerializer.Meta):
         model = CampusInfo
         fields = [
             "id",
@@ -24,45 +32,59 @@ class CampusInfoListSerializer(serializers.ModelSerializer):
             "email",
             "location",
             "organization_chart",
-            "is_active",
+            "social_links",
         ]
 
+        fields += AbstractInfoRetrieveSerializer.Meta.fields
 
-class CampusInfoRetrieveSerializer(serializers.ModelSerializer):
+    @extend_schema_field(SocialMediaLinkListSerializer(many=True))
+    def get_social_links(self, obj):
+        return SocialMediaLinkListSerializer(
+            SocialMediaLink.objects.filter(is_active=True),
+            many=True,
+        ).data
+
+
+class SocialMediaLinkPatchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SocialMediaLink
+        fields = ["id", "platform", "url", "is_active"]
+
+
+class CampusInfoPatchSerializer(serializers.ModelSerializer):
+    social_links = SocialMediaLinkPatchSerializer(many=True, allow_null=True)
+
     class Meta:
         model = CampusInfo
         fields = [
-            "id",
             "name",
             "phone_number",
             "email",
             "location",
             "organization_chart",
-            "is_active",
+            "social_links",
         ]
 
+    def update(self, instance, validated_data):
+        user = get_user_by_context(self.context)
+        social_links = validated_data.pop("social_links", [])
+        validated_data["name"] = validated_data.pop("name").title()
 
-class CampusInfoCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CampusInfo
-        fields = [
-            "name",
-            "phone_number",
-            "email",
-            "location",
-            "organization_chart",
-            "is_active",
-            "is_archived",
-        ]
+        for key, val in validated_data.items():
+            setattr(instance, key, val)
 
-    def create(self, validated_data):
-        created_by = get_user_by_context(self.context)
-        validated_data["created_by"] = created_by
-        campus = CampusInfo.objects.create(**validated_data)
-        return campus
+        for social_link in social_links:
+            SocialMediaLink.objects.create(**social_link, created_by=user)
+            
+        instance.save()
+        return instance
 
-    def to_representation(self, instance):
-        return {"message": "Campus Info created successfully", "id": instance.id}
+    def to_representation(self, instance) -> dict[str, str]:
+        return {"message": CAMPUS_INFO_UPDATED_SUCCESS, "id": instance.id}
+
+
+# Campus Key Official Serializers
+# ---------------------------------------------------------------------------------------------------
 
 
 class CampusKeyOfficialListSerializer(serializers.ModelSerializer):
