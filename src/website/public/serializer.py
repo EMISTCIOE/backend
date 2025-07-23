@@ -8,7 +8,14 @@ from src.website.models import (
     CampusDownload,
     CampusEvent,
     CampusKeyOfficial,
+    CampusEventGallery,
 )
+
+
+class PublicEventGallerySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusEventGallery
+        fields = ["id", "image", "caption"]
 
 
 class PublicSocialMediaLinkForCampusInfoSerializer(serializers.ModelSerializer):
@@ -60,6 +67,8 @@ class PublicCampusEventListSerializer(serializers.ModelSerializer):
 
 
 class PublicCampusEventRetrieveSerializer(serializers.ModelSerializer):
+    gallery = PublicEventGallerySerializer(many=True, read_only=True)
+
     class Meta:
         model = CampusEvent
         fields = [
@@ -71,6 +80,7 @@ class PublicCampusEventRetrieveSerializer(serializers.ModelSerializer):
             "event_start_date",
             "event_end_date",
             "thumbnail",
+            "gallery",
         ]
 
 

@@ -1,7 +1,16 @@
 #!/usr/bin/env python
 from django.contrib import admin
 
-from .models import CampusInfo, CampusKeyOfficial, SocialMediaLink
+from .models import (
+    CampusInfo,
+    CampusKeyOfficial,
+    SocialMediaLink,
+    CampusEvent,
+    CampusEventGallery,
+)
+
+admin.site.register(CampusEvent)
+admin.site.register(CampusEventGallery)
 
 
 @admin.register(CampusInfo)
