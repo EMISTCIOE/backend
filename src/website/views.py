@@ -27,7 +27,11 @@ class CampusInfoAPIView(generics.GenericAPIView):
     """Campus Info Retrive and Update APIs"""
 
     permission_classes = [CampusInfoPermission]
-    serializer_class = CampusInfoRetrieveSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == "PATCH":
+            return CampusInfoPatchSerializer
+        return CampusInfoRetrieveSerializer
 
     def get_object(self):
         return CampusInfo.objects.filter(is_archived=False).first()
