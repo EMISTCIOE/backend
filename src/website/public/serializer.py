@@ -28,5 +28,6 @@ class PublicCampusInfoSerializer(serializers.ModelSerializer):
     @extend_schema_field(PublicSocialMediaLinkForCampusInfoSerializer(many=True))
     def get_social_links(self, obj):
         return PublicSocialMediaLinkForCampusInfoSerializer(
-            SocialMediaLink.objects.filter(is_active=True), many=True
+            SocialMediaLink.objects.filter(is_active=True),
+            many=True,
         ).data

@@ -1,9 +1,15 @@
 from rest_framework.permissions import BasePermission
 
-class CampusInfoPermission(BasePermission):
-    """
-    Allow only staff to use this API.
-    """
-    def has_permission(self, request, view):
-        return request.user and request.user.is_authenticated and request.user.is_staff
+from src.libs.permissions import validate_permissions
 
+
+class CampusInfoPermission(BasePermission):
+    def has_permission(self, request, view):
+        user_permissions_dict = {
+            "SAFE_METHODS": "view_campus_info",
+            "POST": "add_campus_info",
+            "PATCH": "edit_campus_info",
+            "DELETE": "delete_campus_info",
+        }
+
+        return validate_permissions(request, user_permissions_dict)

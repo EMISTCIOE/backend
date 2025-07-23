@@ -1,9 +1,9 @@
 from ckeditor.fields import RichTextField
+from django.core.exceptions import ValidationError
 from django.db import models
-from django.utils.translation import gettext_lazy as _
-import os
 from django.db.models.signals import pre_delete, pre_save
 from django.dispatch import receiver
+from django.utils.translation import gettext_lazy as _
 
 # Project Imports
 from src.base.models import AuditInfoModel
@@ -24,6 +24,7 @@ from src.website.constants import (
     CampusEventTypes,
     ReportTypes,
 )
+from src.website.messages import ONLY_ONE_CAMPUS_INFO_ALLOWED
 
 
 class CampusInfo(AuditInfoModel):
@@ -67,8 +68,11 @@ class CampusInfo(AuditInfoModel):
         verbose_name_plural = _("Campus Info")
 
     def save(self, *args, **kwargs):
-        if not self.pk and CampusInfo.objects.filter(is_active=True, is_archived=False).exists():
-            raise Exception("Only one active CampusInfo instance allowed!")
+        if (
+            not self.pk
+            and CampusInfo.objects.filter(is_active=True, is_archived=False).exists()
+        ):
+            raise ValidationError(ONLY_ONE_CAMPUS_INFO_ALLOWED)
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -134,6 +138,7 @@ class SocialMediaLink(AuditInfoModel):
         _("Platform URL"),
         help_text=_("URL to the respective social media profile."),
     )
+
     class Meta:
         verbose_name = _("Social Media Link")
         verbose_name_plural = _("Social Media Links")
@@ -539,10 +544,12 @@ class CampusFeedback(AuditInfoModel):
     def __str__(self):
         return f"{self.full_name} - Feedback"
 
+
 @receiver(pre_delete, sender=CampusKeyOfficial)
 def delete_photo_file_on_delete(sender, instance, **kwargs):
     if instance.photo and instance.photo.name:
         instance.photo.delete(save=False)
+
 
 @receiver(pre_save, sender=CampusKeyOfficial)
 def delete_old_photo_on_change(sender, instance, **kwargs):

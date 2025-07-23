@@ -7,6 +7,7 @@ from rest_framework.response import Response
 # Project Imports
 from src.website.models import CampusInfo
 from src.website.public.messages import CAMPUS_INFO_NOT_FOUND
+
 from .serializer import PublicCampusInfoSerializer
 
 
