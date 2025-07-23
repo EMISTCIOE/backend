@@ -10,3 +10,5 @@ SOCIAL_MEDIA_DELETED_SUCCESS = _("Social media link deleted successfully.")
 
 CAMPUS_KEY_OFFICIAL_CREATE_SUCCESS = _("Key official created successfully")
 CAMPUS_KEY_OFFICIAL_UPDATE_SUCCESS = _("Key official updated successfully")
+
+SOCIAL_MEDIA_ALREADY_EXISTS = _("This social media already exists for the campus.")
