@@ -121,7 +121,7 @@ class NoticeViewSet(ModelViewSet):
         notice = self.get_object()
 
         try:
-            media = notice.medias.get(id=media_id, is_active=True)
+            media = notice.medias.get()
         except NoticeMedia.DoesNotExist:
             return Response(
                 {"detail": MEDIA_NOT_FOUND},

@@ -30,7 +30,7 @@ def get_basic_urls(request):
     try:
         # Get current site information
         current_site = get_current_site(request)
-        origin_url = request.headers.get("origin", "")
+        origin_url = request.headers.get("origin")
         domain = current_site.domain
         base_static_url = f'https://{domain}{static("images")}'
 

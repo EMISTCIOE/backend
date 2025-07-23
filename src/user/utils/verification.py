@@ -14,7 +14,7 @@ def send_user_forget_password_email(
 ):
     current_site = get_current_site(request)
     lock_url = f'https://{current_site.domain}{static("images/icons/lock.png")}'
-    origin_url = request.headers.get("origin", "")
+    origin_url = request.headers.get("origin")
 
     try:
         subject = "Forget Password"
@@ -48,7 +48,7 @@ def send_user_account_verification_email(
 ):
     current_site = get_current_site(request)
     lock_url = f'https://{current_site.domain}{static("images/icons/lock.png")}'
-    origin_url = request.headers.get("origin", "")
+    origin_url = request.headers.get("origin")
 
     try:
         subject = "Account Verification"

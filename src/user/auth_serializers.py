@@ -116,7 +116,7 @@ class UserLoginSerializer(serializers.ModelSerializer):
         }
 
     def get_photo(self, user: User) -> str | None:
-        request = self.context.get("request")
+        request = self.context.get("request", )
         if user.photo:
             return request.build_absolute_uri(user.photo.url)
         return None
@@ -124,9 +124,9 @@ class UserLoginSerializer(serializers.ModelSerializer):
     def get_user(self, persona: str) -> User:
         try:
             if "@" in persona:
-                user = User.objects.get(email=persona, is_archived=False)
+                user = User.objects.get()
             else:
-                user = User.objects.get(username=persona, is_archived=False)
+                user = User.objects.get()
         except User.DoesNotExist as err:
             raise serializers.ValidationError({"persona": INVALID_CREDENTIALS}) from err
         return user
@@ -164,7 +164,7 @@ class UserLogoutSerializer(serializers.Serializer):
     message = serializers.CharField(read_only=True)
 
     def validate(self, attrs):
-        refresh_token = attrs.get("refresh", None)
+        refresh_token = attrs.get("refresh")
         try:
             RefreshToken(refresh_token)
         except Exception as err:
@@ -175,7 +175,7 @@ class UserLogoutSerializer(serializers.Serializer):
         return attrs
 
     def create(self, validated_data):
-        refresh_token = validated_data.get("refresh", None)
+        refresh_token = validated_data.get("refresh")
         try:
             RefreshToken(refresh_token).blacklist()
         except Exception as err:
@@ -280,17 +280,17 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
         ]
 
     def update(self, instance: User, validated_data):
-        photo = validated_data.get("photo", None)
+        photo = validated_data.get("photo")
 
         # Update user details
         instance.first_name = (
-            validated_data.get("first_name", instance.first_name).strip().title()
+            validated_data.get("first_name").strip().title()
         )
         instance.last_name = (
-            validated_data.get("last_name", instance.last_name).strip().title()
+            validated_data.get("last_name").strip().title()
         )
 
-        instance.phone_no = validated_data.get("phone_no", instance.phone_no)
+        instance.phone_no = validated_data.get("phone_no")
         instance.updated_at = timezone.now()
 
         if "photo" in validated_data:
@@ -317,9 +317,9 @@ class UserForgetPasswordRequestSerializer(serializers.Serializer):
     message = serializers.CharField(read_only=True)
 
     def validate(self, attrs):
-        email = attrs.get("email", "")
+        email = attrs.get("email")
         try:
-            user = User.objects.get(email=email)
+            user = User.objects.get()
             if not user.is_active:
                 raise serializers.ValidationError({"email": ACCOUNT_DISABLED})
             attrs["user"] = user
@@ -413,9 +413,7 @@ class UserResetPasswordSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         new_password = validated_data["new_password"]
-        forget_password_request: UserForgetPasswordRequest = validated_data.get(
-            "forget_password_request",
-        )
+        forget_password_request: UserForgetPasswordRequest = validated_data.get("forget_password_request")
 
         user: User = validated_data["user"]
         user.set_password(new_password)

@@ -26,7 +26,7 @@ def validate_permissions(request, user_permissions_dict):
         method = "SAFE_METHODS"
 
     user_permissions = get_user_permissions(request)
-    required_permission = user_permissions_dict.get(method, None)
+    required_permission = user_permissions_dict.get(method)
 
     codename_list = [perm.codename for perm in user_permissions]
     if required_permission and required_permission in codename_list:
