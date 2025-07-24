@@ -28,7 +28,11 @@ class CampusInfoAPIView(generics.GenericAPIView):
     """Campus Info Retrive and Update APIs"""
 
     permission_classes = [CampusInfoPermission]
-    serializer_class = CampusInfoRetrieveSerializer
+
+    def get_serializer_class(self):
+        if self.request.method == "PATCH":
+            return CampusInfoPatchSerializer
+        return CampusInfoRetrieveSerializer
 
     def get_object(self):
         return CampusInfo.objects.filter(is_archived=False).first()
@@ -48,7 +52,8 @@ class CampusInfoAPIView(generics.GenericAPIView):
         instance = self.get_object()
         if not instance:
             return Response(
-                {"detail": CAMPUS_INFO_NOT_FOUND}, status=status.HTTP_404_NOT_FOUND
+                {"detail": CAMPUS_INFO_NOT_FOUND},
+                status=status.HTTP_404_NOT_FOUND,
             )
         serializer = CampusInfoPatchSerializer(
             instance,

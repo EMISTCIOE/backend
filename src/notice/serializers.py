@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.core.files.storage import default_storage
 
 # Project Imports
 from src.base.serializers import AbstractInfoRetrieveSerializer
@@ -128,8 +129,8 @@ class NoticeCreateSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         """Ensure notice has either a title or at least one media."""
 
-        title = attrs.get("title").strip()
-        medias = attrs.get("medias")
+        title = attrs.get("title", "").strip()
+        medias = attrs.get("medias", [])
 
         if not title and not medias:
             raise serializers.ValidationError({"title": TITLE_OR_MEDIA_REQUIRED})
@@ -144,6 +145,7 @@ class NoticeCreateSerializer(serializers.ModelSerializer):
             title=validated_data.get("title").strip(),
             description=validated_data.get("description").strip(),
             department=validated_data["department"],
+            thumbnail=validated_data.get("thumbnail", None),
             is_featured=validated_data["is_featured"],
             category=validated_data["category"],
             created_by=user,
@@ -153,6 +155,7 @@ class NoticeCreateSerializer(serializers.ModelSerializer):
             notice.status = NoticeStatus.DRAFT.value
         else:
             notice.status = NoticeStatus.PENDING.value
+
         notice.save()
 
         notice_medias = [
@@ -217,8 +220,8 @@ class NoticePatchSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         """Ensure notice has either a title or at least one media."""
-        title = attrs.get("title").strip()
-        medias = attrs.get("medias")
+        title = attrs.get("title", self.instance.title).strip()
+        medias = attrs.get("medias", self.instance.medias)
 
         if not title and not medias:
             raise serializers.ValidationError({"title": TITLE_OR_MEDIA_REQUIRED})
@@ -228,6 +231,7 @@ class NoticePatchSerializer(serializers.ModelSerializer):
     def update(self, instance: Notice, validated_data):
         user = get_user_by_context(self.context)
         medias_data = validated_data.pop("medias", [])
+        thumbnail = validated_data.pop("thumbnail", None)
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value.strip() if isinstance(value, str) else value)
@@ -237,17 +241,28 @@ class NoticePatchSerializer(serializers.ModelSerializer):
         else:
             instance.status = NoticeStatus.PENDING.value
 
+        # Remove the old thumbnail file from disk
+        if thumbnail and default_storage.exists(instance.thumbnail.name):
+            default_storage.delete(instance.thumbnail.name)
+
+        instance.thumbnail = thumbnail
+
         # Update audit info
         instance.updated_by = user
         instance.save()
 
+        # Update notice medias
         if medias_data is not None:
             for media_data in medias_data:
                 media_instance = media_data.pop("id", None)
-
                 if media_instance:
+                    # Remove the old file from disk
+                    if media_instance.file and default_storage.exists(media_instance.file.name):
+                        default_storage.delete(media_instance.file.name)
+
                     for key, value in media_data.items():
                         setattr(media_instance, key, value)
+
                     media_instance.updated_by = user
                     media_instance.save()
                 else:

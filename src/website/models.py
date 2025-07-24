@@ -1,12 +1,10 @@
 from ckeditor.fields import RichTextField
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models.signals import pre_delete, pre_save
-from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 
 # Project Imports
-from src.base.models import AuditInfoModel
+from src.base.models import AuditInfoModel, PublicAuditInfoModel
 from src.core.constants import (
     AcademicProgramTypes,
     SocialMediaPlatforms,
@@ -105,6 +103,7 @@ class CampusKeyOfficial(AuditInfoModel):
         default=1,
         help_text=_("Display Order (ranking) of staffs to display in website."),
     )
+    message = models.TextField(_("Message"), blank=True)
     photo = models.ImageField(
         _("Photo"),
         upload_to=CAMPUS_KEY_OFFICIAL_FILE_PATH,
@@ -530,7 +529,7 @@ class StudentClubEventGallery(AuditInfoModel):
         return self.caption or f"{self.event.title} Image"
 
 
-class CampusFeedback(AuditInfoModel):
+class CampusFeedback(PublicAuditInfoModel):
     """
     Model to collect feedback or suggestions from campus students and visitors.
     """

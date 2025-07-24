@@ -12,7 +12,6 @@ router = DefaultRouter(trailing_slash=False)
 
 router.register("notices", NoticeViewSet, basename="notices")
 
-
 urlpatterns = [
     path("notices/<int:id>/update-status", NoticeStatusUpdateAPIView.as_view()),
 ]
@@ -23,4 +22,4 @@ list_urls = [
     path("notices/authors", AuthorForNoticeListAPIView.as_view()),
 ]
 
-urlpatterns = [*list_urls, *router.urls]
+urlpatterns += [*list_urls, *router.urls]
