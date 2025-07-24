@@ -11,38 +11,38 @@ from src.notice.listing_apis.serializers import (
     UserForNoticeListSerializer,
 )
 from src.notice.models import NoticeCategory
+from src.notice.permissions import NoticePermission
 from src.user.models import User
-from src.user.permissions import UserSetupPermission
 
 
 class DepartmentForNoticeListAPIView(ListAPIView):
-    permission_classes = [UserSetupPermission]
+    permission_classes = [NoticePermission]
     queryset = Department.objects.filter(is_active=True)
     serializer_class = DepartmentForNoticeListSerializer
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
     filter_fields = ["id", "name"]
-    search_fields = ["id", "name"]
-    ordering_fields = ["id", "name"]
+    search_fields = ["name", "short_name"]
+    ordering_fields = ["created_at", "name"]
     ordering = ["name"]
 
 
 class CategoryForNoticeListAPIView(ListAPIView):
-    permission_classes = [UserSetupPermission]
+    permission_classes = [NoticePermission]
     queryset = NoticeCategory.objects.filter(is_active=True)
     serializer_class = CategoryForNoticeListSerializer
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
     filter_fields = ["id", "name"]
-    search_fields = ["id", "name"]
-    ordering_fields = ["id", "name"]
+    search_fields = ["name"]
+    ordering_fields = ["created_at", "name"]
     ordering = ["name"]
 
 
 class AuthorForNoticeListAPIView(ListAPIView):
-    permission_classes = [UserSetupPermission]
+    permission_classes = [NoticePermission]
     serializer_class = UserForNoticeListSerializer
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
     queryset = User.objects.filter(is_active=True)
     filter_fields = ["id", "email"]
-    search_fields = ["id", "email"]
-    ordering_fields = ["id", "email"]
-    ordering = ["-id"]
+    search_fields = ["first_name", "email"]
+    ordering_fields = ["created_at", "email"]
+    ordering = ["-created_at", "first_name"]

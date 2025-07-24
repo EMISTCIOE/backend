@@ -317,7 +317,7 @@ class UserForgetPasswordRequestSerializer(serializers.Serializer):
     def validate(self, attrs):
         email = attrs.get("email")
         try:
-            user = User.objects.get()
+            user = User.objects.get(email=email)
             if not user.is_active:
                 raise serializers.ValidationError({"email": ACCOUNT_DISABLED})
             attrs["user"] = user

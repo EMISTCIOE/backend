@@ -12,7 +12,6 @@ router = DefaultRouter(trailing_slash=False)
 
 router.register("notices", NoticeViewSet, basename="notices")
 
-
 urlpatterns = [
     path("notices/<int:id>/update-status", NoticeStatusUpdateAPIView.as_view()),
 ]
