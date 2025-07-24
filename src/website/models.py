@@ -103,6 +103,7 @@ class CampusKeyOfficial(AuditInfoModel):
         default=1,
         help_text=_("Display Order (ranking) of staffs to display in website."),
     )
+    message = models.TextField(_("Message"), blank=True)
     photo = models.ImageField(
         _("Photo"),
         upload_to=CAMPUS_KEY_OFFICIAL_FILE_PATH,

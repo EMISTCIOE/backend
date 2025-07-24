@@ -1,12 +1,12 @@
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
-
-from src.base.serializers import AbstractInfoRetrieveSerializer
+from django.core.files.storage import default_storage
 
 # Project Imports
 from src.libs.get_context import get_user_by_context
 from src.libs.validators import validate_unique_fields
 from src.user.validators import validate_user_image
+from src.base.serializers import AbstractInfoRetrieveSerializer
 
 from .constants import CAMPUS_KEY_OFFICIAL_FILE_PATH
 from .messages import (
@@ -16,6 +16,7 @@ from .messages import (
     SOCIAL_MEDIA_ALREADY_EXISTS,
 )
 from .models import CampusInfo, CampusKeyOfficial, SocialMediaLink
+
 
 # Campus Info Serializers
 # ---------------------------------------------------------------------------------------------------
@@ -138,6 +139,7 @@ class CampusKeyOfficialRetrieveSerializer(AbstractInfoRetrieveSerializer):
             "title_prefix",
             "full_name",
             "designation",
+            "message",
             "photo",
             "email",
             "phone_number",
@@ -157,6 +159,7 @@ class CampusKeyOfficialCreateSerializer(serializers.ModelSerializer):
             "designation",
             "photo",
             "email",
+            "message",
             "phone_number",
             "is_active",
         ]
@@ -180,6 +183,7 @@ class CampusKeyOfficialPatchSerializer(serializers.ModelSerializer):
             "full_name",
             "designation",
             "photo",
+            "message",
             "email",
             "phone_number",
             "is_active",
@@ -188,23 +192,18 @@ class CampusKeyOfficialPatchSerializer(serializers.ModelSerializer):
     def update(self, instance: CampusKeyOfficial, validated_data):
         updated_by = get_user_by_context(self.context)
         validated_data["full_name"] = validated_data.pop("full_name").title()
-        photo = validated_data.pop("photo", None)
+
+        # Handle the photo
+        if "photo" in validated_data:
+            if validated_data["photo"] is None:
+                # Remove the old file from disk
+                if instance.photo and default_storage.exists(instance.photo.name):
+                    default_storage.delete(instance.photo.name)
+            else:
+                instance.photo = validated_data.pop("photo", None)
 
         for key, value in validated_data.items():
             setattr(instance, key, value)
-
-        if photo:
-            if photo is not None:
-                upload_path = instance.get_upload_path(
-                    upload_path=CAMPUS_KEY_OFFICIAL_FILE_PATH,
-                    filename=photo.name,
-                )
-                instance.photo.delete(save=False)  # Remove the old file
-                instance.photo.save(upload_path, photo)
-            else:
-                instance.photo.delete(
-                    save=True,
-                )  # Delete the existing photo if photo is None
 
         instance.updated_by = updated_by
         instance.save()
