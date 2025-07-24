@@ -199,3 +199,16 @@ class CampusKeyOfficialPatchSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         return {"message": CAMPUS_KEY_OFFICIAL_UPDATE_SUCCESS}
+
+class CampusDownloadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusDownload
+        fields = "__all__"
+
+    def create(self, validated_data):
+        validated_data['created_by'] = get_user_by_context(self.context)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        validated_data['updated_by'] = get_user_by_context(self.context)
+        return super().update(instance, validated_data)

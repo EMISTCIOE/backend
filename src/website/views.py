@@ -11,7 +11,7 @@ from src.website.messages import (
     SOCIAL_MEDIA_DELETED_SUCCESS,
     SOCIAL_MEDIA_NOT_FOUND,
 )
-from .models import CampusInfo, CampusKeyOfficial, SocialMediaLink
+from .models import CampusInfo, CampusKeyOfficial, SocialMediaLink, CampusDownload
 from .permissions import CampusInfoPermission, CampusKeyOfficialPermission
 from .serializers import (
     CampusInfoPatchSerializer,
@@ -20,6 +20,7 @@ from .serializers import (
     CampusKeyOfficialListSerializer,
     CampusKeyOfficialPatchSerializer,
     CampusKeyOfficialRetrieveSerializer,
+    CampusDownloadSerializer,
 )
 
 
@@ -112,3 +113,9 @@ class CampusKeyOfficialViewSet(viewsets.ModelViewSet):
             instance.photo.delete(save=False)
 
         return super().destroy(request, *args, **kwargs)
+
+class CampusDownloadViewSet(viewsets.ModelViewSet):
+    queryset = CampusDownload.objects.all()
+    serializer_class = CampusDownloadSerializer
+    permission_classes = [CampusInfoPermission]
+    http_method_names = ["get", "post", "put", "patch", "delete", "head", "options"]

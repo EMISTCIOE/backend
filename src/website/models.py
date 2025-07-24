@@ -586,3 +586,21 @@ def delete_old_photo_on_change(sender, instance, **kwargs):
 #     new_file = instance.file
 #     if old_file and old_file != new_file:
 #         old_file.delete(save=False)
+
+@receiver(pre_delete, sender=CampusDownload)
+def delete_campus_download_file_on_delete(sender, instance, **kwargs):
+    if instance.file and instance.file.name:
+        instance.file.delete(save=False)
+
+@receiver(pre_save, sender=CampusDownload)
+def delete_old_campus_download_file_on_change(sender, instance, **kwargs):
+    if not instance.pk:
+        return
+    try:
+        old_instance = CampusDownload.objects.get(pk=instance.pk)
+    except CampusDownload.DoesNotExist:
+        return
+    old_file = old_instance.file
+    new_file = instance.file
+    if old_file and old_file != new_file:
+        old_file.delete(save=False)
