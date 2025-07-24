@@ -2,7 +2,7 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
@@ -19,6 +19,7 @@ from .serializer import (
     PublicCampusDownloadSerializer,
     PublicCampusEventListSerializer,
     PublicCampusEventRetrieveSerializer,
+    PublicCampusFeedbackSerializer,
     PublicCampusInfoSerializer,
     PublicCampusKeyOfficialSerializer,
 )
@@ -82,3 +83,10 @@ class PublicCampusKeyOfficialListAPIView(ListAPIView):
     ordering = ["display_order"]
     ordering_fields = ["display_order", "created_at"]
     filter_fields = ["designation"]
+
+
+class PublicCampusFeedbackCreateAPIView(CreateAPIView):
+    """Campus Feedback Submission API"""
+
+    permission_classes = [AllowAny]
+    serializer_class = PublicCampusFeedbackSerializer

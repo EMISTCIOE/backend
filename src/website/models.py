@@ -4,7 +4,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 # Project Imports
-from src.base.models import AuditInfoModel
+from src.base.models import AuditInfoModel, PublicAuditInfoModel
 from src.core.constants import (
     AcademicProgramTypes,
     SocialMediaPlatforms,
@@ -528,7 +528,7 @@ class StudentClubEventGallery(AuditInfoModel):
         return self.caption or f"{self.event.title} Image"
 
 
-class CampusFeedback(AuditInfoModel):
+class CampusFeedback(PublicAuditInfoModel):
     """
     Model to collect feedback or suggestions from campus students and visitors.
     """

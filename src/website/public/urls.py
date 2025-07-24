@@ -6,6 +6,7 @@ from src.website.public.views import (
     PublicCampusDownloadListAPIView,
     PublicCampusEventListAPIView,
     PublicCampusEventRetrieveAPIView,
+    PublicCampusFeedbackCreateAPIView,
     PublicCampusInfoRetrieveAPIView,
     PublicCampusKeyOfficialListAPIView,
 )
@@ -30,5 +31,10 @@ urlpatterns = [
         name="public-campus-event-detail",
     ),
     path("campus-key-officials", PublicCampusKeyOfficialListAPIView.as_view()),
+    path(
+        "submit-feedback",
+        PublicCampusFeedbackCreateAPIView.as_view(),
+        name="submit-feedback",
+    ),
     path("", include(router.urls)),
 ]
