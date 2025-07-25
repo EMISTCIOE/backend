@@ -51,10 +51,10 @@ class DepartmentEventPermission(BasePermission):
 class DepartmentPlanAndPolicyPermission(BasePermission):
     def has_permission(self, request, view):
         user_permissions_dict = {
-            "SAFE_METHODS": "view_department_planandpolicy",
-            "POST": "add_department_planandpolicy",
-            "PATCH": "edit_department_planandpolicy",
-            "DELETE": "delete_department_planandpolicy",
+            "SAFE_METHODS": "view_department_plan_and_policy",
+            "POST": "add_department_plan_and_policy",
+            "PATCH": "edit_department_plan_and_policy",
+            "DELETE": "delete_department_plan_and_policy",
         }
         return validate_permissions(request, user_permissions_dict)
 

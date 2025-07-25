@@ -193,6 +193,7 @@ class AcademicProgramViewSet(ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
+            instance.thumbnail.delete(save=False)
         except Exception:
             return Response(
                 {"message": ACADEMIC_PROGRAM_NOT_FOUND},
@@ -249,6 +250,8 @@ class DepartmentDownloadViewSet(ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
+            instance.file.delete(save=False)
+
         except Exception:
             return Response(
                 {"message": DEPARTMENT_DOWNLOAD_NOT_FOUND},
@@ -305,6 +308,7 @@ class DepartmentEventViewSet(ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
+            instance.thumbnail.delete(save=False)
         except Exception:
             return Response(
                 {"message": DEPARTMENT_EVENT_NOT_FOUND},
@@ -333,6 +337,7 @@ class DepartmentEventGalleryDestroyAPIView(generics.DestroyAPIView):
 
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
+        instance.image.delete(save=False)
         instance.delete()
         return Response(
             {"message": EVENT_GALLERY_DELETED_SUCCESS}, status=status.HTTP_200_OK
@@ -380,6 +385,7 @@ class DepartmentPlanAndPolicyViewSet(ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
+            instance.file.delete(save=False)
         except Exception:
             return Response(
                 {"message": DEPARTMENT_PLANS_NOT_FOUND},
@@ -436,6 +442,7 @@ class StaffMemberViewSet(ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
+            instance.photo.delete(save=False)
         except Exception:
             return Response(
                 {"message": STAFF_MEMBER_NOT_FOUND},
