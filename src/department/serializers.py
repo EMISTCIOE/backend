@@ -85,7 +85,9 @@ class DepartmentSocialMediaForDepartmentCreateSerializer(serializers.ModelSerial
 
 
 class DepartmentCreateSerializer(serializers.ModelSerializer):
-    social_links = DepartmentSocialMediaForDepartmentCreateSerializer(many=True)
+    social_links = DepartmentSocialMediaForDepartmentCreateSerializer(
+        many=True, required=False
+    )
 
     class Meta:
         model = Department

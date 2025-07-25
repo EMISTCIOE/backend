@@ -2,6 +2,8 @@ from django.urls import include, path
 from rest_framework import routers
 
 from .views import (
+    DepartmentEventGalleryDestroyAPIView,
+    DepartmentSocialMediaDestroyAPIView,
     DepartmentViewSet,
     AcademicProgramViewSet,
     DepartmentDownloadViewSet,
@@ -10,7 +12,7 @@ from .views import (
     StaffMemberViewSet,
 )
 
-router = routers.DefaultRouter()
+router = routers.DefaultRouter(trailing_slash=False)
 
 # Register all viewsets
 router.register("departments", DepartmentViewSet, basename="department")
@@ -31,5 +33,15 @@ router.register(
 router.register("staff-members", StaffMemberViewSet, basename="staff-member")
 
 urlpatterns = [
+    path(
+        "departments/<int:department_id>/social-link/<int:social_link_id>",
+        DepartmentSocialMediaDestroyAPIView.as_view(),
+        name="department-social-link-destroy",
+    ),
+    path(
+        "departments-events/<int:event_id>/gallery/<int:gallery_id>",
+        DepartmentEventGalleryDestroyAPIView.as_view(),
+        name="department-events-gallery-destroy",
+    ),
     path("", include(router.urls)),
 ]

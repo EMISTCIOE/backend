@@ -3,12 +3,31 @@ from django.db import transaction
 import django_filters
 from django_filters.filterset import FilterSet
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import generics, status
+from rest_framework.response import Response
+from rest_framework.exceptions import NotFound
 
 # Rest Framework Imports
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.viewsets import ModelViewSet
 
 # Project Imports
+from .messages import (
+    ACADEMIC_PROGRAM_NOT_FOUND,
+    DEPARTMENT_DOWNLOAD_NOT_FOUND,
+    DEPARTMENT_EVENT_NOT_FOUND,
+    DEPARTMENT_PLANS_NOT_FOUND,
+    EVENT_GALLERY_DELETED_SUCCESS,
+    EVENT_GALLERY_NOT_FOUND,
+    SOCIAL_LINK_DELETED_SUCCESS,
+    SOCIAL_LINK_NOT_FOUND,
+    ACADEMIC_PROGRAM_DELETED_SUCCESS,
+    DEPARTMENT_DOWNLOAD_DELETED_SUCCESS,
+    STAFF_MEMBER_NOT_FOUND,
+    STAFF_MEMBER_DELETED_SUCCESS,
+    DEPARTMENT_PLANS_DELETED_SUCCESS,
+    DEPARTMENT_EVENT_DELETED_SUCCESS,
+)
 from src.libs.utils import set_binary_files_null_if_empty
 
 from .models import (
@@ -16,7 +35,9 @@ from .models import (
     Department,
     DepartmentDownload,
     DepartmentEvent,
+    DepartmentEventGallery,
     DepartmentPlanAndPolicy,
+    DepartmentSocialMedia,
     StaffMember,
 )
 from .permissions import (
@@ -109,6 +130,28 @@ class DepartmentViewSet(ModelViewSet):
         return super().update(request, *args, **kwargs)
 
 
+class DepartmentSocialMediaDestroyAPIView(generics.DestroyAPIView):
+    permission_classes = [DepartmentPermission]
+    lookup_url_kwarg = "social_link_id"
+    queryset = DepartmentSocialMedia.objects.all()
+
+    def get_object(self):
+        obj = self.queryset.filter(
+            department_id=self.kwargs["department_id"],
+            pk=self.kwargs[self.lookup_url_kwarg],
+        ).first()
+        if not obj:
+            raise NotFound({"message": SOCIAL_LINK_NOT_FOUND})
+        return obj
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.delete()
+        return Response(
+            {"message": SOCIAL_LINK_DELETED_SUCCESS}, status=status.HTTP_200_OK
+        )
+
+
 class FilterForAcademicProgramViewSet(FilterSet):
     class Meta:
         model = AcademicProgram
@@ -122,7 +165,7 @@ class AcademicProgramViewSet(ModelViewSet):
     search_fields = ["name", "short_name", "description"]
     queryset = AcademicProgram.objects.filter(is_archived=False)
     ordering_fields = ["-created_at", "name", "short_name"]
-    http_method_names = ["options", "head", "get", "patch", "post"]
+    http_method_names = ["options", "head", "get", "patch", "post", "delete"]
 
     def get_serializer_class(self):
         if self.request.method == "GET":
@@ -147,6 +190,21 @@ class AcademicProgramViewSet(ModelViewSet):
         set_binary_files_null_if_empty(["thumbnail"], request.data)
         return super().update(request, *args, **kwargs)
 
+    def destroy(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+        except Exception:
+            return Response(
+                {"message": ACADEMIC_PROGRAM_NOT_FOUND},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        instance.delete()
+        return Response(
+            {"message": ACADEMIC_PROGRAM_DELETED_SUCCESS},
+            status=status.HTTP_200_OK,
+        )
+
 
 class FilterForDepartmentDownloadViewSet(FilterSet):
     date = django_filters.DateFromToRangeFilter(field_name="created_at")
@@ -163,7 +221,7 @@ class DepartmentDownloadViewSet(ModelViewSet):
     search_fields = ["title", "description"]
     queryset = DepartmentDownload.objects.filter(is_archived=False)
     ordering_fields = ["-created_at", "title"]
-    http_method_names = ["options", "head", "get", "patch", "post"]
+    http_method_names = ["options", "head", "get", "patch", "post", "delete"]
 
     def get_serializer_class(self):
         if self.request.method == "GET":
@@ -188,6 +246,21 @@ class DepartmentDownloadViewSet(ModelViewSet):
         set_binary_files_null_if_empty(["file"], request.data)
         return super().update(request, *args, **kwargs)
 
+    def destroy(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+        except Exception:
+            return Response(
+                {"message": DEPARTMENT_DOWNLOAD_NOT_FOUND},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        instance.delete()
+        return Response(
+            {"message": DEPARTMENT_DOWNLOAD_DELETED_SUCCESS},
+            status=status.HTTP_200_OK,
+        )
+
 
 class FilterForDepartmentEventViewSet(FilterSet):
     date = django_filters.DateFromToRangeFilter(field_name="created_at")
@@ -204,7 +277,7 @@ class DepartmentEventViewSet(ModelViewSet):
     search_fields = ["title", "description_short"]
     queryset = DepartmentEvent.objects.filter(is_archived=False)
     ordering_fields = ["-created_at", "event_start_date", "title"]
-    http_method_names = ["options", "head", "get", "patch", "post"]
+    http_method_names = ["options", "head", "get", "patch", "post", "delete"]
 
     def get_serializer_class(self):
         if self.request.method == "GET":
@@ -229,6 +302,42 @@ class DepartmentEventViewSet(ModelViewSet):
         set_binary_files_null_if_empty(["thumbnail"], request.data)
         return super().update(request, *args, **kwargs)
 
+    def destroy(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+        except Exception:
+            return Response(
+                {"message": DEPARTMENT_EVENT_NOT_FOUND},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        instance.delete()
+        return Response(
+            {"message": DEPARTMENT_EVENT_DELETED_SUCCESS}, status=status.HTTP_200_OK
+        )
+
+
+class DepartmentEventGalleryDestroyAPIView(generics.DestroyAPIView):
+    permission_classes = [DepartmentPermission]
+    lookup_url_kwarg = "gallery_id"
+    queryset = DepartmentEventGallery.objects.all()
+
+    def get_object(self):
+        obj = self.queryset.filter(
+            event_id=self.kwargs["event_id"],
+            pk=self.kwargs[self.lookup_url_kwarg],
+        ).first()
+        if not obj:
+            raise NotFound({"message": EVENT_GALLERY_NOT_FOUND})
+        return obj
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.delete()
+        return Response(
+            {"message": EVENT_GALLERY_DELETED_SUCCESS}, status=status.HTTP_200_OK
+        )
+
 
 class FilterForDepartmentPlanAndPolicyViewSet(FilterSet):
     class Meta:
@@ -243,7 +352,7 @@ class DepartmentPlanAndPolicyViewSet(ModelViewSet):
     search_fields = ["title"]
     queryset = DepartmentPlanAndPolicy.objects.filter(is_archived=False)
     ordering_fields = ["-created_at", "title"]
-    http_method_names = ["options", "head", "get", "patch", "post"]
+    http_method_names = ["options", "head", "get", "patch", "post", "delete"]
 
     def get_serializer_class(self):
         if self.request.method == "GET":
@@ -268,6 +377,21 @@ class DepartmentPlanAndPolicyViewSet(ModelViewSet):
         set_binary_files_null_if_empty(["file"], request.data)
         return super().update(request, *args, **kwargs)
 
+    def destroy(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+        except Exception:
+            return Response(
+                {"message": DEPARTMENT_PLANS_NOT_FOUND},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        instance.delete()
+        return Response(
+            {"message": DEPARTMENT_PLANS_DELETED_SUCCESS},
+            status=status.HTTP_200_OK,
+        )
+
 
 class FilterForStaffMemberViewSet(FilterSet):
     date = django_filters.DateFromToRangeFilter(field_name="created_at")
@@ -284,7 +408,7 @@ class StaffMemberViewSet(ModelViewSet):
     search_fields = ["name", "email", "phone_number"]
     queryset = StaffMember.objects.filter(is_archived=False)
     ordering_fields = ["-created_at", "display_order", "name"]
-    http_method_names = ["options", "head", "get", "patch", "post"]
+    http_method_names = ["options", "head", "get", "patch", "post", "delete"]
 
     def get_serializer_class(self):
         if self.request.method == "GET":
@@ -308,3 +432,18 @@ class StaffMemberViewSet(ModelViewSet):
     def update(self, request, *args, **kwargs):
         set_binary_files_null_if_empty(["photo"], request.data)
         return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+        except Exception:
+            return Response(
+                {"message": STAFF_MEMBER_NOT_FOUND},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        instance.delete()
+        return Response(
+            {"message": STAFF_MEMBER_DELETED_SUCCESS},
+            status=status.HTTP_200_OK,
+        )
