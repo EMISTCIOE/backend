@@ -2,18 +2,24 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from .views import (
+    CampusDownloadViewSet,
+    CampusFeedbackViewSet,
     CampusInfoAPIView,
     CampusKeyOfficialViewSet,
+    CampusReportViewSet,
     SocialMediaLinkDeleteAPIView,
 )
 
-router = DefaultRouter()
+router = DefaultRouter(trailing_slash=False)
 
 router.register(
     "campus-key-officials",
     CampusKeyOfficialViewSet,
     basename="campus-key-official",
 )
+router.register("campus-feedbacks", CampusFeedbackViewSet, basename="campus-feedback")
+router.register("campus-downloads", CampusDownloadViewSet, basename="campus-download")
+router.register("campus-reports", CampusReportViewSet, basename="campus-report")
 
 urlpatterns = [
     path("campus-info", CampusInfoAPIView.as_view(), name="campus-info"),

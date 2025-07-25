@@ -25,3 +25,36 @@ class CampusKeyOfficialPermission(BasePermission):
         }
 
         return validate_permissions(request, user_permissions_dict)
+
+
+class CampusFeedbackPermission(BasePermission):
+    def has_permission(self, request, view):
+        user_permissions_dict = {
+            "SAFE_METHODS": "view_campus_feedback",
+            "POST": "add_campus_feedback",
+            "PATCH": "edit_campus_feedback",
+            "DELETE": "delete_campus_feedback",
+        }
+        return validate_permissions(request, user_permissions_dict)
+
+
+class CampusDownloadPermission(BasePermission):
+    def has_permission(self, request, view):
+        user_permissions_dict = {
+            "SAFE_METHODS": "view_campus_download",
+            "POST": "add_campus_download",
+            "PATCH": "edit_campus_download",
+            "DELETE": "delete_campus_download",
+        }
+        return validate_permissions(request, user_permissions_dict)
+
+
+class CampusReportPermission(BasePermission):
+    def has_permission(self, request, view):
+        user_permissions_dict = {
+            "SAFE_METHODS": "view_campusreport",
+            "POST": "add_campusreport",
+            "PATCH": "edit_campusreport",
+            "DELETE": "delete_campusreport",
+        }
+        return validate_permissions(request, user_permissions_dict)

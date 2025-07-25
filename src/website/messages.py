@@ -11,3 +11,18 @@ CAMPUS_KEY_OFFICIAL_CREATE_SUCCESS = _("Key official created successfully")
 CAMPUS_KEY_OFFICIAL_UPDATE_SUCCESS = _("Key official updated successfully")
 
 SOCIAL_MEDIA_ALREADY_EXISTS = _("This social media already exists for the campus.")
+
+CAMPUS_FEEDBACK_RESOLVE_SUCCESS = _("Feedback resolve status updated successfully.")
+CAMPUS_FEEDBACK_NOT_FOUND = _("Feedback not found.")
+
+
+CAMPUS_DOWNLOAD_UPDATED_SUCCESS = _("Downloads updated successfully")
+CAMPUS_DOWNLOAD_CREATED_SUCCESS = _("Downloads created successfully")
+CAMPUS_DOWNLOAD_NOT_FOUND = _("Downloads not found")
+CAMPUS_DOWNLOAD_DELETED_SUCCESS = _("Downloads deleted successfully")
+
+
+CAMPUS_REPORT_CREATED_SUCCESS = _("Campus report created successfully.")
+CAMPUS_REPORT_UPDATED_SUCCESS = _("Campus report updated successfully.")
+CAMPUS_REPORT_DELETED_SUCCESS = _("Campus report deleted successfully.")
+CAMPUS_REPORT_NOT_FOUND = _("Campus report not found.")
