@@ -2,13 +2,16 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 # Project Imports
+from src.core.models import FiscalSessionBS
 from src.website.models import (
+    AcademicCalendar,
     CampusDownload,
     CampusEvent,
     CampusEventGallery,
     CampusFeedback,
     CampusInfo,
     CampusKeyOfficial,
+    CampusReport,
     SocialMediaLink,
 )
 from src.website.public.messages import (
@@ -48,7 +51,7 @@ class PublicCampusInfoSerializer(serializers.ModelSerializer):
 class PublicCampusDownloadSerializer(serializers.ModelSerializer):
     class Meta:
         model = CampusDownload
-        fields = ["id", "title", "description", "file", "created_at"]
+        fields = ["uuid", "title", "description", "file", "created_at"]
 
 
 class PublicCampusEventListSerializer(serializers.ModelSerializer):
@@ -132,3 +135,23 @@ class PublicCampusFeedbackSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data["is_resolved"] = False
         return super().create(validated_data)
+
+
+class PublicAcademicCalendarListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AcademicCalendar
+        fields = ["uuid", "program_type", "start_year", "end_year", "file"]
+
+
+class PublicFiscalSessionForCampusReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FiscalSessionBS
+        fields = ["uuid", "session_full", "session_short"]
+
+
+class PublicCampusReportListSerializer(serializers.ModelSerializer):
+    fiscal_session = PublicFiscalSessionForCampusReportSerializer()
+
+    class Meta:
+        model = CampusReport
+        fields = ["uuid", "report_type", "fiscal_session", "published_date", "file"]

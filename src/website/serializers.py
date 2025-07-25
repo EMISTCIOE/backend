@@ -12,6 +12,8 @@ from src.base.serializers import AbstractInfoRetrieveSerializer
 from src.website.validators import validate_campus_download_file
 
 from .messages import (
+    ACADEMIC_CALENDER_CREATED_SUCCESS,
+    ACADEMIC_CALENDER_UPDATED_SUCCESS,
     CAMPUS_DOWNLOAD_CREATED_SUCCESS,
     CAMPUS_DOWNLOAD_UPDATED_SUCCESS,
     CAMPUS_INFO_UPDATED_SUCCESS,
@@ -20,8 +22,10 @@ from .messages import (
     CAMPUS_REPORT_CREATED_SUCCESS,
     CAMPUS_REPORT_UPDATED_SUCCESS,
     SOCIAL_MEDIA_ALREADY_EXISTS,
+    YEAR_ORDER_ERROR,
 )
 from .models import (
+    AcademicCalendar,
     CampusDownload,
     CampusFeedback,
     CampusInfo,
@@ -409,3 +413,83 @@ class CampusReportPatchSerializer(FileHandlingMixin, serializers.ModelSerializer
 
     def to_representation(self, instance):
         return {"message": CAMPUS_REPORT_UPDATED_SUCCESS}
+
+
+# Campus Reports Serializers
+# ------------------------------------------------------------------------------------------------------
+
+
+class AcademicCalendarListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AcademicCalendar
+        fields = ["id", "program_type", "start_year", "end_year", "file", "is_active"]
+
+
+class AcademicCalendarRetrieveSerializer(AbstractInfoRetrieveSerializer):
+    class Meta(AbstractInfoRetrieveSerializer.Meta):
+        model = AcademicCalendar
+        fields = [
+            "id",
+            "program_type",
+            "start_year",
+            "end_year",
+            "file",
+        ]
+
+        fields += AbstractInfoRetrieveSerializer.Meta.fields
+
+
+class AcademicCalendarCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AcademicCalendar
+        fields = ["program_type", "start_year", "end_year", "file"]
+
+    def validate(self, attrs):
+        start = attrs.get("start_year")
+        end = attrs.get("end_year")
+
+        if start is None or end is None:
+            return attrs
+
+        if start >= end:
+            raise serializers.ValidationError({"end_year": YEAR_ORDER_ERROR})
+
+        return attrs
+
+    def create(self, validated_data):
+        current_user = get_user_by_context(self.context)
+        validated_data["created_by"] = current_user
+        return AcademicCalendar.objects.create(**validated_data)
+
+    def to_representation(self, instance):
+        return {"message": ACADEMIC_CALENDER_CREATED_SUCCESS}
+
+
+class AcademicCalendarPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
+    class Meta:
+        model = AcademicCalendar
+        fields = ["program_type", "start_year", "end_year", "file", "is_active"]
+
+    def validate(self, attrs):
+        start = attrs.get("start_year", getattr(self.instance, "start_year", None))
+        end = attrs.get("end_year", getattr(self.instance, "end_year", None))
+
+        if start is not None and end is not None and start >= end:
+            raise serializers.ValidationError({"end_year": YEAR_ORDER_ERROR})
+
+        return attrs
+
+    def update(self, instance, validated_data):
+        current_user = get_user_by_context(self.context)
+
+        self.handle_file_update(instance, validated_data, "file")
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.updated_by = current_user
+        instance.save()
+        return instance
+
+    def to_representation(self, instance):
+        return {"message": ACADEMIC_CALENDER_UPDATED_SUCCESS}

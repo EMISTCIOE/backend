@@ -20,10 +20,13 @@ from src.website.messages import (
     SOCIAL_MEDIA_DELETED_SUCCESS,
     CAMPUS_DOWNLOAD_DELETED_SUCCESS,
     SOCIAL_MEDIA_NOT_FOUND,
+    ACADEMIC_CALENDER_NOT_FOUND,
     CAMPUS_FEEDBACK_RESOLVE_SUCCESS,
+    ACADEMIC_CALENDER_DELETED_SUCCESS,
 )
 
 from .models import (
+    AcademicCalendar,
     CampusDownload,
     CampusFeedback,
     CampusInfo,
@@ -32,6 +35,7 @@ from .models import (
     SocialMediaLink,
 )
 from .permissions import (
+    AcademicCalendarPermission,
     CampusDownloadPermission,
     CampusFeedbackPermission,
     CampusInfoPermission,
@@ -39,6 +43,10 @@ from .permissions import (
     CampusReportPermission,
 )
 from .serializers import (
+    AcademicCalendarCreateSerializer,
+    AcademicCalendarListSerializer,
+    AcademicCalendarPatchSerializer,
+    AcademicCalendarRetrieveSerializer,
     CampusDownloadCreateSerializer,
     CampusDownloadListSerializer,
     CampusDownloadPatchSerializer,
@@ -295,4 +303,58 @@ class CampusReportViewSet(viewsets.ModelViewSet):
         instance.delete()
         return Response(
             {"message": CAMPUS_REPORT_DELETED_SUCCESS}, status=status.HTTP_200_OK
+        )
+
+
+class FilterForAcademicCalendarViewSet(FilterSet):
+    class Meta:
+        model = AcademicCalendar
+        fields = ["program_type", "start_year", "end_year", "is_active"]
+
+
+class AcademicCalendarViewSet(viewsets.ModelViewSet):
+    permission_classes = [AcademicCalendarPermission]
+    filterset_class = FilterForAcademicCalendarViewSet
+    filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
+    search_fields = ["program_type", "start_year", "end_year"]
+    queryset = AcademicCalendar.objects.filter(is_archived=False)
+    ordering_fields = ["-created_at", "start_year", "end_year"]
+    http_method_names = ["options", "head", "get", "patch", "post", "delete"]
+
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return (
+                AcademicCalendarListSerializer
+                if self.action == "list"
+                else AcademicCalendarRetrieveSerializer
+            )
+        if self.request.method == "POST":
+            return AcademicCalendarCreateSerializer
+        if self.request.method == "PATCH":
+            return AcademicCalendarPatchSerializer
+        return AcademicCalendarRetrieveSerializer
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        set_binary_files_null_if_empty(["file"], request.data)
+        return super().create(request, *args, **kwargs)
+
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        set_binary_files_null_if_empty(["file"], request.data)
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            instance.file.delete(save=False)
+        except Exception:
+            return Response(
+                {"message": ACADEMIC_CALENDER_DELETED_SUCCESS},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        instance.delete()
+        return Response(
+            {"message": ACADEMIC_CALENDER_NOT_FOUND}, status=status.HTTP_200_OK
         )

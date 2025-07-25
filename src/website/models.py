@@ -153,7 +153,8 @@ class SocialMediaLink(AuditInfoModel):
 
 class AcademicCalendar(AuditInfoModel):
     """
-    Academic calendar for a specific program type (Bachelor's or Master's) and year.
+    Academic calendar for a specific program type (Bachelor's or Master's) and academic year range.
+    Example: 2081 Mangshir to 2082 Mangshir.
     """
 
     program_type = models.CharField(
@@ -161,7 +162,14 @@ class AcademicCalendar(AuditInfoModel):
         max_length=20,
         choices=AcademicProgramTypes.choices(),
     )
-    year = models.PositiveIntegerField(_("Year"))
+    start_year = models.PositiveIntegerField(
+        _("Start Year"),
+        help_text=_("Start year of the academic calendar (e.g., 2081)."),
+    )
+    end_year = models.PositiveIntegerField(
+        _("End Year"),
+        help_text=_("End year of the academic calendar (e.g., 2082)."),
+    )
     file = models.FileField(
         _("File"),
         upload_to=ACADEMIC_CALENDER_FILE_PATH,
@@ -172,6 +180,9 @@ class AcademicCalendar(AuditInfoModel):
     class Meta:
         verbose_name = _("Academic Calendar")
         verbose_name_plural = _("Academic Calendars")
+
+    def __str__(self):
+        return f"{self.program_type} - {self.start_year}/{self.end_year}"
 
 
 class CampusReport(AuditInfoModel):

@@ -22,7 +22,16 @@ CAMPUS_DOWNLOAD_NOT_FOUND = _("Downloads not found")
 CAMPUS_DOWNLOAD_DELETED_SUCCESS = _("Downloads deleted successfully")
 
 
-CAMPUS_REPORT_CREATED_SUCCESS = _("Campus report created successfully.")
-CAMPUS_REPORT_UPDATED_SUCCESS = _("Campus report updated successfully.")
-CAMPUS_REPORT_DELETED_SUCCESS = _("Campus report deleted successfully.")
-CAMPUS_REPORT_NOT_FOUND = _("Campus report not found.")
+CAMPUS_REPORT_CREATED_SUCCESS = _("Campus report created successfully")
+CAMPUS_REPORT_UPDATED_SUCCESS = _("Campus report updated successfully")
+CAMPUS_REPORT_DELETED_SUCCESS = _("Campus report deleted successfully")
+CAMPUS_REPORT_NOT_FOUND = _("Campus report not found")
+
+
+ACADEMIC_CALENDER_CREATED_SUCCESS = _("Academic Calendar created successfully")
+ACADEMIC_CALENDER_UPDATED_SUCCESS = _("Academic Calendar updated successfully")
+ACADEMIC_CALENDER_DELETED_SUCCESS = _("Academic Calendar deleted successfully")
+ACADEMIC_CALENDER_NOT_FOUND = _("Academic Calendar not found.")
+
+
+YEAR_ORDER_ERROR = "End year must be greater than start year."

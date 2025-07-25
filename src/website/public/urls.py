@@ -9,6 +9,8 @@ from src.website.public.views import (
     PublicCampusFeedbackCreateAPIView,
     PublicCampusInfoRetrieveAPIView,
     PublicCampusKeyOfficialListAPIView,
+    PublicCampusReportListAPIView,
+    PublicCampusAcademicCalenderListAPIView,
 )
 
 router = DefaultRouter()
@@ -19,6 +21,16 @@ urlpatterns = [
         "campus-downloads",
         PublicCampusDownloadListAPIView.as_view(),
         name="public-campus-downloads",
+    ),
+    path(
+        "campus-reports",
+        PublicCampusReportListAPIView.as_view(),
+        name="public-campus-reports",
+    ),
+    path(
+        "academic-calendars",
+        PublicCampusAcademicCalenderListAPIView.as_view(),
+        name="public-campus-academic-calenders",
     ),
     path(
         "campus-events",
