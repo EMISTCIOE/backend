@@ -22,7 +22,7 @@ class FiscalSessionBS(AuditInfoModel):
         _("Short Session"),
         max_length=5,
         unique=True,
-        help_text=_("E.g. 079/80"),
+        help_text=_("E.g. 79/80"),
     )
 
     class Meta:

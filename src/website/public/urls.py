@@ -9,6 +9,7 @@ from src.website.public.views import (
     PublicCampusFeedbackCreateAPIView,
     PublicCampusInfoRetrieveAPIView,
     PublicCampusKeyOfficialListAPIView,
+    PublicCampusReportListAPIView,
 )
 
 router = DefaultRouter()
@@ -35,6 +36,11 @@ urlpatterns = [
         "submit-feedback",
         PublicCampusFeedbackCreateAPIView.as_view(),
         name="submit-feedback",
+    ),
+    path(
+        "campus-reports",
+        PublicCampusReportListAPIView.as_view(),
+        name="public-campus-report-list",
     ),
     path("", include(router.urls)),
 ]

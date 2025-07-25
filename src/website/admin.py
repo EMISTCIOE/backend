@@ -7,6 +7,7 @@ from .models import (
     CampusFeedback,
     CampusInfo,
     CampusKeyOfficial,
+    CampusReport,
     SocialMediaLink,
 )
 
@@ -39,3 +40,4 @@ class CampusKeyOfficialAdmin(admin.ModelAdmin):
 
 
 admin.site.register(CampusFeedback)
+admin.site.register(CampusReport)

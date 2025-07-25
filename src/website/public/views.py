@@ -12,6 +12,7 @@ from src.website.models import (
     CampusEvent,
     CampusInfo,
     CampusKeyOfficial,
+    CampusReport,
 )
 from src.website.public.messages import CAMPUS_INFO_NOT_FOUND
 
@@ -22,6 +23,7 @@ from .serializer import (
     PublicCampusFeedbackSerializer,
     PublicCampusInfoSerializer,
     PublicCampusKeyOfficialSerializer,
+    PublicCampusReportSerializer,
 )
 
 
@@ -90,3 +92,15 @@ class PublicCampusFeedbackCreateAPIView(CreateAPIView):
 
     permission_classes = [AllowAny]
     serializer_class = PublicCampusFeedbackSerializer
+
+
+class PublicCampusReportListAPIView(ListAPIView):
+    """Campus Report List API"""
+
+    permission_classes = [AllowAny]
+    serializer_class = PublicCampusReportSerializer
+    queryset = CampusReport.objects.filter(is_active=True)
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    ordering = ["-published_date"]
+    ordering_fields = ["published_date", "created_at"]
+    filter_fields = ["report_type"]

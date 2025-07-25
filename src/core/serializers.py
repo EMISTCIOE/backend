@@ -9,7 +9,7 @@ from src.core.messages import (
     EMAIL_CONFIG_UPDATE_SUCCESS,
     EMAIL_TYPE_EXISTS,
 )
-from src.core.models import EmailConfig
+from src.core.models import EmailConfig, FiscalSessionBS
 from src.libs.get_context import get_user_by_context
 
 
@@ -106,3 +106,12 @@ class EmailConfigPatchSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         return {"message": EMAIL_CONFIG_UPDATE_SUCCESS, "id": instance.id}
+
+
+class FiscalSessionBSSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FiscalSessionBS
+        fields = [
+            "session_full",
+            "session_short",
+        ]
