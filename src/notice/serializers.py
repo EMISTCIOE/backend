@@ -231,7 +231,13 @@ class NoticePatchSerializer(serializers.ModelSerializer):
     def update(self, instance: Notice, validated_data):
         user = get_user_by_context(self.context)
         medias_data = validated_data.pop("medias", [])
-        thumbnail = validated_data.pop("thumbnail", None)
+
+        # Handle the thumbnail
+        if "thumbnail" in validated_data:
+            if instance.thumbnail and default_storage.exists(instance.thumbnail.name):
+                default_storage.delete(instance.thumbnail.name)
+
+            instance.thumbnail = validated_data.pop("thumbnail", None)
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value.strip() if isinstance(value, str) else value)
@@ -240,12 +246,6 @@ class NoticePatchSerializer(serializers.ModelSerializer):
             instance.status = NoticeStatus.DRAFT.value
         else:
             instance.status = NoticeStatus.PENDING.value
-
-        # Remove the old thumbnail file from disk
-        if thumbnail and default_storage.exists(instance.thumbnail.name):
-            default_storage.delete(instance.thumbnail.name)
-
-        instance.thumbnail = thumbnail
 
         # Update audit info
         instance.updated_by = user
@@ -257,7 +257,9 @@ class NoticePatchSerializer(serializers.ModelSerializer):
                 media_instance = media_data.pop("id", None)
                 if media_instance:
                     # Remove the old file from disk
-                    if media_instance.file and default_storage.exists(media_instance.file.name):
+                    if media_instance.file and default_storage.exists(
+                        media_instance.file.name
+                    ):
                         default_storage.delete(media_instance.file.name)
 
                     for key, value in media_data.items():

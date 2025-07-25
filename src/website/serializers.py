@@ -8,7 +8,6 @@ from src.libs.validators import validate_unique_fields
 from src.user.validators import validate_user_image
 from src.base.serializers import AbstractInfoRetrieveSerializer
 
-from .constants import CAMPUS_KEY_OFFICIAL_FILE_PATH
 from .messages import (
     CAMPUS_INFO_UPDATED_SUCCESS,
     CAMPUS_KEY_OFFICIAL_CREATE_SUCCESS,
@@ -195,12 +194,10 @@ class CampusKeyOfficialPatchSerializer(serializers.ModelSerializer):
 
         # Handle the photo
         if "photo" in validated_data:
-            if validated_data["photo"] is None:
-                # Remove the old file from disk
-                if instance.photo and default_storage.exists(instance.photo.name):
-                    default_storage.delete(instance.photo.name)
-            else:
-                instance.photo = validated_data.pop("photo", None)
+            if instance.photo and default_storage.exists(instance.photo.name):
+                default_storage.delete(instance.photo.name)
+
+            instance.photo = validated_data.pop("photo", None)
 
         for key, value in validated_data.items():
             setattr(instance, key, value)
