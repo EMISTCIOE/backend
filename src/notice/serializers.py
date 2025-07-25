@@ -203,7 +203,7 @@ class NoticePatchSerializer(serializers.ModelSerializer):
         queryset=NoticeCategory.objects.filter(is_active=True),
         required=False,
     )
-    is_draft = serializers.BooleanField(default=False, write_only=True)
+    is_draft = serializers.BooleanField(required=False)
 
     class Meta:
         model = Notice
@@ -242,10 +242,11 @@ class NoticePatchSerializer(serializers.ModelSerializer):
         for attr, value in validated_data.items():
             setattr(instance, attr, value.strip() if isinstance(value, str) else value)
 
-        if validated_data.get("is_draft"):
-            instance.status = NoticeStatus.DRAFT.value
-        else:
-            instance.status = NoticeStatus.PENDING.value
+        if "is_draft" in validated_data:
+            if validated_data["is_draft"]:
+                instance.status = NoticeStatus.DRAFT.value
+            else:
+                instance.status = NoticeStatus.PENDING.value
 
         # Update audit info
         instance.updated_by = user
