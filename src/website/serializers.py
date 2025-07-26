@@ -1,15 +1,28 @@
-from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_field
+from rest_framework import serializers
+from django.core.files.storage import default_storage
 
 # Project Imports
+from src.core.models import FiscalSessionBS
 from src.libs.get_context import get_user_by_context
-from src.base.serializers import AbstractInfoRetrieveSerializer
+from src.libs.mixins import FileHandlingMixin
+from src.libs.validators import validate_unique_fields
 from src.user.validators import validate_user_image
-from .constants import CAMPUS_KEY_OFFICIAL_FILE_PATH
+from src.base.serializers import AbstractInfoRetrieveSerializer
+from src.website.validators import validate_campus_download_file
+
 from .messages import (
+    ACADEMIC_CALENDER_CREATED_SUCCESS,
+    ACADEMIC_CALENDER_UPDATED_SUCCESS,
+    CAMPUS_DOWNLOAD_CREATED_SUCCESS,
+    CAMPUS_DOWNLOAD_UPDATED_SUCCESS,
     CAMPUS_INFO_UPDATED_SUCCESS,
     CAMPUS_KEY_OFFICIAL_CREATE_SUCCESS,
     CAMPUS_KEY_OFFICIAL_UPDATE_SUCCESS,
+    CAMPUS_REPORT_CREATED_SUCCESS,
+    CAMPUS_REPORT_UPDATED_SUCCESS,
+    SOCIAL_MEDIA_ALREADY_EXISTS,
+    YEAR_ORDER_ERROR,
 )
 from .models import (
     CampusInfo,
@@ -18,6 +31,15 @@ from .models import (
     CampusReport,
     CampusEventGallery,
     CampusEvent,
+)
+from .models import (
+    AcademicCalendar,
+    CampusDownload,
+    CampusFeedback,
+    CampusInfo,
+    CampusKeyOfficial,
+    CampusReport,
+    SocialMediaLink,
 )
 
 
@@ -55,35 +77,22 @@ class CampusInfoRetrieveSerializer(serializers.ModelSerializer):
 
 class SocialMediaLinkPatchSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(
-        queryset=SocialMediaLink.objects.filter(is_archived=False), required=False
+        queryset=SocialMediaLink.objects.filter(is_archived=False),
+        required=False,
     )
 
     class Meta:
         model = SocialMediaLink
         fields = ["id", "platform", "url", "is_active"]
 
-        extra_kwargs = {"platform": {"validators": []}}
-
     def validate(self, attrs):
-        """Custom validation jasle uniqueness manyally handle garcha"""
-        platform = attrs.get("platform")
-        link_id = attrs.get("id", None)
-        campus_info = self.context.get("campus_info")
-
-        if platform and campus_info:
-            social_media_query_set = SocialMediaLink.objects.filter(
-                platform=platform,
-                campus_info=campus_info,
-                is_archived=False,
-            )
-            if link_id:
-                social_media_query_set = social_media_query_set.exclude(pk=link_id)
-            if social_media_query_set.exists():
-                raise serializers.ValidationError(
-                    {"platform": "Social Media Link with this Platform already exists."}
-                )
-
-        return attrs
+        return validate_unique_fields(
+            model=SocialMediaLink,
+            attrs=attrs,
+            fields=["platform"],
+            instance=self.instance or attrs.get("id"),
+            error_messages={"platform": SOCIAL_MEDIA_ALREADY_EXISTS},
+        )
 
 
 class CampusInfoPatchSerializer(serializers.ModelSerializer):
@@ -345,6 +354,7 @@ class CampusKeyOfficialRetrieveSerializer(AbstractInfoRetrieveSerializer):
             "title_prefix",
             "full_name",
             "designation",
+            "message",
             "photo",
             "email",
             "phone_number",
@@ -364,6 +374,7 @@ class CampusKeyOfficialCreateSerializer(serializers.ModelSerializer):
             "designation",
             "photo",
             "email",
+            "message",
             "phone_number",
             "is_active",
         ]
@@ -387,6 +398,7 @@ class CampusKeyOfficialPatchSerializer(serializers.ModelSerializer):
             "full_name",
             "designation",
             "photo",
+            "message",
             "email",
             "phone_number",
             "is_active",
@@ -395,23 +407,16 @@ class CampusKeyOfficialPatchSerializer(serializers.ModelSerializer):
     def update(self, instance: CampusKeyOfficial, validated_data):
         updated_by = get_user_by_context(self.context)
         validated_data["full_name"] = validated_data.pop("full_name").title()
-        photo = validated_data.pop("photo", None)
+
+        # Handle the photo
+        if "photo" in validated_data:
+            if instance.photo and default_storage.exists(instance.photo.name):
+                default_storage.delete(instance.photo.name)
+
+            instance.photo = validated_data.pop("photo", None)
 
         for key, value in validated_data.items():
             setattr(instance, key, value)
-
-        if photo:
-            if photo is not None:
-                upload_path = instance.get_upload_path(
-                    upload_path=CAMPUS_KEY_OFFICIAL_FILE_PATH,
-                    filename=photo.name,
-                )
-                instance.photo.delete(save=False)  # Remove the old file
-                instance.photo.save(upload_path, photo)
-            else:
-                instance.photo.delete(
-                    save=True,
-                )  # Delete the existing photo if photo is None
 
         instance.updated_by = updated_by
         instance.save()
@@ -419,3 +424,270 @@ class CampusKeyOfficialPatchSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         return {"message": CAMPUS_KEY_OFFICIAL_UPDATE_SUCCESS}
+
+
+# Campus Feedback Serializers
+# ------------------------------------------------------------------------------------------------
+
+
+class CampusFeedbackListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusFeedback
+        fields = [
+            "id",
+            "full_name",
+            "roll_number",
+            "email",
+            "message",
+            "is_resolved",
+            "created_at",
+        ]
+
+
+class CampusFeedbackResolveSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusFeedback
+        fields = ["is_resolved"]
+
+
+# Campus Downloads Serializers
+# ------------------------------------------------------------------------------------------------------
+
+
+class CampusDownloadListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CampusDownload
+        fields = ["id", "title", "file", "description", "is_active"]
+
+
+class CampusDownloadRetrieveSerializer(AbstractInfoRetrieveSerializer):
+
+    class Meta(AbstractInfoRetrieveSerializer.Meta):
+        model = CampusDownload
+        fields = ["id", "title", "file", "description"]
+        fields += AbstractInfoRetrieveSerializer.Meta.fields
+
+
+class CampusDownloadCreateSerializer(serializers.ModelSerializer):
+    file = serializers.FileField(validators=[validate_campus_download_file])
+
+    class Meta:
+        model = CampusDownload
+        fields = ["title", "file", "description"]
+
+    def create(self, validated_data):
+        current_user = get_user_by_context(self.context)
+
+        # Sanitize text fields
+        validated_data["title"] = validated_data["title"].strip()
+        validated_data["created_by"] = current_user
+
+        return CampusDownload.objects.create(**validated_data)
+
+    def to_representation(self, instance) -> dict[str, str]:
+        return {"message": CAMPUS_DOWNLOAD_CREATED_SUCCESS}
+
+
+class CampusDownloadPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
+    file = serializers.FileField(
+        validators=[validate_campus_download_file], required=False
+    )
+
+    class Meta:
+        model = CampusDownload
+        fields = ["title", "file", "description", "is_active"]
+
+    def update(self, instance, validated_data):
+        current_user = get_user_by_context(self.context)
+
+        self.handle_file_update(instance, validated_data, "file")
+
+        # Sanitize fields only if present
+        title = validated_data.pop("title", None)
+        if title is not None:
+            instance.title = title.strip()
+
+        description = validated_data.pop("description", None)
+        if description is not None:
+            instance.description = description.strip()
+
+        if "is_active" in validated_data:
+            instance.is_active = validated_data["is_active"]
+
+        instance.updated_by = current_user
+        instance.save()
+
+        return instance
+
+    def to_representation(self, instance) -> dict[str, str]:
+        return {"message": CAMPUS_DOWNLOAD_UPDATED_SUCCESS}
+
+
+# Campus Reports Serializers
+# ------------------------------------------------------------------------------------------------------
+
+
+class FiscalSessionForCampusReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FiscalSessionBS
+        fields = ["id", "session_full", "session_short"]
+
+
+class CampusReportListSerializer(serializers.ModelSerializer):
+    fiscal_session = FiscalSessionForCampusReportSerializer()
+
+    class Meta:
+        model = CampusReport
+        fields = [
+            "id",
+            "report_type",
+            "fiscal_session",
+            "published_date",
+            "file",
+            "is_active",
+        ]
+
+
+class CampusReportRetrieveSerializer(AbstractInfoRetrieveSerializer):
+    fiscal_session = FiscalSessionForCampusReportSerializer()
+
+    class Meta(AbstractInfoRetrieveSerializer.Meta):
+        model = CampusReport
+        fields = [
+            "id",
+            "report_type",
+            "fiscal_session",
+            "published_date",
+            "file",
+        ]
+        fields += AbstractInfoRetrieveSerializer.Meta.fields
+
+
+class CampusReportCreateSerializer(serializers.ModelSerializer):
+    fiscal_session = serializers.PrimaryKeyRelatedField(
+        queryset=FiscalSessionBS.objects.filter(is_active=True)
+    )
+
+    class Meta:
+        model = CampusReport
+        fields = ["report_type", "fiscal_session", "published_date", "file"]
+
+    def create(self, validated_data):
+        current_user = get_user_by_context(self.context)
+        validated_data["created_by"] = current_user
+        return CampusReport.objects.create(**validated_data)
+
+    def to_representation(self, instance):
+        return {"message": CAMPUS_REPORT_CREATED_SUCCESS}
+
+
+class CampusReportPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
+    fiscal_session = serializers.PrimaryKeyRelatedField(
+        queryset=FiscalSessionBS.objects.filter(is_active=True), required=False
+    )
+
+    class Meta:
+        model = CampusReport
+        fields = [
+            "report_type",
+            "fiscal_session",
+            "published_date",
+            "file",
+            "is_active",
+        ]
+
+    def update(self, instance, validated_data):
+        current_user = get_user_by_context(self.context)
+
+        self.handle_file_update(instance, validated_data, "file")
+
+        for key, val in validated_data.items():
+            setattr(instance, key, val)
+
+        instance.updated_by = current_user
+        instance.save()
+        return instance
+
+    def to_representation(self, instance):
+        return {"message": CAMPUS_REPORT_UPDATED_SUCCESS}
+
+
+# Campus Reports Serializers
+# ------------------------------------------------------------------------------------------------------
+
+
+class AcademicCalendarListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AcademicCalendar
+        fields = ["id", "program_type", "start_year", "end_year", "file", "is_active"]
+
+
+class AcademicCalendarRetrieveSerializer(AbstractInfoRetrieveSerializer):
+    class Meta(AbstractInfoRetrieveSerializer.Meta):
+        model = AcademicCalendar
+        fields = [
+            "id",
+            "program_type",
+            "start_year",
+            "end_year",
+            "file",
+        ]
+
+        fields += AbstractInfoRetrieveSerializer.Meta.fields
+
+
+class AcademicCalendarCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AcademicCalendar
+        fields = ["program_type", "start_year", "end_year", "file"]
+
+    def validate(self, attrs):
+        start = attrs.get("start_year")
+        end = attrs.get("end_year")
+
+        if start is None or end is None:
+            return attrs
+
+        if start >= end:
+            raise serializers.ValidationError({"end_year": YEAR_ORDER_ERROR})
+
+        return attrs
+
+    def create(self, validated_data):
+        current_user = get_user_by_context(self.context)
+        validated_data["created_by"] = current_user
+        return AcademicCalendar.objects.create(**validated_data)
+
+    def to_representation(self, instance):
+        return {"message": ACADEMIC_CALENDER_CREATED_SUCCESS}
+
+
+class AcademicCalendarPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
+    class Meta:
+        model = AcademicCalendar
+        fields = ["program_type", "start_year", "end_year", "file", "is_active"]
+
+    def validate(self, attrs):
+        start = attrs.get("start_year", getattr(self.instance, "start_year", None))
+        end = attrs.get("end_year", getattr(self.instance, "end_year", None))
+
+        if start is not None and end is not None and start >= end:
+            raise serializers.ValidationError({"end_year": YEAR_ORDER_ERROR})
+
+        return attrs
+
+    def update(self, instance, validated_data):
+        current_user = get_user_by_context(self.context)
+
+        self.handle_file_update(instance, validated_data, "file")
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.updated_by = current_user
+        instance.save()
+        return instance
+
+    def to_representation(self, instance):
+        return {"message": ACADEMIC_CALENDER_UPDATED_SUCCESS}

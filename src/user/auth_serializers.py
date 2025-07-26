@@ -116,7 +116,9 @@ class UserLoginSerializer(serializers.ModelSerializer):
         }
 
     def get_photo(self, user: User) -> str | None:
-        request = self.context.get("request", )
+        request = self.context.get(
+            "request",
+        )
         if user.photo:
             return request.build_absolute_uri(user.photo.url)
         return None
@@ -124,9 +126,9 @@ class UserLoginSerializer(serializers.ModelSerializer):
     def get_user(self, persona: str) -> User:
         try:
             if "@" in persona:
-                user = User.objects.get()
+                user = User.objects.get(email=persona)
             else:
-                user = User.objects.get()
+                user = User.objects.get(username=persona)
         except User.DoesNotExist as err:
             raise serializers.ValidationError({"persona": INVALID_CREDENTIALS}) from err
         return user
@@ -283,12 +285,8 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
         photo = validated_data.get("photo")
 
         # Update user details
-        instance.first_name = (
-            validated_data.get("first_name").strip().title()
-        )
-        instance.last_name = (
-            validated_data.get("last_name").strip().title()
-        )
+        instance.first_name = validated_data.get("first_name").strip().title()
+        instance.last_name = validated_data.get("last_name").strip().title()
 
         instance.phone_no = validated_data.get("phone_no")
         instance.updated_at = timezone.now()
@@ -319,7 +317,7 @@ class UserForgetPasswordRequestSerializer(serializers.Serializer):
     def validate(self, attrs):
         email = attrs.get("email")
         try:
-            user = User.objects.get()
+            user = User.objects.get(email=email)
             if not user.is_active:
                 raise serializers.ValidationError({"email": ACCOUNT_DISABLED})
             attrs["user"] = user
@@ -413,7 +411,9 @@ class UserResetPasswordSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         new_password = validated_data["new_password"]
-        forget_password_request: UserForgetPasswordRequest = validated_data.get("forget_password_request")
+        forget_password_request: UserForgetPasswordRequest = validated_data.get(
+            "forget_password_request",
+        )
 
         user: User = validated_data["user"]
         user.set_password(new_password)

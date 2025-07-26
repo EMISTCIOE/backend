@@ -13,6 +13,7 @@ from src.core.constants import (
 from src.department.constants import (
     DEPARTMENT_DOWNLOADS_FILE_PATH,
     DEPARTMENT_EVENT_FILE_PATH,
+    DEPARTMENT_PLANS_FILE_PATH,
     DEPARTMENT_PROGRAM_THUMBNAIL_PATH,
     DEPARTMENT_STAFF_PHOTO_PATH,
     DEPARTMENT_THUMBNAIL_PATH,
@@ -92,14 +93,13 @@ class DepartmentSocialMedia(AuditInfoModel):
     department = models.ForeignKey(
         Department,
         on_delete=models.CASCADE,
-        related_name="department_social_links",
+        related_name="social_links",
         db_index=True,
         verbose_name=_("Department"),
     )
     platform = models.CharField(
         _("Platform"),
         max_length=20,
-        unique=True,
         choices=SocialMediaPlatforms.choices(),
         help_text=_("Select the social media platform."),
     )
@@ -111,6 +111,11 @@ class DepartmentSocialMedia(AuditInfoModel):
     class Meta:
         verbose_name = _("Department Social Media")
         verbose_name_plural = _("Department Social Medias")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["department", "platform"], name="unique_department_platform"
+            )
+        ]
 
     def __str__(self) -> str:
         return self.get_platform_display()
@@ -274,8 +279,8 @@ class DepartmentDownload(AuditInfoModel):
     description = RichTextField(_("Description"), blank=True)
 
     class Meta:
-        verbose_name = _("Campus Download")
-        verbose_name_plural = _("Campus Downloads")
+        verbose_name = _("Department Download")
+        verbose_name_plural = _("Department Downloads")
 
     def __str__(self) -> str:
         return self.title
@@ -392,6 +397,12 @@ class DepartmentPlanAndPolicy(AuditInfoModel):
         blank=True,
         verbose_name=_("Description"),
         help_text=_("Detailed description of the plan or policy."),
+    )
+    file = models.FileField(
+        _("File"),
+        upload_to=DEPARTMENT_PLANS_FILE_PATH,
+        null=True,
+        help_text=_("Upload the form or downloadable file."),
     )
 
     class Meta:

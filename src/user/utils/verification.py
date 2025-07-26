@@ -1,9 +1,8 @@
-from django.contrib.sites.shortcuts import get_current_site
-from django.templatetags.static import static
 from rest_framework import serializers
+from django.templatetags.static import static
 
 from src.libs.messages import UNKNOWN_ERROR
-from src.libs.send_mail import _send_email, get_basic_urls
+from src.libs.send_mail import _send_email
 
 
 def send_user_forget_password_email(
@@ -12,23 +11,22 @@ def send_user_forget_password_email(
     request,
     redirect_url: str = "reset-password",
 ):
-    current_site = get_current_site(request)
-    lock_url = f'https://{current_site.domain}{static("images/icons/lock.png")}'
     origin_url = request.headers.get("origin")
 
     try:
         subject = "Forget Password"
         body = "Account Information"
-        email_template_name = "user/forget_password"
+        email_template_name = "user/forget-password"
         verification_url = f"{origin_url}/{redirect_url}/{token}"
 
+        logo_url = f"{origin_url}{static('images/logo.png')}"
+
         email_context = {
-            "token": token,
-            "lock_url": lock_url,
-            "basic_urls": get_basic_urls(request),
-            "redirect_url": verification_url,
+            "verification_url": verification_url,
+            "logo": logo_url,
+            "username": "User",
         }
-        _send_email.delay(
+        _send_email(
             subject,
             body,
             email_template_name,
@@ -46,23 +44,23 @@ def send_user_account_verification_email(
     request,
     redirect_url: str = "verify-account",
 ):
-    current_site = get_current_site(request)
-    lock_url = f'https://{current_site.domain}{static("images/icons/lock.png")}'
     origin_url = request.headers.get("origin")
 
     try:
         subject = "Account Verification"
         body = "Account Information"
-        email_template_name = "user/account_verification"
+        email_template_name = "user/account-verification"
         verification_url = f"{origin_url}/{redirect_url}/{token}"
 
+        logo_url = f"{origin_url}{static('images/logo.png')}"
+
         email_context = {
-            "token": token,
-            "lock_url": lock_url,
-            "basic_urls": get_basic_urls(request),
-            "redirect_url": verification_url,
+            "verification_url": verification_url,
+            "logo": logo_url,
+            "username": "User",
         }
-        _send_email.delay(
+
+        _send_email(
             subject,
             body,
             email_template_name,

@@ -2,20 +2,22 @@ from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 # Project Imports
+from src.core.models import FiscalSessionBS
 from src.website.models import (
-    CampusInfo,
-    SocialMediaLink,
+    AcademicCalendar,
     CampusDownload,
     CampusEvent,
-    CampusKeyOfficial,
     CampusEventGallery,
+    CampusFeedback,
+    CampusInfo,
+    CampusKeyOfficial,
+    CampusReport,
+    SocialMediaLink,
 )
-
-
-class PublicEventGallerySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CampusEventGallery
-        fields = ["id", "image", "caption"]
+from src.website.public.messages import (
+    FEEDBACK_FULL_NAME_REQUIRED,
+    FEEDBACK_MESSAGE_TOO_SHORT,
+)
 
 
 class PublicSocialMediaLinkForCampusInfoSerializer(serializers.ModelSerializer):
@@ -49,7 +51,7 @@ class PublicCampusInfoSerializer(serializers.ModelSerializer):
 class PublicCampusDownloadSerializer(serializers.ModelSerializer):
     class Meta:
         model = CampusDownload
-        fields = ["id", "title", "description", "file", "created_at"]
+        fields = ["uuid", "title", "description", "file", "created_at"]
 
 
 class PublicCampusEventListSerializer(serializers.ModelSerializer):
@@ -66,8 +68,14 @@ class PublicCampusEventListSerializer(serializers.ModelSerializer):
         ]
 
 
+class PublicEventGalleryListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusEventGallery
+        fields = ["uuid", "image", "caption"]
+
+
 class PublicCampusEventRetrieveSerializer(serializers.ModelSerializer):
-    gallery = PublicEventGallerySerializer(many=True, read_only=True)
+    gallery = PublicEventGalleryListSerializer(many=True)
 
     class Meta:
         model = CampusEvent
@@ -96,3 +104,54 @@ class PublicCampusKeyOfficialSerializer(serializers.ModelSerializer):
             "email",
             "phone_number",
         ]
+
+
+class PublicCampusFeedbackSerializer(serializers.ModelSerializer):
+    MIN_MESSAGE_LENGTH = 10
+
+    class Meta:
+        model = CampusFeedback
+        fields = [
+            "full_name",
+            "roll_number",
+            "email",
+            "message",
+        ]
+
+    def validate_full_name(self, value):
+        cleaned_value = value.strip()
+        if not cleaned_value:
+            raise serializers.ValidationError(FEEDBACK_FULL_NAME_REQUIRED)
+        return cleaned_value
+
+    def validate_message(self, value):
+        cleaned_value = value.strip()
+        if len(cleaned_value) < self.MIN_MESSAGE_LENGTH:
+            raise serializers.ValidationError(
+                FEEDBACK_MESSAGE_TOO_SHORT.format(min_length=self.MIN_MESSAGE_LENGTH),
+            )
+        return cleaned_value
+
+    def create(self, validated_data):
+        validated_data["is_resolved"] = False
+        return super().create(validated_data)
+
+
+class PublicAcademicCalendarListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AcademicCalendar
+        fields = ["uuid", "program_type", "start_year", "end_year", "file"]
+
+
+class PublicFiscalSessionForCampusReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FiscalSessionBS
+        fields = ["uuid", "session_full", "session_short"]
+
+
+class PublicCampusReportListSerializer(serializers.ModelSerializer):
+    fiscal_session = PublicFiscalSessionForCampusReportSerializer()
+
+    class Meta:
+        model = CampusReport
+        fields = ["uuid", "report_type", "fiscal_session", "published_date", "file"]

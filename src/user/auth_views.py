@@ -71,7 +71,7 @@ class UserLoginView(APIView):
             if verification_request:
                 verification_request.update(is_archived=True)
 
-            user = User.objects.get()
+            user = User.objects.get(id=user_id)
             token = generate_secure_token()
             UserAccountVerification.objects.create(
                 user=user,

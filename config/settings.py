@@ -32,8 +32,12 @@ CSRF_TRUSTED_ORIGINS = env.list(
     default=["https://api.tcioe.edu.np"],
 )
 
-X_FRAME_OPTIONS = env("X_FRAME_OPTIONS", default="DENY")
 
+CSP_FRAME_ANCESTORS = [
+    "'self'",
+    "http://localhost:3000",
+    "https://tcioe-cms.vercel.app",
+]
 
 # APPS
 # ------------------------------------------------------------------------------
@@ -74,13 +78,13 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "corsheaders.middleware.CorsMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
+    "csp.middleware.CSPMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -201,9 +205,9 @@ LOCALE_PATHS = [
 # ------------------------------------------------------------------------------
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
-X_FRAME_OPTIONS = "DENY"
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_SSL_REDIRECT = True
 
 
 # STATIC

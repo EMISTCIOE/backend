@@ -1,25 +1,31 @@
 # Rest Framework Imports
-from rest_framework import status
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.generics import RetrieveAPIView, ListAPIView
+from rest_framework import status
+from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework.filters import SearchFilter, OrderingFilter
 
 # Project Imports
 from src.website.models import (
-    CampusInfo,
+    AcademicCalendar,
     CampusDownload,
     CampusEvent,
+    CampusInfo,
     CampusKeyOfficial,
+    CampusReport,
 )
 from src.website.public.messages import CAMPUS_INFO_NOT_FOUND
+
 from .serializer import (
-    PublicCampusInfoSerializer,
+    PublicAcademicCalendarListSerializer,
     PublicCampusDownloadSerializer,
     PublicCampusEventListSerializer,
     PublicCampusEventRetrieveSerializer,
+    PublicCampusFeedbackSerializer,
+    PublicCampusInfoSerializer,
     PublicCampusKeyOfficialSerializer,
+    PublicCampusReportListSerializer,
 )
 
 
@@ -49,6 +55,7 @@ class PublicCampusDownloadListAPIView(ListAPIView):
     queryset = CampusDownload.objects.filter(is_active=True)
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     ordering = ["-created_at"]
+    filter_fields = ["uuid"]
 
 
 class PublicCampusEventListAPIView(ListAPIView):
@@ -59,7 +66,9 @@ class PublicCampusEventListAPIView(ListAPIView):
     serializer_class = PublicCampusEventListSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     ordering = ["-created_at"]
-    filter_fields = ["event_type"]
+    ordering_fields = ["event_start_date", "created_at"]
+    search_fields = ["title"]
+    filter_fields = ["event_type", "event_start_date", "event_end_date"]
 
 
 class PublicCampusEventRetrieveAPIView(RetrieveAPIView):
@@ -79,5 +88,33 @@ class PublicCampusKeyOfficialListAPIView(ListAPIView):
     queryset = CampusKeyOfficial.objects.filter(is_active=True)
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     ordering = ["display_order"]
+    search_fields = ["full_name"]
     ordering_fields = ["display_order", "created_at"]
-    filter_fields = ["designation"]
+    filter_fields = ["uuid", "designation"]
+
+
+class PublicCampusAcademicCalenderListAPIView(ListAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = PublicAcademicCalendarListSerializer
+    queryset = AcademicCalendar.objects.filter(is_active=True)
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    ordering = ["start_year"]
+    ordering_fields = ["start_year", "end_year"]
+    filter_fields = ["uuid", "program_type", "start_year", "end_year"]
+
+
+class PublicCampusReportListAPIView(ListAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = PublicCampusReportListSerializer
+    queryset = CampusReport.objects.filter(is_active=True)
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    ordering = ["published_date"]
+    ordering_fields = ["published_date"]
+    filter_fields = ["uuid", "report_type", "published_date", "fiscal_session"]
+
+
+class PublicCampusFeedbackCreateAPIView(CreateAPIView):
+    """Campus Feedback Submission API"""
+
+    permission_classes = [AllowAny]
+    serializer_class = PublicCampusFeedbackSerializer

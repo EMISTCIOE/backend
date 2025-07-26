@@ -11,7 +11,7 @@ class ModelUUIDField(serializers.UUIDField):
         # Convert the incoming UUID to a Model instance
         try:
             uuid_val = UUID(data)  # Validate UUID format
-            return self.model.objects.get()
+            return self.model.objects.get(uuid=uuid_val)
         except (ValueError, AttributeError, self.model.DoesNotExist) as err:
             error_message = _("Invalid %s") % self.model.__name__
             raise serializers.ValidationError(error_message) from err

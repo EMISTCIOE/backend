@@ -1,12 +1,10 @@
 from ckeditor.fields import RichTextField
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models.signals import pre_delete, pre_save
-from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 
 # Project Imports
-from src.base.models import AuditInfoModel
+from src.base.models import AuditInfoModel, PublicAuditInfoModel
 from src.core.constants import (
     AcademicProgramTypes,
     SocialMediaPlatforms,
@@ -105,6 +103,7 @@ class CampusKeyOfficial(AuditInfoModel):
         default=1,
         help_text=_("Display Order (ranking) of staffs to display in website."),
     )
+    message = models.TextField(_("Message"), blank=True)
     photo = models.ImageField(
         _("Photo"),
         upload_to=CAMPUS_KEY_OFFICIAL_FILE_PATH,
@@ -154,7 +153,8 @@ class SocialMediaLink(AuditInfoModel):
 
 class AcademicCalendar(AuditInfoModel):
     """
-    Academic calendar for a specific program type (Bachelor's or Master's) and year.
+    Academic calendar for a specific program type (Bachelor's or Master's) and academic year range.
+    Example: 2081 Mangshir to 2082 Mangshir.
     """
 
     program_type = models.CharField(
@@ -162,7 +162,14 @@ class AcademicCalendar(AuditInfoModel):
         max_length=20,
         choices=AcademicProgramTypes.choices(),
     )
-    year = models.PositiveIntegerField(_("Year"))
+    start_year = models.PositiveIntegerField(
+        _("Start Year"),
+        help_text=_("Start year of the academic calendar (e.g., 2081)."),
+    )
+    end_year = models.PositiveIntegerField(
+        _("End Year"),
+        help_text=_("End year of the academic calendar (e.g., 2082)."),
+    )
     file = models.FileField(
         _("File"),
         upload_to=ACADEMIC_CALENDER_FILE_PATH,
@@ -173,6 +180,9 @@ class AcademicCalendar(AuditInfoModel):
     class Meta:
         verbose_name = _("Academic Calendar")
         verbose_name_plural = _("Academic Calendars")
+
+    def __str__(self):
+        return f"{self.program_type} - {self.start_year}/{self.end_year}"
 
 
 class CampusReport(AuditInfoModel):
@@ -530,7 +540,7 @@ class StudentClubEventGallery(AuditInfoModel):
         return self.caption or f"{self.event.title} Image"
 
 
-class CampusFeedback(AuditInfoModel):
+class CampusFeedback(PublicAuditInfoModel):
     """
     Model to collect feedback or suggestions from campus students and visitors.
     """
@@ -548,23 +558,3 @@ class CampusFeedback(AuditInfoModel):
 
     def __str__(self):
         return f"{self.full_name} - Feedback"
-
-
-@receiver(pre_delete, sender=CampusKeyOfficial)
-def delete_photo_file_on_delete(sender, instance, **kwargs):
-    if instance.photo and instance.photo.name:
-        instance.photo.delete(save=False)
-
-
-@receiver(pre_save, sender=CampusKeyOfficial)
-def delete_old_photo_on_change(sender, instance, **kwargs):
-    if not instance.pk:
-        return
-    try:
-        old_instance = CampusKeyOfficial.objects.get(pk=instance.pk)
-    except CampusKeyOfficial.DoesNotExist:
-        return
-    old_file = old_instance.photo
-    new_file = instance.photo
-    if old_file and old_file != new_file:
-        old_file.delete(save=False)
