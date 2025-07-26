@@ -123,7 +123,9 @@ class CampusInfoPatchSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         user = get_user_by_context(self.context)
         social_links = validated_data.pop("social_links", [])
-        validated_data["name"] = validated_data.pop("name").title()
+
+        if "name" in validated_data:
+            validated_data["name"] = validated_data.pop("name").strip().title()
 
         for key, val in validated_data.items():
             setattr(instance, key, val)
@@ -185,7 +187,9 @@ class CampusKeyOfficialRetrieveSerializer(AbstractInfoRetrieveSerializer):
 
 
 class CampusKeyOfficialCreateSerializer(serializers.ModelSerializer):
-    photo = serializers.ImageField(allow_null=True, validators=[validate_photo_thumbnail])
+    photo = serializers.ImageField(
+        allow_null=True, validators=[validate_photo_thumbnail]
+    )
 
     class Meta:
         model = CampusKeyOfficial
