@@ -38,6 +38,19 @@ CAMPUS_EVENT_UPDATED_SUCCESS = _("Event updated successfully")
 CAMPUS_EVENT_NOT_FOUND = _("Event not found")
 CAMPUS_EVENT_DELETED_SUCCESS = _("Event delete successfully")
 
+CAMPUS_UNION_CREATED_SUCCESS = _("Union created successfully")
+CAMPUS_UNION_UPDATED_SUCCESS = _("Union updated successfully")
+CAMPUS_UNION_NOT_FOUND = _("Union not found")
+CAMPUS_UNION_DELETED_SUCCESS = _("Union delete successfully")
+
+CAMPUS_CLUB_CREATED_SUCCESS = _("Club created successfully")
+CAMPUS_CLUB_UPDATED_SUCCESS = _("Club updated successfully")
+CAMPUS_CLUB_NOT_FOUND = _("Club not found")
+CAMPUS_CLUB_DELETED_SUCCESS = _("Club delete successfully")
+
+MEMBER_DELETED_SUCCESS = _("Member delete successfully")
+MEMBER_NOT_FOUND = _("Member not found")
+
 YEAR_ORDER_ERROR = "End year must be greater than start year."
 EVENT_DATE_ERROR = _("End date cannot be earlier than start date.")
 EVENT_GALLERY_NOT_FOUND = _("Gallery link not found.")

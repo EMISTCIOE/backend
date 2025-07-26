@@ -16,6 +16,8 @@ from src.libs.utils import set_binary_files_null_if_empty
 from src.website.messages import (
     ACADEMIC_CALENDER_DELETED_SUCCESS,
     ACADEMIC_CALENDER_NOT_FOUND,
+    CAMPUS_CLUB_DELETED_SUCCESS,
+    CAMPUS_CLUB_NOT_FOUND,
     CAMPUS_DOWNLOAD_DELETED_SUCCESS,
     CAMPUS_DOWNLOAD_NOT_FOUND,
     CAMPUS_EVENT_DELETED_SUCCESS,
@@ -24,8 +26,12 @@ from src.website.messages import (
     CAMPUS_INFO_NOT_FOUND,
     CAMPUS_REPORT_DELETED_SUCCESS,
     CAMPUS_REPORT_NOT_FOUND,
+    CAMPUS_UNION_DELETED_SUCCESS,
+    CAMPUS_UNION_NOT_FOUND,
     EVENT_GALLERY_DELETED_SUCCESS,
     EVENT_GALLERY_NOT_FOUND,
+    MEMBER_DELETED_SUCCESS,
+    MEMBER_NOT_FOUND,
     SOCIAL_MEDIA_DELETED_SUCCESS,
     SOCIAL_MEDIA_NOT_FOUND,
 )
@@ -39,16 +45,22 @@ from .models import (
     CampusInfo,
     CampusKeyOfficial,
     CampusReport,
+    CampusUnion,
+    CampusUnionMember,
     SocialMediaLink,
+    StudentClub,
+    StudentClubMember,
 )
 from .permissions import (
     AcademicCalendarPermission,
+    CampusClubPermission,
     CampusDownloadPermission,
     CampusEventPermission,
     CampusFeedbackPermission,
     CampusInfoPermission,
     CampusKeyOfficialPermission,
     CampusReportPermission,
+    CampusUnionPermission,
 )
 from .serializers import (
     AcademicCalendarCreateSerializer,
@@ -75,6 +87,14 @@ from .serializers import (
     CampusReportListSerializer,
     CampusReportPatchSerializer,
     CampusReportRetrieveSerializer,
+    CampusUnionCreateSerializer,
+    CampusUnionListSerializer,
+    CampusUnionPatchSerializer,
+    CampusUnionRetrieveSerializer,
+    StudentClubCreateSerializer,
+    StudentClubListSerializer,
+    StudentClubPatchSerializer,
+    StudentClubRetrieveSerializer,
 )
 
 
@@ -448,5 +468,179 @@ class CampusEventGalleryDestroyAPIView(generics.DestroyAPIView):
         instance.delete()
         return Response(
             {"message": EVENT_GALLERY_DELETED_SUCCESS},
+            status=status.HTTP_200_OK,
+        )
+
+
+class CampusUnionViewSet(viewsets.ModelViewSet):
+    permission_classes = [CampusUnionPermission]
+    queryset = CampusUnion.objects.filter(is_archived=False)
+    filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
+    filterset_fields = ["is_active"]
+    search_fields = ["name"]
+    ordering_fields = ["-created_at", "name"]
+    http_method_names = ["get", "head", "options", "post", "patch", "delete"]
+
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return (
+                CampusUnionListSerializer
+                if self.action == "list"
+                else CampusUnionRetrieveSerializer
+            )
+        if self.request.method == "POST":
+            return CampusUnionCreateSerializer
+        if self.request.method == "PATCH":
+            return CampusUnionPatchSerializer
+        return CampusUnionRetrieveSerializer
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+
+    @transaction.atomic
+    def destroy(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+        except Exception:
+            return Response(
+                {"message": CAMPUS_UNION_NOT_FOUND},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        members = instance.members.all()
+
+        # Delete associated photo files from disk
+        for member in members:
+            member.photo.delete(save=False)
+            member.delete()
+
+        instance.delete()
+
+        return Response(
+            {"detail": CAMPUS_UNION_DELETED_SUCCESS},
+            status=status.HTTP_200_OK,
+        )
+
+    @action(
+        detail=True,
+        methods=["delete"],
+        url_path="member/(?P<member_id>[^/.]+)",
+        name="Delete Union Member",
+    )
+    def delete_member(self, request, pk=None, member_id=None):
+        try:
+            union = self.get_object()
+        except Exception:
+            return Response(
+                {"message": CAMPUS_UNION_NOT_FOUND},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        try:
+            member = union.members.get(pk=member_id, union=pk)
+        except CampusUnionMember.DoesNotExist:
+            return Response(
+                {"detail": MEMBER_NOT_FOUND},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if member.photo:
+            member.photo.delete(save=False)
+
+        member.delete()
+
+        return Response(
+            {"detail": MEMBER_DELETED_SUCCESS},
+            status=status.HTTP_200_OK,
+        )
+
+
+class StudentClubViewSet(viewsets.ModelViewSet):
+    permission_classes = [CampusClubPermission]
+    queryset = StudentClub.objects.filter(is_archived=False)
+    filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
+    filterset_fields = ["is_active"]
+    search_fields = ["name"]
+    ordering_fields = ["-created_at", "name"]
+    http_method_names = ["get", "head", "options", "post", "patch", "delete"]
+
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return (
+                StudentClubListSerializer
+                if self.action == "list"
+                else StudentClubRetrieveSerializer
+            )
+        if self.request.method == "POST":
+            return StudentClubCreateSerializer
+        if self.request.method == "PATCH":
+            return StudentClubPatchSerializer
+        return StudentClubRetrieveSerializer
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        return super().create(request, *args, **kwargs)
+
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
+
+    @transaction.atomic
+    def destroy(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+        except Exception:
+            return Response(
+                {"message": CAMPUS_CLUB_NOT_FOUND},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        members = instance.members.all()
+
+        # Delete associated photo files from disk
+        for member in members:
+            member.photo.delete(save=False)
+            member.delete()
+
+        instance.delete()
+
+        return Response(
+            {"detail": CAMPUS_CLUB_DELETED_SUCCESS},
+            status=status.HTTP_200_OK,
+        )
+
+    @action(
+        detail=True,
+        methods=["delete"],
+        url_path="member/(?P<member_id>[^/.]+)",
+        name="Delete Club Member",
+    )
+    def delete_member(self, request, pk=None, member_id=None):
+        try:
+            club = self.get_object()
+        except Exception:
+            return Response(
+                {"message": CAMPUS_CLUB_NOT_FOUND},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        try:
+            member = club.members.get(pk=member_id, club=pk)
+        except StudentClubMember.DoesNotExist:
+            return Response(
+                {"detail": MEMBER_NOT_FOUND},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if member.photo:
+            member.photo.delete(save=False)
+
+        member.delete()
+
+        return Response(
+            {"detail": MEMBER_DELETED_SUCCESS},
             status=status.HTTP_200_OK,
         )

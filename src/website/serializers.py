@@ -18,6 +18,8 @@ from src.website.validators import (
 from .messages import (
     ACADEMIC_CALENDER_CREATED_SUCCESS,
     ACADEMIC_CALENDER_UPDATED_SUCCESS,
+    CAMPUS_CLUB_CREATED_SUCCESS,
+    CAMPUS_CLUB_UPDATED_SUCCESS,
     CAMPUS_DOWNLOAD_CREATED_SUCCESS,
     CAMPUS_DOWNLOAD_UPDATED_SUCCESS,
     CAMPUS_EVENT_CREATED_SUCCESS,
@@ -27,6 +29,8 @@ from .messages import (
     CAMPUS_KEY_OFFICIAL_UPDATE_SUCCESS,
     CAMPUS_REPORT_CREATED_SUCCESS,
     CAMPUS_REPORT_UPDATED_SUCCESS,
+    CAMPUS_UNION_CREATED_SUCCESS,
+    CAMPUS_UNION_UPDATED_SUCCESS,
     EVENT_DATE_ERROR,
     SOCIAL_MEDIA_ALREADY_EXISTS,
     YEAR_ORDER_ERROR,
@@ -40,7 +44,11 @@ from .models import (
     CampusInfo,
     CampusKeyOfficial,
     CampusReport,
+    CampusUnion,
+    CampusUnionMember,
     SocialMediaLink,
+    StudentClub,
+    StudentClubMember,
 )
 
 # Campus Info Serializers
@@ -676,3 +684,247 @@ class CampusEventPatchSerializer(FileHandlingMixin, serializers.ModelSerializer)
 
     def to_representation(self, instance) -> dict[str, str]:
         return {"message": CAMPUS_EVENT_UPDATED_SUCCESS}
+
+
+# Campus Union Serializers
+# ------------------------------------------------------------------------------------------------------
+
+
+class CampusUnionMemberListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusUnionMember
+        fields = ["id", "full_name", "designation", "photo", "is_active"]
+
+
+class CampusUnionListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusUnion
+        fields = ["id", "name", "description", "is_active"]
+
+
+class CampusUnionRetrieveSerializer(AbstractInfoRetrieveSerializer):
+    members = CampusUnionMemberListSerializer(many=True)
+
+    class Meta(AbstractInfoRetrieveSerializer.Meta):
+        model = CampusUnion
+        fields = ["id", "name", "description", "members"]
+
+        fields += AbstractInfoRetrieveSerializer.Meta.fields
+
+
+class CampusUnionMemberCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusUnionMember
+        fields = ["full_name", "designation", "photo"]
+
+
+class CampusUnionCreateSerializer(serializers.ModelSerializer):
+    members = CampusUnionMemberCreateSerializer(many=True, allow_null=True)
+
+    class Meta:
+        model = CampusUnion
+        fields = ["name", "description", "members"]
+
+    def create(self, validated_data):
+        current_user = get_user_by_context(self.context)
+        members_data = validated_data.pop("members", [])
+
+        validated_data["name"] = validated_data["name"].strip()
+        validated_data["created_by"] = current_user
+        union = CampusUnion.objects.create(**validated_data)
+
+        for member_data in members_data:
+            CampusUnionMember.objects.create(
+                union=union,
+                **member_data,
+                created_by=current_user,
+            )
+
+        return union
+
+    def to_representation(self, instance):
+        return {"message": CAMPUS_UNION_CREATED_SUCCESS}
+
+
+class CampusUnionMemberPatchSerializer(serializers.ModelSerializer):
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=CampusUnionMember.objects.filter(is_archived=False),
+        required=False,
+    )
+
+    class Meta:
+        model = CampusUnionMember
+        fields = ["id", "full_name", "designation", "photo", "is_active"]
+
+
+class CampusUnionPatchSerializer(serializers.ModelSerializer):
+    members = CampusUnionMemberPatchSerializer(many=True, required=False)
+
+    class Meta:
+        model = CampusUnion
+        fields = ["name", "description", "members", "is_active"]
+
+    def update(self, instance, validated_data):
+        current_user = get_user_by_context(self.context)
+        union_members = validated_data.pop("members", [])
+
+        name = validated_data.pop("name", None)
+        if name is not None:
+            instance.name = name.strip()
+
+        for k, v in validated_data.items():
+            setattr(instance, k, v)
+
+        # Handle union members
+        for union_member_data in union_members:
+            if "id" in union_member_data:
+                obj = union_member_data.pop("id")
+                union_member_data["updated_by"] = current_user
+
+                for key, val in union_member_data.items():
+                    setattr(obj, key, val)
+                obj.save()
+            else:
+                union_member_data["union"] = instance
+                union_member_data["created_by"] = current_user
+                CampusUnionMember.objects.create(**union_member_data)
+
+        instance.updated_by = current_user
+        instance.save()
+        return instance
+
+    def to_representation(self, instance):
+        return {"message": CAMPUS_UNION_UPDATED_SUCCESS}
+
+
+# Student Club Serializers
+# ------------------------------------------------------------------------------------------------------
+
+
+class StudentClubMemberListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentClubMember
+        fields = ["id", "full_name", "designation", "photo", "is_active"]
+
+
+class StudentClubListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentClub
+        fields = ["id", "name", "short_description", "thumbnail", "is_active"]
+
+
+class StudentClubRetrieveSerializer(AbstractInfoRetrieveSerializer):
+    members = StudentClubMemberListSerializer(many=True)
+
+    class Meta(AbstractInfoRetrieveSerializer.Meta):
+        model = StudentClub
+        fields = [
+            "id",
+            "name",
+            "short_description",
+            "thumbnail",
+            "detailed_description",
+            "members",
+        ]
+
+        fields += AbstractInfoRetrieveSerializer.Meta.fields
+
+
+class StudentClubMemberCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentClubMember
+        fields = ["full_name", "designation", "photo"]
+
+
+class StudentClubCreateSerializer(serializers.ModelSerializer):
+    members = StudentClubMemberCreateSerializer(many=True, allow_null=True)
+
+    class Meta:
+        model = StudentClub
+        fields = [
+            "name",
+            "short_description",
+            "thumbnail",
+            "detailed_description",
+            "members",
+        ]
+
+    def create(self, validated_data):
+        current_user = get_user_by_context(self.context)
+        members_data = validated_data.pop("members", [])
+
+        validated_data["name"] = validated_data["name"].strip()
+        validated_data["created_by"] = current_user
+        club = StudentClub.objects.create(**validated_data)
+
+        for member_data in members_data:
+            StudentClubMember.objects.create(
+                club=club,
+                **member_data,
+                created_by=current_user,
+            )
+
+        return club
+
+    def to_representation(self, instance):
+        return {"message": CAMPUS_CLUB_CREATED_SUCCESS}
+
+
+class StudentClubMemberPatchSerializer(serializers.ModelSerializer):
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=StudentClubMember.objects.filter(is_archived=False),
+        required=False,
+    )
+
+    class Meta:
+        model = StudentClubMember
+        fields = ["id", "full_name", "designation", "photo", "is_active"]
+
+
+class StudentClubPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
+    members = StudentClubMemberPatchSerializer(many=True, required=False)
+
+    class Meta:
+        model = StudentClub
+        fields = [
+            "name",
+            "short_description",
+            "thumbnail",
+            "detailed_description",
+            "members",
+            "is_active",
+        ]
+
+    def update(self, instance, validated_data):
+        current_user = get_user_by_context(self.context)
+        club_members = validated_data.pop("members", [])
+
+        self.handle_file_update(instance, validated_data, "thumbnail")
+
+        name = validated_data.pop("name", None)
+        if name is not None:
+            instance.name = name.strip()
+
+        for k, v in validated_data.items():
+            setattr(instance, k, v)
+
+        # Handle club members
+        for club_member_data in club_members:
+            if "id" in club_member_data:
+                obj = club_member_data.pop("id")
+                club_member_data["updated_by"] = current_user
+
+                for key, val in club_member_data.items():
+                    setattr(obj, key, val)
+                obj.save()
+            else:
+                club_member_data["club"] = instance
+                club_member_data["created_by"] = current_user
+                StudentClubMember.objects.create(**club_member_data)
+
+        instance.updated_by = current_user
+        instance.save()
+        return instance
+
+    def to_representation(self, instance):
+        return {"message": CAMPUS_CLUB_UPDATED_SUCCESS}

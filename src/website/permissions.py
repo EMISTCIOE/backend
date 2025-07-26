@@ -80,3 +80,25 @@ class CampusEventPermission(BasePermission):
             "DELETE": "delete_campus_event",
         }
         return validate_permissions(request, user_permissions_dict)
+
+
+class CampusUnionPermission(BasePermission):
+    def has_permission(self, request, view):
+        user_permissions_dict = {
+            "SAFE_METHODS": "view_campus_union",
+            "POST": "add_campus_union",
+            "PATCH": "edit_campus_union",
+            "DELETE": "delete_campus_union",
+        }
+        return validate_permissions(request, user_permissions_dict)
+
+
+class CampusClubPermission(BasePermission):
+    def has_permission(self, request, view):
+        user_permissions_dict = {
+            "SAFE_METHODS": "view_campus_club",
+            "POST": "add_campus_club",
+            "PATCH": "edit_campus_club",
+            "DELETE": "delete_campus_club",
+        }
+        return validate_permissions(request, user_permissions_dict)

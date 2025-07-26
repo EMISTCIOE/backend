@@ -10,7 +10,9 @@ from .views import (
     CampusInfoAPIView,
     CampusKeyOfficialViewSet,
     CampusReportViewSet,
+    CampusUnionViewSet,
     SocialMediaLinkDeleteAPIView,
+    StudentClubViewSet,
 )
 
 router = DefaultRouter(trailing_slash=False)
@@ -29,6 +31,8 @@ router.register(
     basename="academic-calendar",
 )
 router.register("campus-events", CampusEventViewSet, basename="campus-event")
+router.register("student-clubs", StudentClubViewSet, basename="student-club")
+router.register("campus-unions", CampusUnionViewSet, basename="campus-unions")
 
 urlpatterns = [
     path("campus-info", CampusInfoAPIView.as_view(), name="campus-info"),
