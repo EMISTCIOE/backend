@@ -205,7 +205,6 @@ LOCALE_PATHS = [
 # ------------------------------------------------------------------------------
 SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
-X_FRAME_OPTIONS = "DENY"
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
