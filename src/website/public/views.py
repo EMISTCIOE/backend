@@ -55,7 +55,7 @@ class PublicCampusDownloadListAPIView(ListAPIView):
     queryset = CampusDownload.objects.filter(is_active=True)
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     ordering = ["-created_at"]
-    filter_fields = ["uuid"]
+    filterset_fields = ["uuid"]
 
 
 class PublicCampusEventListAPIView(ListAPIView):
@@ -68,7 +68,7 @@ class PublicCampusEventListAPIView(ListAPIView):
     ordering = ["-created_at"]
     ordering_fields = ["event_start_date", "created_at"]
     search_fields = ["title"]
-    filter_fields = ["event_type", "event_start_date", "event_end_date"]
+    filterset_fields = ["event_type", "event_start_date", "event_end_date"]
 
 
 class PublicCampusEventRetrieveAPIView(RetrieveAPIView):
@@ -90,7 +90,7 @@ class PublicCampusKeyOfficialListAPIView(ListAPIView):
     ordering = ["display_order"]
     search_fields = ["full_name"]
     ordering_fields = ["display_order", "created_at"]
-    filter_fields = ["uuid", "designation"]
+    filterset_fields = ["uuid", "designation"]
 
 
 class PublicCampusAcademicCalenderListAPIView(ListAPIView):
@@ -100,7 +100,7 @@ class PublicCampusAcademicCalenderListAPIView(ListAPIView):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     ordering = ["start_year"]
     ordering_fields = ["start_year", "end_year"]
-    filter_fields = ["uuid", "program_type", "start_year", "end_year"]
+    filterset_fields = ["uuid", "program_type", "start_year", "end_year"]
 
 
 class PublicCampusReportListAPIView(ListAPIView):
@@ -110,7 +110,7 @@ class PublicCampusReportListAPIView(ListAPIView):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     ordering = ["published_date"]
     ordering_fields = ["published_date"]
-    filter_fields = ["uuid", "report_type", "published_date", "fiscal_session"]
+    filterset_fields = ["uuid", "report_type", "published_date", "fiscal_session"]
 
 
 class PublicCampusFeedbackCreateAPIView(CreateAPIView):

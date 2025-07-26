@@ -38,6 +38,12 @@ CSP_FRAME_ANCESTORS = [
     "http://localhost:3000",
     "https://tcioe-cms.vercel.app",
 ]
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_IMG_SRC = ("'self'", "data:", "https://cdn.jsdelivr.net")  # Allow Swagger icons
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net")
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net")
+CSP_FONT_SRC = ("'self'", "https://cdn.jsdelivr.net")
+
 
 # APPS
 # ------------------------------------------------------------------------------

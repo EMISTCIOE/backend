@@ -20,7 +20,7 @@ class DepartmentForNoticeListAPIView(ListAPIView):
     queryset = Department.objects.filter(is_active=True)
     serializer_class = DepartmentForNoticeListSerializer
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
-    filter_fields = ["id", "name"]
+    filterset_fields = ["id", "name"]
     search_fields = ["name", "short_name"]
     ordering_fields = ["created_at", "name"]
     ordering = ["name"]
@@ -31,7 +31,7 @@ class CategoryForNoticeListAPIView(ListAPIView):
     queryset = NoticeCategory.objects.filter(is_active=True)
     serializer_class = CategoryForNoticeListSerializer
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
-    filter_fields = ["id", "name"]
+    filterset_fields = ["id", "name"]
     search_fields = ["name"]
     ordering_fields = ["created_at", "name"]
     ordering = ["name"]
@@ -42,7 +42,7 @@ class AuthorForNoticeListAPIView(ListAPIView):
     serializer_class = UserForNoticeListSerializer
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
     queryset = User.objects.filter(is_active=True)
-    filter_fields = ["id", "email"]
+    filterset_fields = ["id", "email"]
     search_fields = ["first_name", "email"]
     ordering_fields = ["created_at", "email"]
     ordering = ["-created_at", "first_name"]
