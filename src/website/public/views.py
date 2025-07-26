@@ -1,10 +1,13 @@
 # Rest Framework Imports
+import django_filters
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.viewsets import ReadOnlyModelViewSet
+from django_filters.filterset import FilterSet
 
 # Project Imports
 from src.website.models import (
@@ -14,6 +17,9 @@ from src.website.models import (
     CampusInfo,
     CampusKeyOfficial,
     CampusReport,
+    CampusUnion,
+    StudentClub,
+    StudentClubEvent,
 )
 from src.website.public.messages import CAMPUS_INFO_NOT_FOUND
 
@@ -26,6 +32,12 @@ from .serializer import (
     PublicCampusInfoSerializer,
     PublicCampusKeyOfficialSerializer,
     PublicCampusReportListSerializer,
+    PublicCampusUnionListSerializer,
+    PublicCampusUnionRetrieveSerializer,
+    PublicStudentClubEventListSerializer,
+    PublicStudentClubEventRetrieveSerializer,
+    PublicStudentClubListSerializer,
+    PublicStudentClubRetrieveSerializer,
 )
 
 
@@ -118,3 +130,64 @@ class PublicCampusFeedbackCreateAPIView(CreateAPIView):
 
     permission_classes = [AllowAny]
     serializer_class = PublicCampusFeedbackSerializer
+
+
+class PublicCampusUnionReadOnlyViewSet(ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
+    queryset = CampusUnion.objects.filter(is_active=True)
+    filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
+    filterset_fields = ["name"]
+    search_fields = ["name"]
+    ordering_fields = ["-created_at", "name"]
+    http_method_names = ["get", "head", "options"]
+    lookup_field = "uuid"
+    lookup_url_kwarg = "uuid"
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return PublicCampusUnionListSerializer
+        return PublicCampusUnionRetrieveSerializer
+
+
+class PublicStudentClubReadOnlyViewSet(ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
+    queryset = StudentClub.objects.filter(is_active=True)
+    filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
+    filterset_fields = ["name"]
+    search_fields = ["name"]
+    ordering_fields = ["-created_at", "name"]
+    http_method_names = ["get", "head", "options"]
+    lookup_field = "uuid"
+    lookup_url_kwarg = "uuid"
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return PublicStudentClubListSerializer
+        return PublicStudentClubRetrieveSerializer
+
+
+class PublicStudentClubEventFilter(FilterSet):
+    club = django_filters.UUIDFilter(field_name="club.uuid", label="Club")
+
+    class Meta:
+        model = StudentClubEvent
+        fields = ["club", "date"]
+
+
+class PublicStudentClubEventViewSet(ReadOnlyModelViewSet):
+    """
+    Public API for listing and retrieving student club events with galleries.
+    """
+
+    permission_classes = [AllowAny]
+    queryset = StudentClubEvent.objects.filter(is_archived=False)
+    filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
+    filterset_class = PublicStudentClubEventFilter
+    search_fields = ["title", "description"]
+    ordering_fields = ["-created_at", "title", "date"]
+    http_method_names = ["get", "head", "options"]
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return PublicStudentClubEventListSerializer
+        return PublicStudentClubEventRetrieveSerializer

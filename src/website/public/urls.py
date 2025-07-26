@@ -11,12 +11,30 @@ from src.website.public.views import (
     PublicCampusKeyOfficialListAPIView,
     PublicCampusReportListAPIView,
     PublicCampusAcademicCalenderListAPIView,
+    PublicCampusUnionReadOnlyViewSet,
+    PublicStudentClubEventViewSet,
+    PublicStudentClubReadOnlyViewSet,
 )
 
-router = DefaultRouter()
+router = DefaultRouter(trailing_slash=False)
+
+router.register(
+    "unions", PublicCampusUnionReadOnlyViewSet, basename="public-campus-union"
+)
+router.register(
+    "clubs", PublicStudentClubReadOnlyViewSet, basename="public-campus-club"
+)
+router.register(
+    "club-events", PublicStudentClubEventViewSet, basename="public-club-event"
+)
+
 
 urlpatterns = [
-    path("campus-info", PublicCampusInfoRetrieveAPIView.as_view(), name="campus-info"),
+    path(
+        "campus-info",
+        PublicCampusInfoRetrieveAPIView.as_view(),
+        name="public-campus-info",
+    ),
     path(
         "campus-downloads",
         PublicCampusDownloadListAPIView.as_view(),
@@ -46,7 +64,7 @@ urlpatterns = [
     path(
         "submit-feedback",
         PublicCampusFeedbackCreateAPIView.as_view(),
-        name="submit-feedback",
+        name="public-submit-feedback",
     ),
     path("", include(router.urls)),
 ]

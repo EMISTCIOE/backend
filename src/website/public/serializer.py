@@ -12,7 +12,13 @@ from src.website.models import (
     CampusInfo,
     CampusKeyOfficial,
     CampusReport,
+    CampusUnion,
+    CampusUnionMember,
     SocialMediaLink,
+    StudentClub,
+    StudentClubEvent,
+    StudentClubEventGallery,
+    StudentClubMember,
 )
 from src.website.public.messages import (
     FEEDBACK_FULL_NAME_REQUIRED,
@@ -100,6 +106,7 @@ class PublicCampusKeyOfficialSerializer(serializers.ModelSerializer):
             "title_prefix",
             "full_name",
             "designation",
+            "message",
             "photo",
             "email",
             "phone_number",
@@ -155,3 +162,85 @@ class PublicCampusReportListSerializer(serializers.ModelSerializer):
     class Meta:
         model = CampusReport
         fields = ["uuid", "report_type", "fiscal_session", "published_date", "file"]
+
+
+# Campus Unions and Clubs Serializers
+# ----------------------------------------------------------------------------------------------------
+
+
+class PublicCampusUnionMemberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusUnionMember
+        fields = ["uuid", "full_name", "designation", "photo"]
+
+
+class PublicCampusUnionListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusUnion
+        fields = ["uuid", "name"]
+
+
+class PublicCampusUnionRetrieveSerializer(serializers.ModelSerializer):
+    members = PublicCampusUnionMemberSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = CampusUnion
+        fields = ["uuid", "name", "description", "members"]
+
+
+class PublicStudentClubMemberSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentClubMember
+        fields = ["uuid", "full_name", "designation", "photo"]
+
+
+class PublicStudentClubListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentClub
+        fields = ["uuid", "name", "short_description", "thumbnail"]
+
+
+class PublicStudentClubRetrieveSerializer(serializers.ModelSerializer):
+    members = PublicStudentClubMemberSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = StudentClub
+        fields = [
+            "uuid",
+            "name",
+            "short_description",
+            "detailed_description",
+            "thumbnail",
+            "members",
+        ]
+
+
+class PublicStudentClubEventGallerySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentClubEventGallery
+        fields = ["uuid", "image", "caption", "created_at"]
+
+
+class PublicStudentClubEventListSerializer(serializers.ModelSerializer):
+    club_name = serializers.CharField(source="club.name", read_only=True)
+
+    class Meta:
+        model = StudentClubEvent
+        fields = ["uuid", "title", "club_name", "date", "thumbnail"]
+
+
+class PublicStudentClubEventRetrieveSerializer(serializers.ModelSerializer):
+    club_name = serializers.CharField(source="club.name", read_only=True)
+    gallery = PublicStudentClubEventGallerySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = StudentClubEvent
+        fields = [
+            "uuid",
+            "title",
+            "description",
+            "date",
+            "thumbnail",
+            "club_name",
+            "gallery",
+        ]

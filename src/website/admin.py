@@ -8,10 +8,14 @@ from .models import (
     CampusInfo,
     CampusKeyOfficial,
     SocialMediaLink,
+    CampusUnion,
+    StudentClub,
 )
 
 admin.site.register(CampusEvent)
 admin.site.register(CampusEventGallery)
+admin.site.register(CampusUnion)
+admin.site.register(StudentClub)
 
 
 @admin.register(CampusInfo)
