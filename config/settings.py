@@ -32,8 +32,12 @@ CSRF_TRUSTED_ORIGINS = env.list(
     default=["https://api.tcioe.edu.np"],
 )
 
-X_FRAME_OPTIONS = env("X_FRAME_OPTIONS", default="DENY")
 
+CSP_FRAME_ANCESTORS = [
+    "'self'",
+    "http://localhost:3000",
+    "https://tcioe-cms.vercel.app",
+]
 
 # APPS
 # ------------------------------------------------------------------------------
@@ -74,13 +78,13 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "corsheaders.middleware.CorsMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
+    "csp.middleware.CSPMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
