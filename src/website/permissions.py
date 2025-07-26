@@ -3,6 +3,28 @@ from rest_framework.permissions import BasePermission
 from src.libs.permissions import validate_permissions
 
 
+class CampusReportPermission(BasePermission):
+    def has_permission(self, request, view):
+        user_permissions_dict = {
+            "SAFE_METHODS": "view_campus_report",
+            "POST": "add_campus_report",
+            "PATCH": "edit_campus_report",
+            "DELETE": "delete_campus_report",
+        }
+        return validate_permissions(request, user_permissions_dict)
+
+
+class CampusEventPermission(BasePermission):
+    def has_permission(self, request, view):
+        user_permissions_dict = {
+            "SAFE_METHODS": "view_campus_event",
+            "POST": "add_campus_event",
+            "PATCH": "edit_campus_event",
+            "DELETE": "delete_campus_event",
+        }
+        return validate_permissions(request, user_permissions_dict)
+
+
 class CampusInfoPermission(BasePermission):
     def has_permission(self, request, view):
         user_permissions_dict = {

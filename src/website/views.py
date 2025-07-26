@@ -11,8 +11,14 @@ from src.website.messages import (
     SOCIAL_MEDIA_DELETED_SUCCESS,
     SOCIAL_MEDIA_NOT_FOUND,
 )
-from .models import CampusInfo, CampusKeyOfficial, SocialMediaLink
-from .permissions import CampusInfoPermission, CampusKeyOfficialPermission
+from .models import (
+    CampusInfo,
+    CampusKeyOfficial,
+    SocialMediaLink,
+    CampusReport,
+    CampusEvent,
+)
+
 from .serializers import (
     CampusInfoPatchSerializer,
     CampusInfoRetrieveSerializer,
@@ -20,7 +26,96 @@ from .serializers import (
     CampusKeyOfficialListSerializer,
     CampusKeyOfficialPatchSerializer,
     CampusKeyOfficialRetrieveSerializer,
+    CampusReportListSerializer,
+    CampusReportRetrieveSerializer,
+    CampusReportCreateSerializer,
+    CampusReportPatchSerializer,
+    CampusEventListSerializer,
+    CampusEventRetrieveSerializer,
+    CampusEventCreateSerializer,
+    CampusEventPatchSerializer,
 )
+
+from .permissions import (
+    CampusReportPermission,
+    CampusEventPermission,
+    CampusInfoPermission,
+    CampusKeyOfficialPermission,
+)
+
+
+class CampusReportViewSet(viewsets.ModelViewSet):
+    """Campus Report API"""
+
+    permission_classes = [CampusReportPermission]
+    queryset = CampusReport.objects.all()
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ["report_type", "fiscal_session", "is_active"]
+    search_fields = ["report_type"]
+    ordering_fields = ["published_date", "created_at"]
+    ordering = ["-created_at"]
+    http_method_names = ["get", "post", "patch", "delete", "head", "options"]
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return CampusReportListSerializer
+        elif self.action == "retrieve":
+            return CampusReportRetrieveSerializer
+        elif self.action == "create":
+            return CampusReportCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return CampusReportPatchSerializer
+        return CampusReportListSerializer
+
+    def perform_destroy(self, instance):
+        if instance.file:
+            instance.file.delete(save=False)
+        instance.delete()
+
+
+class CampusEventViewSet(viewsets.ModelViewSet):
+    """Campus Event API"""
+
+    permission_classes = [CampusEventPermission]
+    queryset = CampusEvent.objects.all()
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ["event_type", "is_active"]
+    search_fields = ["title", "description_short", "description_detailed"]
+    ordering_fields = ["event_start_date", "created_at"]
+    ordering = ["-created_at"]
+    http_method_names = ["get", "post", "patch", "delete", "head", "options"]
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return CampusEventListSerializer
+        elif self.action == "retrieve":
+            return CampusEventRetrieveSerializer
+        elif self.action == "create":
+            return CampusEventCreateSerializer
+        elif self.action in ["update", "partial_update"]:
+            return CampusEventPatchSerializer
+        return CampusEventListSerializer
+
+    @transaction.atomic
+    def perform_destroy(self, instance):
+        # Delete thumbnail file
+        if instance.thumbnail:
+            instance.thumbnail.delete(save=False)
+        # Delete all gallery images
+        for gallery in instance.gallery.all():
+            if gallery.image:
+                gallery.image.delete(save=False)
+            gallery.delete()
+        instance.delete()
+
+    @transaction.atomic
+    def perform_update(self, serializer):
+        instance = self.get_object()
+        old_thumb = instance.thumbnail
+        new_thumb = self.request.FILES.get("thumbnail")
+        if old_thumb and new_thumb and old_thumb != new_thumb:
+            old_thumb.delete(save=False)
+        serializer.save()
 
 
 class CampusInfoAPIView(generics.GenericAPIView):

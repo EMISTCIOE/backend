@@ -11,7 +11,14 @@ from .messages import (
     CAMPUS_KEY_OFFICIAL_CREATE_SUCCESS,
     CAMPUS_KEY_OFFICIAL_UPDATE_SUCCESS,
 )
-from .models import CampusInfo, CampusKeyOfficial, SocialMediaLink
+from .models import (
+    CampusInfo,
+    CampusKeyOfficial,
+    SocialMediaLink,
+    CampusReport,
+    CampusEventGallery,
+    CampusEvent,
+)
 
 
 # Campus Info Serializers
@@ -119,6 +126,196 @@ class CampusInfoPatchSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance) -> dict[str, str]:
         return {"message": CAMPUS_INFO_UPDATED_SUCCESS, "id": instance.id}
+
+
+# Campus Event Serializers
+# ---------------------------------------------------------------------------------------------------
+
+
+class CampusEventGalleryListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusEventGallery
+        fields = ["id", "image", "caption"]
+
+
+class CampusEventGalleryCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusEventGallery
+        fields = ["image", "caption"]
+
+
+class CampusEventListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusEvent
+        fields = [
+            "uuid",
+            "title",
+            "description_short",
+            "event_type",
+            "event_start_date",
+            "event_end_date",
+            "thumbnail",
+        ]
+
+
+class CampusEventRetrieveSerializer(AbstractInfoRetrieveSerializer):
+    gallery = CampusEventGalleryListSerializer(many=True)
+
+    class Meta(AbstractInfoRetrieveSerializer.Meta):
+        model = CampusEvent
+        fields = [
+            "uuid",
+            "title",
+            "description_short",
+            "description_detailed",
+            "event_type",
+            "event_start_date",
+            "event_end_date",
+            "thumbnail",
+            "gallery",
+        ]
+        fields += AbstractInfoRetrieveSerializer.Meta.fields
+
+
+class CampusEventCreateSerializer(serializers.ModelSerializer):
+    gallery = CampusEventGalleryCreateSerializer(many=True, required=False)
+
+    class Meta:
+        model = CampusEvent
+        fields = [
+            "title",
+            "description_short",
+            "description_detailed",
+            "event_type",
+            "event_start_date",
+            "event_end_date",
+            "thumbnail",
+            "gallery",
+            "is_active",
+        ]
+
+    def create(self, validated_data):
+        gallery_data = validated_data.pop("gallery", [])
+        user = get_user_by_context(self.context)
+        event = CampusEvent.objects.create(**validated_data, created_by=user)
+
+        for gallery_item in gallery_data:
+            CampusEventGallery.objects.create(event=event, **gallery_item)
+
+        return event
+
+
+class CampusEventPatchSerializer(serializers.ModelSerializer):
+    gallery = CampusEventGalleryCreateSerializer(many=True, required=False)
+
+    class Meta:
+        model = CampusEvent
+        fields = [
+            "title",
+            "description_short",
+            "description_detailed",
+            "event_type",
+            "event_start_date",
+            "event_end_date",
+            "thumbnail",
+            "gallery",
+            "is_active",
+        ]
+
+    def update(self, instance, validated_data):
+        gallery_data = validated_data.pop("gallery", None)
+        user = get_user_by_context(self.context)
+
+        # Update simple fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.updated_by = user
+        instance.save()
+
+        # Update gallery if provided
+        if gallery_data is not None:
+            # Delete old gallery and add new
+            instance.gallery.all().delete()
+            for gallery_item in gallery_data:
+                CampusEventGallery.objects.create(event=instance, **gallery_item)
+
+        return instance
+
+
+# Campus Report Serializers
+# ---------------------------------------------------------------------------------------------------
+
+
+class CampusReportListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusReport
+        fields = [
+            "id",
+            "report_type",
+            "fiscal_session",
+            "published_date",
+            "file",
+            "is_active",
+            "created_at",
+        ]
+
+
+class CampusReportRetrieveSerializer(AbstractInfoRetrieveSerializer):
+    class Meta(AbstractInfoRetrieveSerializer.Meta):
+        model = CampusReport
+        fields = [
+            "id",
+            "report_type",
+            "fiscal_session",
+            "published_date",
+            "file",
+            "is_active",
+        ]
+        fields += AbstractInfoRetrieveSerializer.Meta.fields
+
+
+class CampusReportCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusReport
+        fields = [
+            "report_type",
+            "fiscal_session",
+            "published_date",
+            "file",
+            "is_active",
+        ]
+
+    def create(self, validated_data):
+        user = get_user_by_context(self.context)
+        validated_data["created_by"] = user
+        return CampusReport.objects.create(**validated_data)
+
+
+class CampusReportPatchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusReport
+        fields = [
+            "report_type",
+            "fiscal_session",
+            "published_date",
+            "file",
+            "is_active",
+        ]
+
+    def update(self, instance, validated_data):
+        user = get_user_by_context(self.context)
+
+        # Handle file update and deletion
+        new_file = validated_data.get("file", None)
+        if new_file and instance.file and instance.file != new_file:
+            instance.file.delete(save=False)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.updated_by = user
+        instance.save()
+        return instance
 
 
 # Campus Key Official Serializers

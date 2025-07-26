@@ -5,6 +5,8 @@ from .views import (
     CampusInfoAPIView,
     CampusKeyOfficialViewSet,
     SocialMediaLinkDeleteAPIView,
+    CampusEventViewSet,
+    CampusReportViewSet,
 )
 
 router = DefaultRouter()
@@ -14,6 +16,9 @@ router.register(
     CampusKeyOfficialViewSet,
     basename="campus-key-official",
 )
+
+router.register("campus-reports", CampusReportViewSet, basename="campus-report")
+router.register("campus-events", CampusEventViewSet, basename="campus-event")
 
 urlpatterns = [
     path("campus-info", CampusInfoAPIView.as_view(), name="campus-info"),
