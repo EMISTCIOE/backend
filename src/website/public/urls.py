@@ -3,6 +3,7 @@ from rest_framework.routers import DefaultRouter
 
 # Project Imports
 from src.website.public.views import (
+    PublicCampusAcademicCalenderListAPIView,
     PublicCampusDownloadListAPIView,
     PublicCampusEventListAPIView,
     PublicCampusEventRetrieveAPIView,
@@ -10,7 +11,6 @@ from src.website.public.views import (
     PublicCampusInfoRetrieveAPIView,
     PublicCampusKeyOfficialListAPIView,
     PublicCampusReportListAPIView,
-    PublicCampusAcademicCalenderListAPIView,
     PublicCampusUnionReadOnlyViewSet,
     PublicStudentClubEventViewSet,
     PublicStudentClubReadOnlyViewSet,
@@ -19,13 +19,19 @@ from src.website.public.views import (
 router = DefaultRouter(trailing_slash=False)
 
 router.register(
-    "unions", PublicCampusUnionReadOnlyViewSet, basename="public-campus-union"
+    "unions",
+    PublicCampusUnionReadOnlyViewSet,
+    basename="public-campus-union",
 )
 router.register(
-    "clubs", PublicStudentClubReadOnlyViewSet, basename="public-campus-club"
+    "clubs",
+    PublicStudentClubReadOnlyViewSet,
+    basename="public-campus-club",
 )
 router.register(
-    "club-events", PublicStudentClubEventViewSet, basename="public-club-event"
+    "club-events",
+    PublicStudentClubEventViewSet,
+    basename="public-club-event",
 )
 
 

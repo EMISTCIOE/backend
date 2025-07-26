@@ -1,6 +1,8 @@
+from django.core.files.storage import default_storage
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
-from django.core.files.storage import default_storage
+
+from src.base.serializers import AbstractInfoRetrieveSerializer
 
 # Project Imports
 from src.core.models import FiscalSessionBS
@@ -8,7 +10,6 @@ from src.libs.get_context import get_user_by_context
 from src.libs.mixins import FileHandlingMixin
 from src.libs.validators import validate_unique_fields
 from src.user.validators import validate_user_image
-from src.base.serializers import AbstractInfoRetrieveSerializer
 from src.website.validators import (
     validate_campus_download_file,
     validate_photo_thumbnail,
@@ -41,7 +42,6 @@ from .models import (
     CampusReport,
     SocialMediaLink,
 )
-
 
 # Campus Info Serializers
 # ---------------------------------------------------------------------------------------------------
@@ -265,14 +265,12 @@ class CampusFeedbackResolveSerializer(serializers.ModelSerializer):
 
 
 class CampusDownloadListSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = CampusDownload
         fields = ["id", "title", "file", "description", "is_active"]
 
 
 class CampusDownloadRetrieveSerializer(AbstractInfoRetrieveSerializer):
-
     class Meta(AbstractInfoRetrieveSerializer.Meta):
         model = CampusDownload
         fields = ["id", "title", "file", "description"]
@@ -301,7 +299,8 @@ class CampusDownloadCreateSerializer(serializers.ModelSerializer):
 
 class CampusDownloadPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
     file = serializers.FileField(
-        validators=[validate_campus_download_file], required=False
+        validators=[validate_campus_download_file],
+        required=False,
     )
 
     class Meta:
@@ -376,7 +375,7 @@ class CampusReportRetrieveSerializer(AbstractInfoRetrieveSerializer):
 
 class CampusReportCreateSerializer(serializers.ModelSerializer):
     fiscal_session = serializers.PrimaryKeyRelatedField(
-        queryset=FiscalSessionBS.objects.filter(is_active=True)
+        queryset=FiscalSessionBS.objects.filter(is_active=True),
     )
 
     class Meta:
@@ -394,7 +393,8 @@ class CampusReportCreateSerializer(serializers.ModelSerializer):
 
 class CampusReportPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
     fiscal_session = serializers.PrimaryKeyRelatedField(
-        queryset=FiscalSessionBS.objects.filter(is_active=True), required=False
+        queryset=FiscalSessionBS.objects.filter(is_active=True),
+        required=False,
     )
 
     class Meta:
@@ -555,7 +555,8 @@ class CampusEventGalleryCreateSerializer(serializers.ModelSerializer):
 class CampusEventCreateSerializer(serializers.ModelSerializer):
     gallery = CampusEventGalleryCreateSerializer(many=True, required=False)
     thumbnail = serializers.ImageField(
-        validators=[validate_photo_thumbnail], allow_null=True
+        validators=[validate_photo_thumbnail],
+        allow_null=True,
     )
 
     class Meta:
@@ -603,7 +604,8 @@ class CampusEventCreateSerializer(serializers.ModelSerializer):
 
 class CampusEventGalleryPatchSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(
-        queryset=CampusEventGallery.objects.filter(is_archived=False), required=False
+        queryset=CampusEventGallery.objects.filter(is_archived=False),
+        required=False,
     )
 
     class Meta:
@@ -614,7 +616,9 @@ class CampusEventGalleryPatchSerializer(serializers.ModelSerializer):
 class CampusEventPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
     gallery = CampusEventGalleryPatchSerializer(many=True, required=False)
     thumbnail = serializers.ImageField(
-        validators=[validate_photo_thumbnail], allow_null=True, required=False
+        validators=[validate_photo_thumbnail],
+        allow_null=True,
+        required=False,
     )
 
     class Meta:

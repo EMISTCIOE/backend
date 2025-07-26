@@ -1,33 +1,33 @@
-from django.db import transaction
 import django_filters
+from django.db import transaction
+from django_filters.filterset import FilterSet
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema
 from rest_framework import generics, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django_filters.filterset import FilterSet
-from rest_framework.decorators import action
 from rest_framework.viewsets import ReadOnlyModelViewSet
-from drf_spectacular.utils import extend_schema
-from rest_framework.exceptions import NotFound
 
 # Project Imports
 from src.libs.utils import set_binary_files_null_if_empty
 from src.website.messages import (
+    ACADEMIC_CALENDER_DELETED_SUCCESS,
+    ACADEMIC_CALENDER_NOT_FOUND,
+    CAMPUS_DOWNLOAD_DELETED_SUCCESS,
     CAMPUS_DOWNLOAD_NOT_FOUND,
+    CAMPUS_EVENT_DELETED_SUCCESS,
     CAMPUS_EVENT_NOT_FOUND,
+    CAMPUS_FEEDBACK_RESOLVE_SUCCESS,
     CAMPUS_INFO_NOT_FOUND,
     CAMPUS_REPORT_DELETED_SUCCESS,
-    CAMPUS_EVENT_DELETED_SUCCESS,
     CAMPUS_REPORT_NOT_FOUND,
     EVENT_GALLERY_DELETED_SUCCESS,
     EVENT_GALLERY_NOT_FOUND,
     SOCIAL_MEDIA_DELETED_SUCCESS,
-    CAMPUS_DOWNLOAD_DELETED_SUCCESS,
     SOCIAL_MEDIA_NOT_FOUND,
-    ACADEMIC_CALENDER_NOT_FOUND,
-    CAMPUS_FEEDBACK_RESOLVE_SUCCESS,
-    ACADEMIC_CALENDER_DELETED_SUCCESS,
 )
 
 from .models import (
@@ -64,9 +64,9 @@ from .serializers import (
     CampusEventPatchSerializer,
     CampusEventRetrieveSerializer,
     CampusFeedbackListSerializer,
+    CampusFeedbackResolveSerializer,
     CampusInfoPatchSerializer,
     CampusInfoRetrieveSerializer,
-    CampusFeedbackResolveSerializer,
     CampusKeyOfficialCreateSerializer,
     CampusKeyOfficialListSerializer,
     CampusKeyOfficialPatchSerializer,
@@ -198,12 +198,15 @@ class CampusFeedbackViewSet(ReadOnlyModelViewSet):
     def resolve(self, request, pk=None):
         instance = self.get_object()
         serializer = CampusFeedbackResolveSerializer(
-            instance, data=request.data, partial=True
+            instance,
+            data=request.data,
+            partial=True,
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(
-            {"message": CAMPUS_FEEDBACK_RESOLVE_SUCCESS}, status=status.HTTP_200_OK
+            {"message": CAMPUS_FEEDBACK_RESOLVE_SUCCESS},
+            status=status.HTTP_200_OK,
         )
 
 
@@ -260,7 +263,8 @@ class CampusDownloadViewSet(viewsets.ModelViewSet):
 
         instance.delete()
         return Response(
-            {"message": CAMPUS_DOWNLOAD_DELETED_SUCCESS}, status=status.HTTP_200_OK
+            {"message": CAMPUS_DOWNLOAD_DELETED_SUCCESS},
+            status=status.HTTP_200_OK,
         )
 
 
@@ -314,7 +318,8 @@ class CampusReportViewSet(viewsets.ModelViewSet):
 
         instance.delete()
         return Response(
-            {"message": CAMPUS_REPORT_DELETED_SUCCESS}, status=status.HTTP_200_OK
+            {"message": CAMPUS_REPORT_DELETED_SUCCESS},
+            status=status.HTTP_200_OK,
         )
 
 
@@ -368,7 +373,8 @@ class AcademicCalendarViewSet(viewsets.ModelViewSet):
 
         instance.delete()
         return Response(
-            {"message": ACADEMIC_CALENDER_DELETED_SUCCESS}, status=status.HTTP_200_OK
+            {"message": ACADEMIC_CALENDER_DELETED_SUCCESS},
+            status=status.HTTP_200_OK,
         )
 
 
@@ -417,7 +423,8 @@ class CampusEventViewSet(viewsets.ModelViewSet):
 
         instance.delete()
         return Response(
-            {"message": CAMPUS_EVENT_DELETED_SUCCESS}, status=status.HTTP_200_OK
+            {"message": CAMPUS_EVENT_DELETED_SUCCESS},
+            status=status.HTTP_200_OK,
         )
 
 
@@ -440,5 +447,6 @@ class CampusEventGalleryDestroyAPIView(generics.DestroyAPIView):
         instance.image.delete(save=False)
         instance.delete()
         return Response(
-            {"message": EVENT_GALLERY_DELETED_SUCCESS}, status=status.HTTP_200_OK
+            {"message": EVENT_GALLERY_DELETED_SUCCESS},
+            status=status.HTTP_200_OK,
         )

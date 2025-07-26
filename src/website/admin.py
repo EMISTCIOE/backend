@@ -7,8 +7,8 @@ from .models import (
     CampusFeedback,
     CampusInfo,
     CampusKeyOfficial,
-    SocialMediaLink,
     CampusUnion,
+    SocialMediaLink,
     StudentClub,
 )
 

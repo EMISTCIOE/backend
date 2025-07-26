@@ -2,13 +2,13 @@ from django.urls import include, path
 from rest_framework import routers
 
 from .views import (
-    DepartmentEventGalleryDestroyAPIView,
-    DepartmentSocialMediaDestroyAPIView,
-    DepartmentViewSet,
     AcademicProgramViewSet,
     DepartmentDownloadViewSet,
+    DepartmentEventGalleryDestroyAPIView,
     DepartmentEventViewSet,
     DepartmentPlanAndPolicyViewSet,
+    DepartmentSocialMediaDestroyAPIView,
+    DepartmentViewSet,
     StaffMemberViewSet,
 )
 
@@ -17,13 +17,19 @@ router = routers.DefaultRouter(trailing_slash=False)
 # Register all viewsets
 router.register("departments", DepartmentViewSet, basename="department")
 router.register(
-    "academic-programs", AcademicProgramViewSet, basename="academic-program"
+    "academic-programs",
+    AcademicProgramViewSet,
+    basename="academic-program",
 )
 router.register(
-    "department-downloads", DepartmentDownloadViewSet, basename="department-download"
+    "department-downloads",
+    DepartmentDownloadViewSet,
+    basename="department-download",
 )
 router.register(
-    "department-events", DepartmentEventViewSet, basename="department-event"
+    "department-events",
+    DepartmentEventViewSet,
+    basename="department-event",
 )
 router.register(
     "department-plans-policies",

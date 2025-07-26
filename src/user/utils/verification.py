@@ -1,5 +1,5 @@
-from rest_framework import serializers
 from django.templatetags.static import static
+from rest_framework import serializers
 
 from src.libs.messages import UNKNOWN_ERROR
 from src.libs.send_mail import _send_email

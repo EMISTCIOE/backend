@@ -24,7 +24,9 @@ router.register("campus-feedbacks", CampusFeedbackViewSet, basename="campus-feed
 router.register("campus-downloads", CampusDownloadViewSet, basename="campus-download")
 router.register("campus-reports", CampusReportViewSet, basename="campus-report")
 router.register(
-    "academic-calendars", AcademicCalendarViewSet, basename="academic-calendar"
+    "academic-calendars",
+    AcademicCalendarViewSet,
+    basename="academic-calendar",
 )
 router.register("campus-events", CampusEventViewSet, basename="campus-event")
 
