@@ -89,35 +89,6 @@ from .permissions import (
 )
 
 
-class CampusReportViewSet(viewsets.ModelViewSet):
-    """Campus Report API"""
-
-    permission_classes = [CampusReportPermission]
-    queryset = CampusReport.objects.all()
-    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ["report_type", "fiscal_session", "is_active"]
-    search_fields = ["report_type"]
-    ordering_fields = ["published_date", "created_at"]
-    ordering = ["-created_at"]
-    http_method_names = ["get", "post", "patch", "delete", "head", "options"]
-
-    def get_serializer_class(self):
-        if self.action == "list":
-            return CampusReportListSerializer
-        elif self.action == "retrieve":
-            return CampusReportRetrieveSerializer
-        elif self.action == "create":
-            return CampusReportCreateSerializer
-        elif self.action in ["update", "partial_update"]:
-            return CampusReportPatchSerializer
-        return CampusReportListSerializer
-
-    def perform_destroy(self, instance):
-        if instance.file:
-            instance.file.delete(save=False)
-        instance.delete()
-
-
 class CampusEventViewSet(viewsets.ModelViewSet):
     """Campus Event API"""
 

@@ -5,20 +5,132 @@ from drf_spectacular.utils import extend_schema_field
 from src.libs.get_context import get_user_by_context
 from src.base.serializers import AbstractInfoRetrieveSerializer
 from src.user.validators import validate_user_image
+from src.website.validators import validate_campus_download_file
+from src.libs.mixins import FileHandlingMixin
 from .constants import CAMPUS_KEY_OFFICIAL_FILE_PATH
 from .messages import (
+    ACADEMIC_CALENDER_CREATED_SUCCESS,
+    ACADEMIC_CALENDER_UPDATED_SUCCESS,
+    CAMPUS_DOWNLOAD_CREATED_SUCCESS,
+    CAMPUS_DOWNLOAD_UPDATED_SUCCESS,
     CAMPUS_INFO_UPDATED_SUCCESS,
     CAMPUS_KEY_OFFICIAL_CREATE_SUCCESS,
     CAMPUS_KEY_OFFICIAL_UPDATE_SUCCESS,
+    CAMPUS_REPORT_CREATED_SUCCESS,
+    CAMPUS_REPORT_UPDATED_SUCCESS,
+    SOCIAL_MEDIA_ALREADY_EXISTS,
+    YEAR_ORDER_ERROR,
 )
 from .models import (
+    AcademicCalendar,
+    CampusDownload,
+    CampusFeedback,
     CampusInfo,
     CampusKeyOfficial,
-    SocialMediaLink,
     CampusReport,
+    SocialMediaLink,
     CampusEventGallery,
+    FiscalSessionBS,
     CampusEvent,
 )
+
+
+# Campus Feedback Serializers
+# ------------------------------------------------------------------------------------------------
+
+
+class CampusFeedbackListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusFeedback
+        fields = [
+            "id",
+            "full_name",
+            "roll_number",
+            "email",
+            "message",
+            "is_resolved",
+            "created_at",
+        ]
+
+
+class CampusFeedbackResolveSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusFeedback
+        fields = ["is_resolved"]
+
+
+# Campus Downloads Serializers
+# ------------------------------------------------------------------------------------------------------
+
+
+class CampusDownloadListSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CampusDownload
+        fields = ["id", "title", "file", "description", "is_active"]
+
+
+class CampusDownloadRetrieveSerializer(AbstractInfoRetrieveSerializer):
+
+    class Meta(AbstractInfoRetrieveSerializer.Meta):
+        model = CampusDownload
+        fields = ["id", "title", "file", "description"]
+        fields += AbstractInfoRetrieveSerializer.Meta.fields
+
+
+class CampusDownloadCreateSerializer(serializers.ModelSerializer):
+    file = serializers.FileField(validators=[validate_campus_download_file])
+
+    class Meta:
+        model = CampusDownload
+        fields = ["title", "file", "description"]
+
+    def create(self, validated_data):
+        current_user = get_user_by_context(self.context)
+
+        # Sanitize text fields
+        validated_data["title"] = validated_data["title"].strip()
+        validated_data["created_by"] = current_user
+
+        return CampusDownload.objects.create(**validated_data)
+
+    def to_representation(self, instance) -> dict[str, str]:
+        return {"message": CAMPUS_DOWNLOAD_CREATED_SUCCESS}
+
+
+class CampusDownloadPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
+    file = serializers.FileField(
+        validators=[validate_campus_download_file], required=False
+    )
+
+    class Meta:
+        model = CampusDownload
+        fields = ["title", "file", "description", "is_active"]
+
+    def update(self, instance, validated_data):
+        current_user = get_user_by_context(self.context)
+
+        self.handle_file_update(instance, validated_data, "file")
+
+        # Sanitize fields only if present
+        title = validated_data.pop("title", None)
+        if title is not None:
+            instance.title = title.strip()
+
+        description = validated_data.pop("description", None)
+        if description is not None:
+            instance.description = description.strip()
+
+        if "is_active" in validated_data:
+            instance.is_active = validated_data["is_active"]
+
+        instance.updated_by = current_user
+        instance.save()
+
+        return instance
+
+    def to_representation(self, instance) -> dict[str, str]:
+        return {"message": CAMPUS_DOWNLOAD_UPDATED_SUCCESS}
 
 
 # Campus Info Serializers
@@ -242,11 +354,19 @@ class CampusEventPatchSerializer(serializers.ModelSerializer):
         return instance
 
 
-# Campus Report Serializers
-# ---------------------------------------------------------------------------------------------------
+# Campus Reports Serializers
+# ------------------------------------------------------------------------------------------------------
+
+
+class FiscalSessionForCampusReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FiscalSessionBS
+        fields = ["id", "session_full", "session_short"]
 
 
 class CampusReportListSerializer(serializers.ModelSerializer):
+    fiscal_session = FiscalSessionForCampusReportSerializer()
+
     class Meta:
         model = CampusReport
         fields = [
@@ -256,11 +376,12 @@ class CampusReportListSerializer(serializers.ModelSerializer):
             "published_date",
             "file",
             "is_active",
-            "created_at",
         ]
 
 
 class CampusReportRetrieveSerializer(AbstractInfoRetrieveSerializer):
+    fiscal_session = FiscalSessionForCampusReportSerializer()
+
     class Meta(AbstractInfoRetrieveSerializer.Meta):
         model = CampusReport
         fields = [
@@ -269,29 +390,33 @@ class CampusReportRetrieveSerializer(AbstractInfoRetrieveSerializer):
             "fiscal_session",
             "published_date",
             "file",
-            "is_active",
         ]
         fields += AbstractInfoRetrieveSerializer.Meta.fields
 
 
 class CampusReportCreateSerializer(serializers.ModelSerializer):
+    fiscal_session = serializers.PrimaryKeyRelatedField(
+        queryset=FiscalSessionBS.objects.filter(is_active=True)
+    )
+
     class Meta:
         model = CampusReport
-        fields = [
-            "report_type",
-            "fiscal_session",
-            "published_date",
-            "file",
-            "is_active",
-        ]
+        fields = ["report_type", "fiscal_session", "published_date", "file"]
 
     def create(self, validated_data):
-        user = get_user_by_context(self.context)
-        validated_data["created_by"] = user
+        current_user = get_user_by_context(self.context)
+        validated_data["created_by"] = current_user
         return CampusReport.objects.create(**validated_data)
 
+    def to_representation(self, instance):
+        return {"message": CAMPUS_REPORT_CREATED_SUCCESS}
 
-class CampusReportPatchSerializer(serializers.ModelSerializer):
+
+class CampusReportPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
+    fiscal_session = serializers.PrimaryKeyRelatedField(
+        queryset=FiscalSessionBS.objects.filter(is_active=True), required=False
+    )
+
     class Meta:
         model = CampusReport
         fields = [
@@ -303,19 +428,19 @@ class CampusReportPatchSerializer(serializers.ModelSerializer):
         ]
 
     def update(self, instance, validated_data):
-        user = get_user_by_context(self.context)
+        current_user = get_user_by_context(self.context)
 
-        # Handle file update and deletion
-        new_file = validated_data.get("file", None)
-        if new_file and instance.file and instance.file != new_file:
-            instance.file.delete(save=False)
+        self.handle_file_update(instance, validated_data, "file")
 
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
+        for key, val in validated_data.items():
+            setattr(instance, key, val)
 
-        instance.updated_by = user
+        instance.updated_by = current_user
         instance.save()
         return instance
+
+    def to_representation(self, instance):
+        return {"message": CAMPUS_REPORT_UPDATED_SUCCESS}
 
 
 # Campus Key Official Serializers
@@ -419,3 +544,79 @@ class CampusKeyOfficialPatchSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         return {"message": CAMPUS_KEY_OFFICIAL_UPDATE_SUCCESS}
+
+
+class AcademicCalendarListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AcademicCalendar
+        fields = ["id", "program_type", "start_year", "end_year", "file", "is_active"]
+
+
+class AcademicCalendarRetrieveSerializer(AbstractInfoRetrieveSerializer):
+    class Meta(AbstractInfoRetrieveSerializer.Meta):
+        model = AcademicCalendar
+        fields = [
+            "id",
+            "program_type",
+            "start_year",
+            "end_year",
+            "file",
+        ]
+
+        fields += AbstractInfoRetrieveSerializer.Meta.fields
+
+
+class AcademicCalendarCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AcademicCalendar
+        fields = ["program_type", "start_year", "end_year", "file"]
+
+    def validate(self, attrs):
+        start = attrs.get("start_year")
+        end = attrs.get("end_year")
+
+        if start is None or end is None:
+            return attrs
+
+        if start >= end:
+            raise serializers.ValidationError({"end_year": YEAR_ORDER_ERROR})
+
+        return attrs
+
+    def create(self, validated_data):
+        current_user = get_user_by_context(self.context)
+        validated_data["created_by"] = current_user
+        return AcademicCalendar.objects.create(**validated_data)
+
+    def to_representation(self, instance):
+        return {"message": ACADEMIC_CALENDER_CREATED_SUCCESS}
+
+
+class AcademicCalendarPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
+    class Meta:
+        model = AcademicCalendar
+        fields = ["program_type", "start_year", "end_year", "file", "is_active"]
+
+    def validate(self, attrs):
+        start = attrs.get("start_year", getattr(self.instance, "start_year", None))
+        end = attrs.get("end_year", getattr(self.instance, "end_year", None))
+
+        if start is not None and end is not None and start >= end:
+            raise serializers.ValidationError({"end_year": YEAR_ORDER_ERROR})
+
+        return attrs
+
+    def update(self, instance, validated_data):
+        current_user = get_user_by_context(self.context)
+
+        self.handle_file_update(instance, validated_data, "file")
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        instance.updated_by = current_user
+        instance.save()
+        return instance
+
+    def to_representation(self, instance):
+        return {"message": ACADEMIC_CALENDER_UPDATED_SUCCESS}

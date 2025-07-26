@@ -26,8 +26,6 @@ router.register("campus-reports", CampusReportViewSet, basename="campus-report")
 router.register(
     "academic-calendars", AcademicCalendarViewSet, basename="academic-calendar"
 )
-
-router.register("campus-reports", CampusReportViewSet, basename="campus-report")
 router.register("campus-events", CampusEventViewSet, basename="campus-event")
 
 urlpatterns = [
