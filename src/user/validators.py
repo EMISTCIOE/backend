@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from rest_framework.serializers import ValidationError
 
@@ -20,7 +19,7 @@ def validate_user_image(image):
           a ValidationError is raised with an appropriate error message.
     """
     file_size = image.size
-    limit_byte_size = settings.IMAGE_MAX_UPLOAD_SIZE
+    limit_byte_size = 2 * 1024 * 1024
     if file_size > limit_byte_size:
         # converting into kb
         f = limit_byte_size / 1024

@@ -9,7 +9,6 @@ from src.core.models import FiscalSessionBS
 from src.libs.get_context import get_user_by_context
 from src.libs.mixins import FileHandlingMixin
 from src.libs.validators import validate_unique_fields
-from src.user.validators import validate_user_image
 from src.website.validators import (
     validate_campus_download_file,
     validate_photo_thumbnail,
@@ -186,7 +185,7 @@ class CampusKeyOfficialRetrieveSerializer(AbstractInfoRetrieveSerializer):
 
 
 class CampusKeyOfficialCreateSerializer(serializers.ModelSerializer):
-    photo = serializers.ImageField(allow_null=True, validators=[validate_user_image])
+    photo = serializers.ImageField(allow_null=True, validators=[validate_photo_thumbnail])
 
     class Meta:
         model = CampusKeyOfficial
