@@ -12,6 +12,8 @@ from .views import (
     CampusReportViewSet,
     CampusUnionViewSet,
     SocialMediaLinkDeleteAPIView,
+    StudentClubEventGalleryDestroyAPIView,
+    StudentClubEventViewSet,
     StudentClubViewSet,
 )
 
@@ -33,6 +35,11 @@ router.register(
 router.register("campus-events", CampusEventViewSet, basename="campus-event")
 router.register("student-clubs", StudentClubViewSet, basename="student-club")
 router.register("campus-unions", CampusUnionViewSet, basename="campus-unions")
+router.register(
+    "student-club-events",
+    StudentClubEventViewSet,
+    basename="student-club-event",
+)
 
 urlpatterns = [
     path("campus-info", CampusInfoAPIView.as_view(), name="campus-info"),
@@ -44,6 +51,11 @@ urlpatterns = [
         "campus-events/<int:event_id>/gallery/<int:gallery_id>",
         CampusEventGalleryDestroyAPIView.as_view(),
         name="campus-events-gallery-destroy",
+    ),
+    path(
+        "student-club-events/<int:event_id>/gallery/<int:gallery_id>",
+        StudentClubEventGalleryDestroyAPIView.as_view(),
+        name="student-club-events-gallery-destroy",
     ),
     path("", include(router.urls)),
 ]

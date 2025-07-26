@@ -34,6 +34,8 @@ from src.website.messages import (
     MEMBER_NOT_FOUND,
     SOCIAL_MEDIA_DELETED_SUCCESS,
     SOCIAL_MEDIA_NOT_FOUND,
+    STUDENT_CLUB_EVENT_DELETED_SUCCESS,
+    STUDENT_CLUB_EVENT_NOT_FOUND,
 )
 
 from .models import (
@@ -49,11 +51,12 @@ from .models import (
     CampusUnionMember,
     SocialMediaLink,
     StudentClub,
+    StudentClubEvent,
+    StudentClubEventGallery,
     StudentClubMember,
 )
 from .permissions import (
     AcademicCalendarPermission,
-    CampusClubPermission,
     CampusDownloadPermission,
     CampusEventPermission,
     CampusFeedbackPermission,
@@ -61,6 +64,8 @@ from .permissions import (
     CampusKeyOfficialPermission,
     CampusReportPermission,
     CampusUnionPermission,
+    StudentClubEventPermission,
+    StudentClubPermission,
 )
 from .serializers import (
     AcademicCalendarCreateSerializer,
@@ -92,6 +97,10 @@ from .serializers import (
     CampusUnionPatchSerializer,
     CampusUnionRetrieveSerializer,
     StudentClubCreateSerializer,
+    StudentClubEventCreateSerializer,
+    StudentClubEventListSerializer,
+    StudentClubEventPatchSerializer,
+    StudentClubEventRetrieveSerializer,
     StudentClubListSerializer,
     StudentClubPatchSerializer,
     StudentClubRetrieveSerializer,
@@ -560,7 +569,7 @@ class CampusUnionViewSet(viewsets.ModelViewSet):
 
 
 class StudentClubViewSet(viewsets.ModelViewSet):
-    permission_classes = [CampusClubPermission]
+    permission_classes = [StudentClubPermission]
     queryset = StudentClub.objects.filter(is_archived=False)
     filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
     filterset_fields = ["is_active"]
@@ -642,5 +651,92 @@ class StudentClubViewSet(viewsets.ModelViewSet):
 
         return Response(
             {"detail": MEMBER_DELETED_SUCCESS},
+            status=status.HTTP_200_OK,
+        )
+
+
+class FilterForStudentClubEventViewSet(FilterSet):
+    class Meta:
+        model = StudentClubEvent
+        fields = ["club", "date", "is_active"]
+
+
+class StudentClubEventViewSet(viewsets.ModelViewSet):
+    permission_classes = [StudentClubEventPermission]
+    filterset_class = FilterForStudentClubEventViewSet
+    filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
+    search_fields = ["title"]
+    queryset = StudentClubEvent.objects.filter(is_archived=False)
+    ordering_fields = ["-date", "title"]
+    http_method_names = ["options", "head", "get", "patch", "post", "delete"]
+
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return (
+                StudentClubEventListSerializer
+                if self.action == "list"
+                else StudentClubEventRetrieveSerializer
+            )
+        if self.request.method == "POST":
+            return StudentClubEventCreateSerializer
+        if self.request.method == "PATCH":
+            return StudentClubEventPatchSerializer
+        return StudentClubEventRetrieveSerializer
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        set_binary_files_null_if_empty(["thumbnail"], request.data)
+        return super().create(request, *args, **kwargs)
+
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        set_binary_files_null_if_empty(["thumbnail"], request.data)
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            if instance.thumbnail:
+                instance.thumbnail.delete(save=False)
+        except Exception:
+            return Response(
+                {"message": STUDENT_CLUB_EVENT_NOT_FOUND},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # Delete related gallery images and their files
+        gallery_images = instance.gallery.all()
+        for gallery_image in gallery_images:
+            if gallery_image.image:
+                gallery_image.image.delete(save=False)
+            gallery_image.delete()
+
+        instance.delete()
+        return Response(
+            {"message": STUDENT_CLUB_EVENT_DELETED_SUCCESS},
+            status=status.HTTP_200_OK,
+        )
+
+
+class StudentClubEventGalleryDestroyAPIView(generics.DestroyAPIView):
+    permission_classes = [StudentClubEventPermission]
+    lookup_url_kwarg = "gallery_id"
+    queryset = StudentClubEventGallery.objects.all()
+
+    def get_object(self):
+        obj = self.queryset.filter(
+            event_id=self.kwargs["event_id"],
+            pk=self.kwargs[self.lookup_url_kwarg],
+        ).first()
+        if not obj:
+            raise NotFound({"message": EVENT_GALLERY_NOT_FOUND})
+        return obj
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.image.delete(save=False)
+        instance.delete()
+        return Response(
+            {"message": EVENT_GALLERY_DELETED_SUCCESS},
             status=status.HTTP_200_OK,
         )

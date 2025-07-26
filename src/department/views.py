@@ -324,7 +324,7 @@ class DepartmentEventViewSet(ModelViewSet):
 
 
 class DepartmentEventGalleryDestroyAPIView(generics.DestroyAPIView):
-    permission_classes = [DepartmentPermission]
+    permission_classes = [DepartmentEventPermission]
     lookup_url_kwarg = "gallery_id"
     queryset = DepartmentEventGallery.objects.all()
 

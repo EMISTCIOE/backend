@@ -38,6 +38,11 @@ CAMPUS_EVENT_UPDATED_SUCCESS = _("Event updated successfully")
 CAMPUS_EVENT_NOT_FOUND = _("Event not found")
 CAMPUS_EVENT_DELETED_SUCCESS = _("Event delete successfully")
 
+STUDENT_CLUB_EVENT_CREATED_SUCCESS = _("Event created successfully")
+STUDENT_CLUB_EVENT_UPDATED_SUCCESS = _("Event updated successfully")
+STUDENT_CLUB_EVENT_NOT_FOUND = _("Event not found")
+STUDENT_CLUB_EVENT_DELETED_SUCCESS = _("Event delete successfully")
+
 CAMPUS_UNION_CREATED_SUCCESS = _("Union created successfully")
 CAMPUS_UNION_UPDATED_SUCCESS = _("Union updated successfully")
 CAMPUS_UNION_NOT_FOUND = _("Union not found")
@@ -53,5 +58,7 @@ MEMBER_NOT_FOUND = _("Member not found")
 
 YEAR_ORDER_ERROR = "End year must be greater than start year."
 EVENT_DATE_ERROR = _("End date cannot be earlier than start date.")
-EVENT_GALLERY_NOT_FOUND = _("Gallery link not found.")
+EVENT_GALLERY_NOT_FOUND = _("Gallery not found.")
 EVENT_GALLERY_DELETED_SUCCESS = _("Gallery deleted successfully")
+STUDENT_CLUB_EVENT_DELETED_SUCCESS = _("Event deleted successfully")
+STUDENT_CLUB_EVENT_NOT_FOUND = _("Event link not found.")

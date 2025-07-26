@@ -465,6 +465,8 @@ class DepartmentEventRetrieveSerializer(AbstractInfoRetrieveSerializer):
 
 
 class DepartmentEventGalleryCreateSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(validators=[validate_photo_thumbnail])
+
     class Meta:
         model = DepartmentEventGallery
         fields = ["image", "caption"]
@@ -529,6 +531,7 @@ class DepartmentEventGalleryPatchSerializer(serializers.ModelSerializer):
         queryset=DepartmentEventGallery.objects.filter(is_archived=False),
         required=False,
     )
+    image = serializers.ImageField(validators=[validate_photo_thumbnail])
 
     class Meta:
         model = DepartmentEventGallery
