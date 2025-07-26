@@ -33,5 +33,12 @@ ACADEMIC_CALENDER_UPDATED_SUCCESS = _("Academic Calendar updated successfully")
 ACADEMIC_CALENDER_DELETED_SUCCESS = _("Academic Calendar deleted successfully")
 ACADEMIC_CALENDER_NOT_FOUND = _("Academic Calendar not found.")
 
+CAMPUS_EVENT_CREATED_SUCCESS = _("Event created successfully")
+CAMPUS_EVENT_UPDATED_SUCCESS = _("Event updated successfully")
+CAMPUS_EVENT_NOT_FOUND = _("Event not found")
+CAMPUS_EVENT_DELETED_SUCCESS = _("Event delete successfully")
 
 YEAR_ORDER_ERROR = "End year must be greater than start year."
+EVENT_DATE_ERROR = _("End date cannot be earlier than start date.")
+EVENT_GALLERY_NOT_FOUND = _("Gallery link not found.")
+EVENT_GALLERY_DELETED_SUCCESS = _("Gallery deleted successfully")

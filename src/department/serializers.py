@@ -131,7 +131,7 @@ class DepartmentCreateSerializer(serializers.ModelSerializer):
 
 class DepartmentSocialMediaForDepartmentPatchSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(
-        queryset=DepartmentSocialMedia.objects.filter(is_archived=False)
+        queryset=DepartmentSocialMedia.objects.filter(is_archived=False), required=False
     )
 
     class Meta:
@@ -516,7 +516,8 @@ class DepartmentEventCreateSerializer(serializers.ModelSerializer):
 
 class DepartmentEventGalleryPatchSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(
-        queryset=DepartmentEventGallery.objects.filter(is_archived=False)
+        queryset=DepartmentEventGallery.objects.filter(is_archived=False),
+        required=False,
     )
 
     class Meta:
@@ -533,7 +534,7 @@ class DepartmentEventPatchSerializer(FileHandlingMixin, serializers.ModelSeriali
     thumbnail = serializers.ImageField(
         validators=[validate_photo_thumbnail], allow_null=True, required=False
     )
-    
+
     class Meta:
         model = DepartmentEvent
         fields = [

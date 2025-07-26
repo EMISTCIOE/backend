@@ -9,14 +9,19 @@ from django_filters.filterset import FilterSet
 from rest_framework.decorators import action
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from drf_spectacular.utils import extend_schema
+from rest_framework.exceptions import NotFound
 
 # Project Imports
 from src.libs.utils import set_binary_files_null_if_empty
 from src.website.messages import (
     CAMPUS_DOWNLOAD_NOT_FOUND,
+    CAMPUS_EVENT_NOT_FOUND,
     CAMPUS_INFO_NOT_FOUND,
     CAMPUS_REPORT_DELETED_SUCCESS,
+    CAMPUS_EVENT_DELETED_SUCCESS,
     CAMPUS_REPORT_NOT_FOUND,
+    EVENT_GALLERY_DELETED_SUCCESS,
+    EVENT_GALLERY_NOT_FOUND,
     SOCIAL_MEDIA_DELETED_SUCCESS,
     CAMPUS_DOWNLOAD_DELETED_SUCCESS,
     SOCIAL_MEDIA_NOT_FOUND,
@@ -28,6 +33,8 @@ from src.website.messages import (
 from .models import (
     AcademicCalendar,
     CampusDownload,
+    CampusEvent,
+    CampusEventGallery,
     CampusFeedback,
     CampusInfo,
     CampusKeyOfficial,
@@ -37,6 +44,7 @@ from .models import (
 from .permissions import (
     AcademicCalendarPermission,
     CampusDownloadPermission,
+    CampusEventPermission,
     CampusFeedbackPermission,
     CampusInfoPermission,
     CampusKeyOfficialPermission,
@@ -51,6 +59,10 @@ from .serializers import (
     CampusDownloadListSerializer,
     CampusDownloadPatchSerializer,
     CampusDownloadRetrieveSerializer,
+    CampusEventCreateSerializer,
+    CampusEventListSerializer,
+    CampusEventPatchSerializer,
+    CampusEventRetrieveSerializer,
     CampusFeedbackListSerializer,
     CampusInfoPatchSerializer,
     CampusInfoRetrieveSerializer,
@@ -350,11 +362,83 @@ class AcademicCalendarViewSet(viewsets.ModelViewSet):
             instance.file.delete(save=False)
         except Exception:
             return Response(
-                {"message": ACADEMIC_CALENDER_DELETED_SUCCESS},
+                {"message": ACADEMIC_CALENDER_NOT_FOUND},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
         instance.delete()
         return Response(
-            {"message": ACADEMIC_CALENDER_NOT_FOUND}, status=status.HTTP_200_OK
+            {"message": ACADEMIC_CALENDER_DELETED_SUCCESS}, status=status.HTTP_200_OK
+        )
+
+
+class CampusEventViewSet(viewsets.ModelViewSet):
+    permission_classes = [CampusEventPermission]
+    queryset = CampusEvent.objects.filter(is_archived=False)
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ["event_type", "is_active"]
+    search_fields = ["title", "description_short", "description_detailed"]
+    ordering_fields = ["event_start_date", "created_at"]
+    ordering = ["-created_at"]
+    http_method_names = ["get", "post", "patch", "delete", "head", "options"]
+
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return (
+                CampusEventListSerializer
+                if self.action == "list"
+                else CampusEventRetrieveSerializer
+            )
+        if self.request.method == "POST":
+            return CampusEventCreateSerializer
+        if self.request.method == "PATCH":
+            return CampusEventPatchSerializer
+        return CampusEventRetrieveSerializer
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        set_binary_files_null_if_empty(["thumbnail"], request.data)
+        return super().create(request, *args, **kwargs)
+
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        set_binary_files_null_if_empty(["thumbnail"], request.data)
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            instance.file.delete(save=False)
+        except Exception:
+            return Response(
+                {"message": CAMPUS_EVENT_NOT_FOUND},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        instance.delete()
+        return Response(
+            {"message": CAMPUS_EVENT_DELETED_SUCCESS}, status=status.HTTP_200_OK
+        )
+
+
+class CampusEventGalleryDestroyAPIView(generics.DestroyAPIView):
+    permission_classes = [CampusEventPermission]
+    lookup_url_kwarg = "gallery_id"
+    queryset = CampusEventGallery.objects.all()
+
+    def get_object(self):
+        obj = self.queryset.filter(
+            event_id=self.kwargs["event_id"],
+            pk=self.kwargs[self.lookup_url_kwarg],
+        ).first()
+        if not obj:
+            raise NotFound({"message": EVENT_GALLERY_NOT_FOUND})
+        return obj
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.image.delete(save=False)
+        instance.delete()
+        return Response(
+            {"message": EVENT_GALLERY_DELETED_SUCCESS}, status=status.HTTP_200_OK
         )

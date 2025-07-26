@@ -4,6 +4,8 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     AcademicCalendarViewSet,
     CampusDownloadViewSet,
+    CampusEventGalleryDestroyAPIView,
+    CampusEventViewSet,
     CampusFeedbackViewSet,
     CampusInfoAPIView,
     CampusKeyOfficialViewSet,
@@ -24,12 +26,18 @@ router.register("campus-reports", CampusReportViewSet, basename="campus-report")
 router.register(
     "academic-calendars", AcademicCalendarViewSet, basename="academic-calendar"
 )
+router.register("campus-events", CampusEventViewSet, basename="campus-event")
 
 urlpatterns = [
     path("campus-info", CampusInfoAPIView.as_view(), name="campus-info"),
     path(
         "campus-info/social-media-links/<int:pk>/delete",
         SocialMediaLinkDeleteAPIView.as_view(),
+    ),
+    path(
+        "campus-events/<int:event_id>/gallery/<int:gallery_id>",
+        CampusEventGalleryDestroyAPIView.as_view(),
+        name="campus-events-gallery-destroy",
     ),
     path("", include(router.urls)),
 ]
