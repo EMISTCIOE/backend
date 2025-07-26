@@ -91,3 +91,14 @@ class AcademicCalendarPermission(BasePermission):
             "DELETE": "delete_academic_calendar",
         }
         return validate_permissions(request, user_permissions_dict)
+
+
+class CampusEventPermission(BasePermission):
+    def has_permission(self, request, view):
+        user_permissions_dict = {
+            "SAFE_METHODS": "view_campus_event",
+            "POST": "add_campus_event",
+            "PATCH": "edit_campus_event",
+            "DELETE": "delete_campus_event",
+        }
+        return validate_permissions(request, user_permissions_dict)

@@ -18,3 +18,21 @@ def validate_campus_download_file(value):
         raise ValidationError(
             f"Unsupported file format. Allowed: {', '.join(allowed_extensions)}."
         )
+
+
+MAX_PHOTO_SIZE = 2 * 1024 * 1024  # 2MB in bytes
+ALLOWED_PHOTO_EXTENSIONS = [".jpg", ".jpeg", ".png"]
+
+
+def validate_photo_thumbnail(file):
+    """
+    Validate that the file is an image with allowed extensions and <= 2MB.
+    """
+    ext = os.path.splitext(file.name)[1].lower()
+    if ext not in ALLOWED_PHOTO_EXTENSIONS:
+        raise ValidationError(
+            f"Unsupported file type: {ext}. Allowed types are {', '.join(ALLOWED_PHOTO_EXTENSIONS)}"
+        )
+
+    if file.size > MAX_PHOTO_SIZE:
+        raise ValidationError("File size must not exceed 2MB.")

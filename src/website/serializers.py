@@ -8,22 +8,33 @@ from src.user.validators import validate_user_image
 from src.website.validators import validate_campus_download_file
 from src.libs.mixins import FileHandlingMixin
 from .constants import CAMPUS_KEY_OFFICIAL_FILE_PATH
+
+from src.website.validators import (
+    validate_campus_download_file,
+    validate_photo_thumbnail,
+)
+
 from .messages import (
     ACADEMIC_CALENDER_CREATED_SUCCESS,
     ACADEMIC_CALENDER_UPDATED_SUCCESS,
     CAMPUS_DOWNLOAD_CREATED_SUCCESS,
     CAMPUS_DOWNLOAD_UPDATED_SUCCESS,
+    CAMPUS_EVENT_CREATED_SUCCESS,
+    CAMPUS_EVENT_UPDATED_SUCCESS,
     CAMPUS_INFO_UPDATED_SUCCESS,
     CAMPUS_KEY_OFFICIAL_CREATE_SUCCESS,
     CAMPUS_KEY_OFFICIAL_UPDATE_SUCCESS,
     CAMPUS_REPORT_CREATED_SUCCESS,
     CAMPUS_REPORT_UPDATED_SUCCESS,
+    EVENT_DATE_ERROR,
     SOCIAL_MEDIA_ALREADY_EXISTS,
     YEAR_ORDER_ERROR,
 )
 from .models import (
     AcademicCalendar,
     CampusDownload,
+    CampusEvent,
+    CampusEventGallery,
     CampusFeedback,
     CampusInfo,
     CampusKeyOfficial,
@@ -620,3 +631,174 @@ class AcademicCalendarPatchSerializer(FileHandlingMixin, serializers.ModelSerial
 
     def to_representation(self, instance):
         return {"message": ACADEMIC_CALENDER_UPDATED_SUCCESS}
+
+
+# Campus Events Serializers
+# ------------------------------------------------------------------------------------------------------
+
+
+class CampusEventGalleryListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusEventGallery
+        fields = ["id", "image", "caption", "is_active"]
+
+
+class CampusEventListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusEvent
+        fields = [
+            "id",
+            "title",
+            "event_type",
+            "event_start_date",
+            "event_end_date",
+            "thumbnail",
+            "is_active",
+        ]
+
+
+class CampusEventRetrieveSerializer(AbstractInfoRetrieveSerializer):
+    gallery = CampusEventGalleryListSerializer(many=True, read_only=True)
+
+    class Meta(AbstractInfoRetrieveSerializer.Meta):
+        model = CampusEvent
+        fields = [
+            "id",
+            "title",
+            "description_short",
+            "description_detailed",
+            "event_type",
+            "event_start_date",
+            "event_end_date",
+            "thumbnail",
+            "gallery",
+        ]
+        fields += AbstractInfoRetrieveSerializer.Meta.fields
+
+
+class CampusEventGalleryCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusEventGallery
+        fields = ["image", "caption"]
+
+
+class CampusEventCreateSerializer(serializers.ModelSerializer):
+    gallery = CampusEventGalleryCreateSerializer(many=True, required=False)
+    thumbnail = serializers.ImageField(
+        validators=[validate_photo_thumbnail], allow_null=True
+    )
+
+    class Meta:
+        model = CampusEvent
+        fields = [
+            "title",
+            "description_short",
+            "description_detailed",
+            "event_type",
+            "event_start_date",
+            "event_end_date",
+            "thumbnail",
+            "gallery",
+        ]
+
+    def validate(self, attrs):
+        start = attrs.get("event_start_date")
+        end = attrs.get("event_end_date")
+        if start and end and end < start:
+            raise serializers.ValidationError({"event_end_date": EVENT_DATE_ERROR})
+        return attrs
+
+    def create(self, validated_data):
+        gallery_data = validated_data.pop("gallery", [])
+        current_user = get_user_by_context(self.context)
+
+        validated_data["title"] = validated_data["title"].strip().title()
+        validated_data["description_short"] = validated_data[
+            "description_short"
+        ].strip()
+        validated_data["created_by"] = current_user
+
+        event = CampusEvent.objects.create(**validated_data)
+
+        for image_data in gallery_data:
+            image_data["event"] = event
+            image_data["created_by"] = current_user
+            CampusEventGallery.objects.create(**image_data)
+
+        return event
+
+    def to_representation(self, instance) -> dict[str, str]:
+        return {"message": CAMPUS_EVENT_CREATED_SUCCESS}
+
+
+class CampusEventGalleryPatchSerializer(serializers.ModelSerializer):
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=CampusEventGallery.objects.filter(is_archived=False), required=False
+    )
+
+    class Meta:
+        model = CampusEventGallery
+        fields = ["id", "image", "caption", "is_active"]
+
+
+class CampusEventPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
+    gallery = CampusEventGalleryPatchSerializer(many=True, required=False)
+    thumbnail = serializers.ImageField(
+        validators=[validate_photo_thumbnail], allow_null=True, required=False
+    )
+
+    class Meta:
+        model = CampusEvent
+        fields = [
+            "title",
+            "description_short",
+            "description_detailed",
+            "event_type",
+            "event_start_date",
+            "event_end_date",
+            "thumbnail",
+            "gallery",
+            "is_active",
+        ]
+
+    def validate(self, attrs):
+        start = attrs.get("event_start_date")
+        end = attrs.get("event_end_date")
+        if start and end and end < start:
+            raise serializers.ValidationError({"event_end_date": EVENT_DATE_ERROR})
+        return attrs
+
+    def update(self, instance, validated_data):
+        gallery_data = validated_data.pop("gallery", [])
+        current_user = get_user_by_context(self.context)
+
+        self.handle_file_update(instance, validated_data, "thumbnail")
+
+        # Update fields only if present
+        if "title" in validated_data:
+            validated_data["title"] = validated_data.pop("title").strip().title()
+
+        for key, val in validated_data.items():
+            setattr(instance, key, val)
+
+        # Handle Event Gallery
+        for gallery in gallery_data:
+            if "id" in gallery:
+                obj = gallery.pop("id")
+                gallery["updated_by"] = current_user
+
+                for key, val in gallery.items():
+                    setattr(obj, key, val)
+                obj.save()
+            else:
+                gallery["event"] = instance
+                gallery["created_by"] = current_user
+                CampusEventGallery.objects.create(**gallery)
+
+        instance.updated_by = current_user
+        instance.save()
+
+        return instance
+
+    def to_representation(self, instance) -> dict[str, str]:
+        return {"message": CAMPUS_EVENT_UPDATED_SUCCESS}
