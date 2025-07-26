@@ -13,7 +13,7 @@ class LoginThrottle(UserRateThrottle):
 
 
 class ForgetPasswordThrottle(UserRateThrottle):
-    rate = "1/minute"  # Specify the desired rate limit per hour
+    rate = "5/minute"  # Specify the desired rate limit per hour
 
     def throttle_response(self, request, exception):
         message = "You have exceeded the maximum attempts."

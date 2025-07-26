@@ -19,7 +19,7 @@ def send_user_forget_password_email(
         email_template_name = "user/forget-password"
         verification_url = f"{origin_url}/{redirect_url}/{token}"
 
-        logo_url = f"{origin_url}{static('images/logo.png')}"
+        logo_url = request.build_absolute_uri(static("images/logo.png"))
 
         email_context = {
             "verification_url": verification_url,
@@ -52,7 +52,7 @@ def send_user_account_verification_email(
         email_template_name = "user/account-verification"
         verification_url = f"{origin_url}/{redirect_url}/{token}"
 
-        logo_url = f"{origin_url}{static('images/logo.png')}"
+        logo_url = request.build_absolute_uri(static("images/logo.png"))
 
         email_context = {
             "verification_url": verification_url,
