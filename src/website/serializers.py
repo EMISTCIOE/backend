@@ -96,15 +96,6 @@ class SocialMediaLinkPatchSerializer(serializers.ModelSerializer):
         model = SocialMediaLink
         fields = ["id", "platform", "url", "is_active"]
 
-    def validate(self, attrs):
-        return validate_unique_fields(
-            model=SocialMediaLink,
-            attrs=attrs,
-            fields=["platform"],
-            instance=self.instance or attrs.get("id"),
-            error_messages={"platform": SOCIAL_MEDIA_ALREADY_EXISTS},
-        )
-
 
 class CampusInfoPatchSerializer(serializers.ModelSerializer):
     social_links = SocialMediaLinkPatchSerializer(many=True)
@@ -119,6 +110,17 @@ class CampusInfoPatchSerializer(serializers.ModelSerializer):
             "organization_chart",
             "social_links",
         ]
+    
+    # def validate(self, attrs):
+    #     social_links = attrs.get("social_links", [])
+
+    #     return validate_unique_fields(
+    #         model=SocialMediaLink,
+    #         attrs=social_links,
+    #         fields=["platform"],
+    #         instance=social_links.get("id"),
+    #         error_messages={"platform": SOCIAL_MEDIA_ALREADY_EXISTS},
+    #     )
 
     def update(self, instance, validated_data):
         user = get_user_by_context(self.context)

@@ -16,6 +16,7 @@ from .views import (
     StudentClubEventViewSet,
     StudentClubViewSet,
 )
+from .listing_apis.views import FiscalSessionBSForCampusReportListAPIView
 
 router = DefaultRouter(trailing_slash=False)
 
@@ -56,6 +57,11 @@ urlpatterns = [
         "student-club-events/<int:event_id>/gallery/<int:gallery_id>",
         StudentClubEventGalleryDestroyAPIView.as_view(),
         name="student-club-events-gallery-destroy",
+    ),
+    # Listing APIs
+    path(
+        "campus-reports/fiscal-sessions",
+        FiscalSessionBSForCampusReportListAPIView.as_view(),
     ),
     path("", include(router.urls)),
 ]
