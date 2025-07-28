@@ -286,7 +286,7 @@ class CampusDownloadViewSet(viewsets.ModelViewSet):
 
         except Exception:
             return Response(
-                {"message": CAMPUS_DOWNLOAD_NOT_FOUND},
+                {"detail": CAMPUS_DOWNLOAD_NOT_FOUND},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -341,7 +341,7 @@ class CampusReportViewSet(viewsets.ModelViewSet):
             instance.file.delete(save=False)
         except Exception:
             return Response(
-                {"message": CAMPUS_REPORT_NOT_FOUND},
+                {"detail": CAMPUS_REPORT_NOT_FOUND},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -396,7 +396,7 @@ class AcademicCalendarViewSet(viewsets.ModelViewSet):
             instance.file.delete(save=False)
         except Exception:
             return Response(
-                {"message": ACADEMIC_CALENDER_NOT_FOUND},
+                {"detail": ACADEMIC_CALENDER_NOT_FOUND},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -446,7 +446,7 @@ class CampusEventViewSet(viewsets.ModelViewSet):
             instance.file.delete(save=False)
         except Exception:
             return Response(
-                {"message": CAMPUS_EVENT_NOT_FOUND},
+                {"detail": CAMPUS_EVENT_NOT_FOUND},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -468,7 +468,7 @@ class CampusEventGalleryDestroyAPIView(generics.DestroyAPIView):
             pk=self.kwargs[self.lookup_url_kwarg],
         ).first()
         if not obj:
-            raise NotFound({"message": EVENT_GALLERY_NOT_FOUND})
+            raise NotFound({"detail": EVENT_GALLERY_NOT_FOUND})
         return obj
 
     def delete(self, request, *args, **kwargs):
@@ -517,7 +517,7 @@ class CampusUnionViewSet(viewsets.ModelViewSet):
             instance = self.get_object()
         except Exception:
             return Response(
-                {"message": CAMPUS_UNION_NOT_FOUND},
+                {"detail": CAMPUS_UNION_NOT_FOUND},
                 status=status.HTTP_404_NOT_FOUND,
             )
         members = instance.members.all()
@@ -530,7 +530,7 @@ class CampusUnionViewSet(viewsets.ModelViewSet):
         instance.delete()
 
         return Response(
-            {"detail": CAMPUS_UNION_DELETED_SUCCESS},
+            {"message": CAMPUS_UNION_DELETED_SUCCESS},
             status=status.HTTP_200_OK,
         )
 
@@ -545,7 +545,7 @@ class CampusUnionViewSet(viewsets.ModelViewSet):
             union = self.get_object()
         except Exception:
             return Response(
-                {"message": CAMPUS_UNION_NOT_FOUND},
+                {"detail": CAMPUS_UNION_NOT_FOUND},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -563,7 +563,7 @@ class CampusUnionViewSet(viewsets.ModelViewSet):
         member.delete()
 
         return Response(
-            {"detail": MEMBER_DELETED_SUCCESS},
+            {"message": MEMBER_DELETED_SUCCESS},
             status=status.HTTP_200_OK,
         )
 
@@ -604,7 +604,7 @@ class StudentClubViewSet(viewsets.ModelViewSet):
             instance = self.get_object()
         except Exception:
             return Response(
-                {"message": CAMPUS_CLUB_NOT_FOUND},
+                {"detail": CAMPUS_CLUB_NOT_FOUND},
                 status=status.HTTP_404_NOT_FOUND,
             )
         members = instance.members.all()
@@ -617,7 +617,7 @@ class StudentClubViewSet(viewsets.ModelViewSet):
         instance.delete()
 
         return Response(
-            {"detail": CAMPUS_CLUB_DELETED_SUCCESS},
+            {"message": CAMPUS_CLUB_DELETED_SUCCESS},
             status=status.HTTP_200_OK,
         )
 
@@ -632,7 +632,7 @@ class StudentClubViewSet(viewsets.ModelViewSet):
             club = self.get_object()
         except Exception:
             return Response(
-                {"message": CAMPUS_CLUB_NOT_FOUND},
+                {"detail": CAMPUS_CLUB_NOT_FOUND},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -650,7 +650,7 @@ class StudentClubViewSet(viewsets.ModelViewSet):
         member.delete()
 
         return Response(
-            {"detail": MEMBER_DELETED_SUCCESS},
+            {"message": MEMBER_DELETED_SUCCESS},
             status=status.HTTP_200_OK,
         )
 
@@ -700,7 +700,7 @@ class StudentClubEventViewSet(viewsets.ModelViewSet):
                 instance.thumbnail.delete(save=False)
         except Exception:
             return Response(
-                {"message": STUDENT_CLUB_EVENT_NOT_FOUND},
+                {"detail": STUDENT_CLUB_EVENT_NOT_FOUND},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -729,7 +729,7 @@ class StudentClubEventGalleryDestroyAPIView(generics.DestroyAPIView):
             pk=self.kwargs[self.lookup_url_kwarg],
         ).first()
         if not obj:
-            raise NotFound({"message": EVENT_GALLERY_NOT_FOUND})
+            raise NotFound({"detail": EVENT_GALLERY_NOT_FOUND})
         return obj
 
     def delete(self, request, *args, **kwargs):

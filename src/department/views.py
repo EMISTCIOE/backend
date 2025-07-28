@@ -141,7 +141,7 @@ class DepartmentSocialMediaDestroyAPIView(generics.DestroyAPIView):
             pk=self.kwargs[self.lookup_url_kwarg],
         ).first()
         if not obj:
-            raise NotFound({"message": SOCIAL_LINK_NOT_FOUND})
+            raise NotFound({"detail": SOCIAL_LINK_NOT_FOUND})
         return obj
 
     def delete(self, request, *args, **kwargs):
@@ -197,7 +197,7 @@ class AcademicProgramViewSet(ModelViewSet):
             instance.thumbnail.delete(save=False)
         except Exception:
             return Response(
-                {"message": ACADEMIC_PROGRAM_NOT_FOUND},
+                {"detail": ACADEMIC_PROGRAM_NOT_FOUND},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -255,7 +255,7 @@ class DepartmentDownloadViewSet(ModelViewSet):
 
         except Exception:
             return Response(
-                {"message": DEPARTMENT_DOWNLOAD_NOT_FOUND},
+                {"detail": DEPARTMENT_DOWNLOAD_NOT_FOUND},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -312,7 +312,7 @@ class DepartmentEventViewSet(ModelViewSet):
             instance.thumbnail.delete(save=False)
         except Exception:
             return Response(
-                {"message": DEPARTMENT_EVENT_NOT_FOUND},
+                {"detail": DEPARTMENT_EVENT_NOT_FOUND},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -334,7 +334,7 @@ class DepartmentEventGalleryDestroyAPIView(generics.DestroyAPIView):
             pk=self.kwargs[self.lookup_url_kwarg],
         ).first()
         if not obj:
-            raise NotFound({"message": EVENT_GALLERY_NOT_FOUND})
+            raise NotFound({"detail": EVENT_GALLERY_NOT_FOUND})
         return obj
 
     def delete(self, request, *args, **kwargs):
@@ -391,7 +391,7 @@ class DepartmentPlanAndPolicyViewSet(ModelViewSet):
             instance.file.delete(save=False)
         except Exception:
             return Response(
-                {"message": DEPARTMENT_PLANS_NOT_FOUND},
+                {"detail": DEPARTMENT_PLANS_NOT_FOUND},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -448,7 +448,7 @@ class StaffMemberViewSet(ModelViewSet):
             instance.photo.delete(save=False)
         except Exception:
             return Response(
-                {"message": STAFF_MEMBER_NOT_FOUND},
+                {"detail": STAFF_MEMBER_NOT_FOUND},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
