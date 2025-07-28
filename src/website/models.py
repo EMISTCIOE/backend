@@ -134,7 +134,6 @@ class SocialMediaLink(AuditInfoModel):
     platform = models.CharField(
         _("Platform"),
         max_length=20,
-        unique=True,
         choices=SocialMediaPlatforms.choices(),
         help_text=_("Select the social media platform."),
     )

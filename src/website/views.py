@@ -443,8 +443,9 @@ class CampusEventViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
-            instance.file.delete(save=False)
-        except Exception:
+            if instance:
+                instance.thumbnail.delete(save=False)
+        except Exception as e:
             return Response(
                 {"detail": CAMPUS_EVENT_NOT_FOUND},
                 status=status.HTTP_404_NOT_FOUND,
@@ -602,6 +603,8 @@ class StudentClubViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
+            if instance:
+                instance.thumbnail.delete(save=False)
         except Exception:
             return Response(
                 {"detail": CAMPUS_CLUB_NOT_FOUND},

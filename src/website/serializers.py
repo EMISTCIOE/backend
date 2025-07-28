@@ -116,7 +116,7 @@ class CampusInfoPatchSerializer(serializers.ModelSerializer):
         for social_link in social_links:
             media_ins = SocialMediaLink.objects.filter(platform=social_link["platform"])
             if "id" in social_link:
-                if media_ins.exclude(pk=social_link["id"]).exists():
+                if media_ins.exclude(pk=social_link["id"].id).exists():
                     raise serializers.ValidationError(
                         {"message": SOCIAL_MEDIA_ALREADY_EXISTS}
                     )
@@ -139,8 +139,8 @@ class CampusInfoPatchSerializer(serializers.ModelSerializer):
             setattr(instance, key, val)
 
         for social_link in social_links:
-            if "id" in social_link:
-                sl = social_link.pop("id")
+            sl = social_link.pop("id", None)
+            if sl:
                 # Update the social media link instance
                 for key, val in social_link.items():
                     setattr(sl, key, val)
@@ -155,7 +155,7 @@ class CampusInfoPatchSerializer(serializers.ModelSerializer):
         return instance
 
     def to_representation(self, instance) -> dict[str, str]:
-        return {"message": CAMPUS_INFO_UPDATED_SUCCESS, "id": instance.id}
+        return {"message": CAMPUS_INFO_UPDATED_SUCCESS}
 
 
 # Campus Key Official Serializers
