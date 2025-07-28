@@ -8,7 +8,6 @@ from src.base.serializers import AbstractInfoRetrieveSerializer
 from src.core.models import FiscalSessionBS
 from src.libs.get_context import get_user_by_context
 from src.libs.mixins import FileHandlingMixin
-from src.libs.validators import validate_unique_fields
 from src.website.validators import (
     validate_campus_download_file,
     validate_photo_thumbnail,
@@ -110,17 +109,24 @@ class CampusInfoPatchSerializer(serializers.ModelSerializer):
             "organization_chart",
             "social_links",
         ]
-    
-    # def validate(self, attrs):
-    #     social_links = attrs.get("social_links", [])
 
-    #     return validate_unique_fields(
-    #         model=SocialMediaLink,
-    #         attrs=social_links,
-    #         fields=["platform"],
-    #         instance=social_links.get("id"),
-    #         error_messages={"platform": SOCIAL_MEDIA_ALREADY_EXISTS},
-    #     )
+    def validate(self, attrs):
+        social_links = attrs.get("social_links", [])
+
+        for social_link in social_links:
+            media_ins = SocialMediaLink.objects.filter(platform=social_link["platform"])
+            if "id" in social_link:
+                if media_ins.exclude(pk=social_link["id"]).exists():
+                    raise serializers.ValidationError(
+                        {"message": SOCIAL_MEDIA_ALREADY_EXISTS}
+                    )
+            else:
+                if media_ins.exists():
+                    raise serializers.ValidationError(
+                        {"message": SOCIAL_MEDIA_ALREADY_EXISTS}
+                    )
+
+        return attrs
 
     def update(self, instance, validated_data):
         user = get_user_by_context(self.context)
