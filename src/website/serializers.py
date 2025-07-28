@@ -680,8 +680,8 @@ class CampusEventPatchSerializer(FileHandlingMixin, serializers.ModelSerializer)
 
         # Handle Event Gallery
         for gallery in gallery_data:
-            if "id" in gallery:
-                obj = gallery.pop("id")
+            obj = gallery.pop("id", None)
+            if obj:
                 gallery["updated_by"] = current_user
 
                 for key, val in gallery.items():
