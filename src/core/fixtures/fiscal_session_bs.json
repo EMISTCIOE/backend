@@ -5,11 +5,9 @@
     "fields": {
       "session_full": "2065/2066",
       "session_short": "65/66",
-      "created_date_ad": "2022-10-28",
-      "created_date_bs": "2079-07-11",
-      "created_by": 1,
-      "device_type": 5,
-      "app_type": 4
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
     }
   },
   {
@@ -18,11 +16,9 @@
     "fields": {
       "session_full": "2066/2067",
       "session_short": "66/67",
-      "created_date_ad": "2022-10-28",
-      "created_date_bs": "2079-07-11",
-      "created_by": 1,
-      "device_type": 5,
-      "app_type": 4
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
     }
   },
   {
@@ -31,11 +27,9 @@
     "fields": {
       "session_full": "2067/2068",
       "session_short": "67/68",
-      "created_date_ad": "2022-10-28",
-      "created_date_bs": "2079-07-11",
-      "created_by": 1,
-      "device_type": 5,
-      "app_type": 4
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
     }
   },
   {
@@ -44,11 +38,9 @@
     "fields": {
       "session_full": "2068/2069",
       "session_short": "68/69",
-      "created_date_ad": "2022-10-28",
-      "created_date_bs": "2079-07-11",
-      "created_by": 1,
-      "device_type": 5,
-      "app_type": 4
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
     }
   },
   {
@@ -57,11 +49,9 @@
     "fields": {
       "session_full": "2069/2070",
       "session_short": "69/70",
-      "created_date_ad": "2022-10-28",
-      "created_date_bs": "2079-07-11",
-      "created_by": 1,
-      "device_type": 5,
-      "app_type": 4
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
     }
   },
   {
@@ -70,11 +60,9 @@
     "fields": {
       "session_full": "2070/2071",
       "session_short": "70/71",
-      "created_date_ad": "2022-10-28",
-      "created_date_bs": "2079-07-11",
-      "created_by": 1,
-      "device_type": 5,
-      "app_type": 4
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
     }
   },
   {
@@ -83,11 +71,9 @@
     "fields": {
       "session_full": "2071/2072",
       "session_short": "71/72",
-      "created_date_ad": "2022-10-28",
-      "created_date_bs": "2079-07-11",
-      "created_by": 1,
-      "device_type": 5,
-      "app_type": 4
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
     }
   },
   {
@@ -96,11 +82,9 @@
     "fields": {
       "session_full": "2072/2073",
       "session_short": "72/73",
-      "created_date_ad": "2022-10-28",
-      "created_date_bs": "2079-07-11",
-      "created_by": 1,
-      "device_type": 5,
-      "app_type": 4
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
     }
   },
   {
@@ -109,11 +93,9 @@
     "fields": {
       "session_full": "2073/2074",
       "session_short": "73/74",
-      "created_date_ad": "2022-10-28",
-      "created_date_bs": "2079-07-11",
-      "created_by": 1,
-      "device_type": 5,
-      "app_type": 4
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
     }
   },
   {
@@ -122,11 +104,9 @@
     "fields": {
       "session_full": "2074/2075",
       "session_short": "74/75",
-      "created_date_ad": "2022-10-28",
-      "created_date_bs": "2079-07-11",
-      "created_by": 1,
-      "device_type": 5,
-      "app_type": 4
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
     }
   },
   {
@@ -135,11 +115,9 @@
     "fields": {
       "session_full": "2075/2076",
       "session_short": "75/76",
-      "created_date_ad": "2022-10-28",
-      "created_date_bs": "2079-07-11",
-      "created_by": 1,
-      "device_type": 5,
-      "app_type": 4
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
     }
   },
   {
@@ -148,11 +126,9 @@
     "fields": {
       "session_full": "2076/2077",
       "session_short": "76/77",
-      "created_date_ad": "2022-10-28",
-      "created_date_bs": "2079-07-11",
-      "created_by": 1,
-      "device_type": 5,
-      "app_type": 4
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
     }
   },
   {
@@ -161,11 +137,9 @@
     "fields": {
       "session_full": "2077/2078",
       "session_short": "77/78",
-      "created_date_ad": "2022-10-28",
-      "created_date_bs": "2079-07-11",
-      "created_by": 1,
-      "device_type": 5,
-      "app_type": 4
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
     }
   },
   {
@@ -174,11 +148,9 @@
     "fields": {
       "session_full": "2078/2079",
       "session_short": "78/79",
-      "created_date_ad": "2022-10-28",
-      "created_date_bs": "2079-07-11",
-      "created_by": 1,
-      "device_type": 5,
-      "app_type": 4
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
     }
   },
   {
@@ -187,11 +159,9 @@
     "fields": {
       "session_full": "2079/2080",
       "session_short": "79/80",
-      "created_date_ad": "2022-10-28",
-      "created_date_bs": "2079-07-11",
-      "created_by": 1,
-      "device_type": 5,
-      "app_type": 4
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
     }
   },
   {
@@ -200,11 +170,9 @@
     "fields": {
       "session_full": "2080/2081",
       "session_short": "80/81",
-      "created_date_ad": "2022-10-28",
-      "created_date_bs": "2079-07-11",
-      "created_by": 1,
-      "device_type": 5,
-      "app_type": 4
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
     }
   },
   {
@@ -213,50 +181,9 @@
     "fields": {
       "session_full": "2081/2082",
       "session_short": "81/82",
-      "created_date_ad": "2022-10-28",
-      "created_date_bs": "2079-07-11",
-      "created_by": 1,
-      "device_type": 5,
-      "app_type": 4
-    }
-  },
-  {
-    "model": "core.FiscalSessionBS",
-    "pk": 18,
-    "fields": {
-      "session_full": "2082/2083",
-      "session_short": "82/83",
-      "created_date_ad": "2022-10-28",
-      "created_date_bs": "2079-07-11",
-      "created_by": 1,
-      "device_type": 5,
-      "app_type": 4
-    }
-  },
-  {
-    "model": "core.FiscalSessionBS",
-    "pk": 19,
-    "fields": {
-      "session_full": "2083/2084",
-      "session_short": "83/84",
-      "created_date_ad": "2022-10-28",
-      "created_date_bs": "2079-07-11",
-      "created_by": 1,
-      "device_type": 5,
-      "app_type": 4
-    }
-  },
-  {
-    "model": "core.FiscalSessionBS",
-    "pk": 20,
-    "fields": {
-      "session_full": "2084/2085",
-      "session_short": "84/85",
-      "created_date_ad": "2022-10-28",
-      "created_date_bs": "2079-07-11",
-      "created_by": 1,
-      "device_type": 5,
-      "app_type": 4
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z",
+      "created_by": 1
     }
   }
 ]

@@ -36,7 +36,6 @@ from .models import (
     StaffMember,
 )
 
-
 # Department Serializers
 # ------------------------------------------------------------------------------------------------------
 
@@ -89,10 +88,12 @@ class DepartmentSocialMediaForDepartmentCreateSerializer(serializers.ModelSerial
 
 class DepartmentCreateSerializer(serializers.ModelSerializer):
     social_links = DepartmentSocialMediaForDepartmentCreateSerializer(
-        many=True, required=False
+        many=True,
+        required=False,
     )
     thumbnail = serializers.ImageField(
-        validators=[validate_photo_thumbnail], allow_null=True
+        validators=[validate_photo_thumbnail],
+        allow_null=True,
     )
 
     class Meta:
@@ -131,7 +132,8 @@ class DepartmentCreateSerializer(serializers.ModelSerializer):
 
 class DepartmentSocialMediaForDepartmentPatchSerializer(serializers.ModelSerializer):
     id = serializers.PrimaryKeyRelatedField(
-        queryset=DepartmentSocialMedia.objects.filter(is_archived=False), required=False
+        queryset=DepartmentSocialMedia.objects.filter(is_archived=False),
+        required=False,
     )
 
     class Meta:
@@ -141,10 +143,13 @@ class DepartmentSocialMediaForDepartmentPatchSerializer(serializers.ModelSeriali
 
 class DepartmentPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
     social_links = DepartmentSocialMediaForDepartmentPatchSerializer(
-        many=True, required=False
+        many=True,
+        required=False,
     )
     thumbnail = serializers.ImageField(
-        validators=[validate_photo_thumbnail], allow_null=True, required=False
+        validators=[validate_photo_thumbnail],
+        allow_null=True,
+        required=False,
     )
 
     class Meta:
@@ -248,7 +253,8 @@ class AcademicProgramCreateSerializer(serializers.ModelSerializer):
         queryset=Department.objects.filter(is_active=True),
     )
     thumbnail = serializers.ImageField(
-        validators=[validate_photo_thumbnail], allow_null=True
+        validators=[validate_photo_thumbnail],
+        allow_null=True,
     )
 
     class Meta:
@@ -275,7 +281,9 @@ class AcademicProgramPatchSerializer(FileHandlingMixin, serializers.ModelSeriali
         required=False,
     )
     thumbnail = serializers.ImageField(
-        validators=[validate_photo_thumbnail], allow_null=True, required=False
+        validators=[validate_photo_thumbnail],
+        allow_null=True,
+        required=False,
     )
 
     class Meta:
@@ -316,7 +324,6 @@ class AcademicProgramPatchSerializer(FileHandlingMixin, serializers.ModelSeriali
 
 
 class AcademicProgramListForOtherSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = AcademicProgram
         fields = ["id", "name", "short_name", "thumbnail"]
@@ -345,7 +352,7 @@ class DepartmentDownloadRetrieveSerializer(AbstractInfoRetrieveSerializer):
 
 class DepartmentDownloadCreateSerializer(serializers.ModelSerializer):
     department = serializers.PrimaryKeyRelatedField(
-        queryset=Department.objects.filter(is_active=True)
+        queryset=Department.objects.filter(is_active=True),
     )
     file = serializers.FileField(validators=[validate_department_download_file])
 
@@ -368,10 +375,12 @@ class DepartmentDownloadCreateSerializer(serializers.ModelSerializer):
 
 class DepartmentDownloadPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
     department = serializers.PrimaryKeyRelatedField(
-        queryset=Department.objects.filter(is_active=True), required=False
+        queryset=Department.objects.filter(is_active=True),
+        required=False,
     )
     file = serializers.FileField(
-        validators=[validate_department_download_file], required=False
+        validators=[validate_department_download_file],
+        required=False,
     )
 
     class Meta:
@@ -456,6 +465,8 @@ class DepartmentEventRetrieveSerializer(AbstractInfoRetrieveSerializer):
 
 
 class DepartmentEventGalleryCreateSerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(validators=[validate_photo_thumbnail])
+
     class Meta:
         model = DepartmentEventGallery
         fields = ["image", "caption"]
@@ -463,11 +474,12 @@ class DepartmentEventGalleryCreateSerializer(serializers.ModelSerializer):
 
 class DepartmentEventCreateSerializer(serializers.ModelSerializer):
     department = serializers.PrimaryKeyRelatedField(
-        queryset=Department.objects.filter(is_active=True)
+        queryset=Department.objects.filter(is_active=True),
     )
     gallery = DepartmentEventGalleryCreateSerializer(many=True, required=False)
     thumbnail = serializers.ImageField(
-        validators=[validate_photo_thumbnail], allow_null=True
+        validators=[validate_photo_thumbnail],
+        allow_null=True,
     )
 
     class Meta:
@@ -519,6 +531,7 @@ class DepartmentEventGalleryPatchSerializer(serializers.ModelSerializer):
         queryset=DepartmentEventGallery.objects.filter(is_archived=False),
         required=False,
     )
+    image = serializers.ImageField(validators=[validate_photo_thumbnail])
 
     class Meta:
         model = DepartmentEventGallery
@@ -532,7 +545,9 @@ class DepartmentEventPatchSerializer(FileHandlingMixin, serializers.ModelSeriali
     )
     gallery = DepartmentEventGalleryPatchSerializer(many=True, required=False)
     thumbnail = serializers.ImageField(
-        validators=[validate_photo_thumbnail], allow_null=True, required=False
+        validators=[validate_photo_thumbnail],
+        allow_null=True,
+        required=False,
     )
 
     class Meta:
@@ -643,13 +658,15 @@ class StaffMemberRetrieveSerializer(AbstractInfoRetrieveSerializer):
 
 class StaffMemberCreateSerializer(serializers.ModelSerializer):
     department = serializers.PrimaryKeyRelatedField(
-        queryset=Department.objects.filter(is_active=True)
+        queryset=Department.objects.filter(is_active=True),
     )
     program = serializers.PrimaryKeyRelatedField(
-        queryset=AcademicProgram.objects.filter(is_active=True), allow_null=True
+        queryset=AcademicProgram.objects.filter(is_active=True),
+        allow_null=True,
     )
     photo = serializers.ImageField(
-        validators=[validate_photo_thumbnail], allow_null=True
+        validators=[validate_photo_thumbnail],
+        allow_null=True,
     )
 
     class Meta:
@@ -681,9 +698,9 @@ class StaffMemberCreateSerializer(serializers.ModelSerializer):
 
         # Sanitize fields
         validated_data["name"] = validated_data["name"].strip()
-        if "phone_number" in validated_data and validated_data["phone_number"]:
+        if validated_data.get("phone_number"):
             validated_data["phone_number"] = validated_data["phone_number"].strip()
-        if "email" in validated_data and validated_data["email"]:
+        if validated_data.get("email"):
             validated_data["email"] = validated_data["email"].strip()
 
         validated_data["created_by"] = current_user
@@ -705,7 +722,9 @@ class StaffMemberPatchSerializer(FileHandlingMixin, serializers.ModelSerializer)
         required=False,
     )
     photo = serializers.ImageField(
-        validators=[validate_photo_thumbnail], allow_null=True, required=False
+        validators=[validate_photo_thumbnail],
+        allow_null=True,
+        required=False,
     )
 
     class Meta:
@@ -791,7 +810,7 @@ class DepartmentPlanAndPolicyRetrieveSerializer(AbstractInfoRetrieveSerializer):
 
 class DepartmentPlanAndPolicyCreateSerializer(serializers.ModelSerializer):
     department = serializers.PrimaryKeyRelatedField(
-        queryset=Department.objects.filter(is_active=True)
+        queryset=Department.objects.filter(is_active=True),
     )
     file = serializers.FileField(validators=[validate_department_download_file])
     title = serializers.CharField(required=True)
@@ -806,7 +825,7 @@ class DepartmentPlanAndPolicyCreateSerializer(serializers.ModelSerializer):
 
         if not description and not file:
             raise serializers.ValidationError(
-                {"description": DESRIPTION_OR_FILE_REQUIRED}
+                {"description": DESRIPTION_OR_FILE_REQUIRED},
             )
 
         return attrs
@@ -825,13 +844,16 @@ class DepartmentPlanAndPolicyCreateSerializer(serializers.ModelSerializer):
 
 
 class DepartmentPlanAndPolicyPatchSerializer(
-    FileHandlingMixin, serializers.ModelSerializer
+    FileHandlingMixin,
+    serializers.ModelSerializer,
 ):
     department = serializers.PrimaryKeyRelatedField(
-        queryset=Department.objects.filter(is_active=True), required=False
+        queryset=Department.objects.filter(is_active=True),
+        required=False,
     )
     file = serializers.FileField(
-        validators=[validate_department_download_file], required=False
+        validators=[validate_department_download_file],
+        required=False,
     )
 
     class Meta:
@@ -848,7 +870,7 @@ class DepartmentPlanAndPolicyPatchSerializer(
 
         if not has_description and not has_file:
             raise serializers.ValidationError(
-                {"description": DESRIPTION_OR_FILE_REQUIRED}
+                {"description": DESRIPTION_OR_FILE_REQUIRED},
             )
 
         return attrs

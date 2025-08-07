@@ -113,8 +113,9 @@ class DepartmentSocialMedia(AuditInfoModel):
         verbose_name_plural = _("Department Social Medias")
         constraints = [
             models.UniqueConstraint(
-                fields=["department", "platform"], name="unique_department_platform"
-            )
+                fields=["department", "platform"],
+                name="unique_department_platform",
+            ),
         ]
 
     def __str__(self) -> str:

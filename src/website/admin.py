@@ -7,9 +7,11 @@ from .models import (
     CampusFeedback,
     CampusInfo,
     CampusKeyOfficial,
+    CampusUnion,
     SocialMediaLink,
     CampusReport,
     FiscalSessionBS,
+    StudentClub,
 )
 
 
@@ -32,6 +34,8 @@ class CampusReportAdmin(admin.ModelAdmin):
 
 
 admin.site.register(CampusEventGallery)
+admin.site.register(CampusUnion)
+admin.site.register(StudentClub)
 
 
 @admin.register(CampusInfo)

@@ -29,7 +29,7 @@ class PublicNoticeCategoryListAPIView(generics.ListAPIView):
     queryset = NoticeCategory.objects.filter(is_active=True)
     serializer_class = PublicCategoryForNoticeListSerializer
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
-    filter_fields = ["uuid"]
+    filterset_fields = ["uuid"]
     search_fields = ["name"]
     ordering_fields = ["created_at"]
     ordering = ["-created_at"]
@@ -42,7 +42,7 @@ class PublicNoticeDepartmentListAPIView(generics.ListAPIView):
     queryset = Department.objects.filter(is_active=True)
     serializer_class = PublicDepartmentForNoticeListSerializer
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
-    filter_fields = ["uuid"]
+    filterset_fields = ["uuid"]
     search_fields = ["name"]
     ordering_fields = ["created_at"]
     ordering = ["-created_at"]

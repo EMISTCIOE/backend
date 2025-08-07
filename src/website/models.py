@@ -14,15 +14,21 @@ from src.core.models import FiscalSessionBS
 from src.website.constants import (
     ACADEMIC_CALENDER_FILE_PATH,
     CAMPUS_DOWNLOADS_FILE_PATH,
+    CAMPUS_EVENT_FILE_PATH,
+    CAMPUS_FILE_PATH,
     CAMPUS_KEY_OFFICIAL_FILE_PATH,
     CAMPUS_REPORT_FILE_PATH,
     CAMPUS_UNION_FILE_PATH,
+    CAMPUS_UNION_MEMBER_FILE_PATH,
+    STUDENT_CLUB_EVENT_FILE_PATH,
     STUDENT_CLUB_FILE_PATH,
+    STUDENT_CLUB_MEMBER_FILE_PATH,
     CampusDesignationChoices,
     CampusEventTypes,
     ReportTypes,
 )
 from src.website.messages import ONLY_ONE_CAMPUS_INFO_ALLOWED
+from src.website.utils import nepali_year_choices
 
 
 class CampusInfo(AuditInfoModel):
@@ -55,7 +61,7 @@ class CampusInfo(AuditInfoModel):
     )
     organization_chart = models.ImageField(
         _("Organization Chart"),
-        upload_to="campus/org_charts/",
+        upload_to=CAMPUS_FILE_PATH,
         null=True,
         blank=True,
         help_text=_("Image representing campus organizational structure."),
@@ -134,7 +140,6 @@ class SocialMediaLink(AuditInfoModel):
     platform = models.CharField(
         _("Platform"),
         max_length=20,
-        unique=True,
         choices=SocialMediaPlatforms.choices(),
         help_text=_("Select the social media platform."),
     )
@@ -164,10 +169,12 @@ class AcademicCalendar(AuditInfoModel):
     )
     start_year = models.PositiveIntegerField(
         _("Start Year"),
+        choices=nepali_year_choices(),
         help_text=_("Start year of the academic calendar (e.g., 2081)."),
     )
     end_year = models.PositiveIntegerField(
         _("End Year"),
+        choices=nepali_year_choices(),
         help_text=_("End year of the academic calendar (e.g., 2082)."),
     )
     file = models.FileField(
@@ -286,7 +293,7 @@ class CampusEvent(AuditInfoModel):
     )
     thumbnail = models.ImageField(
         _("Thumbnail"),
-        upload_to="campus/events/thumbnails/",
+        upload_to=CAMPUS_EVENT_FILE_PATH,
         null=True,
         help_text=_("Main image for the event."),
     )
@@ -312,7 +319,7 @@ class CampusEventGallery(AuditInfoModel):
     )
     image = models.ImageField(
         _("Image"),
-        upload_to="campus/events/gallery/",
+        upload_to=CAMPUS_EVENT_FILE_PATH,
     )
     caption = models.CharField(
         _("Caption"),
@@ -340,10 +347,29 @@ class CampusUnion(AuditInfoModel):
         max_length=100,
         help_text=_("Name of the union, e.g. Free Student Union"),
     )
-    description = RichTextField(
-        _("Description"),
+    short_description = models.TextField(
+        _("Short Description"),
+        max_length=500,
+        help_text=_("Brief summary or introduction (max 500 characters)."),
+    )
+    detailed_description = RichTextField(
+        _("Detailed Description"),
         blank=True,
-        help_text=_("Details or objectives of the union."),
+        help_text=_(
+            "In-depth overview about the unions's mission, activities, and history.",
+        ),
+    )
+    website_url = models.URLField(
+        _("Website Link"),
+        null=True,
+        blank=True,
+        help_text=_("URL of the club website (optional)"),
+    )
+    thumbnail = models.ImageField(
+        _("Thumbnail"),
+        upload_to=CAMPUS_UNION_FILE_PATH,
+        null=True,
+        help_text=_("Optional representative image or logo of the union."),
     )
 
     class Meta:
@@ -379,7 +405,7 @@ class CampusUnionMember(AuditInfoModel):
     )
     photo = models.ImageField(
         _("Photo"),
-        upload_to=CAMPUS_UNION_FILE_PATH,
+        upload_to=CAMPUS_UNION_MEMBER_FILE_PATH,
         null=True,
         help_text=_("Profile photo of the member."),
     )
@@ -415,9 +441,15 @@ class StudentClub(AuditInfoModel):
             "In-depth overview about the club's mission, activities, and history.",
         ),
     )
+    website_url = models.URLField(
+        _("Website Link"),
+        null=True,
+        blank=True,
+        help_text=_("URL of the club website (optional)"),
+    )
     thumbnail = models.ImageField(
         _("Thumbnail"),
-        upload_to="clubs/thumbnails/",
+        upload_to=STUDENT_CLUB_FILE_PATH,
         null=True,
         help_text=_("Optional representative image or logo of the club."),
     )
@@ -453,7 +485,7 @@ class StudentClubMember(AuditInfoModel):
     )
     photo = models.ImageField(
         _("Photo"),
-        upload_to=STUDENT_CLUB_FILE_PATH,
+        upload_to=STUDENT_CLUB_MEMBER_FILE_PATH,
         null=True,
         help_text=_("Profile photo of the member."),
     )
@@ -495,7 +527,7 @@ class StudentClubEvent(AuditInfoModel):
     )
     thumbnail = models.ImageField(
         _("Event Thumbnail"),
-        upload_to="clubs/events/thumbnails/",
+        upload_to=STUDENT_CLUB_EVENT_FILE_PATH,
         null=True,
         blank=True,
         help_text=_("Representative image for the event."),
@@ -522,7 +554,7 @@ class StudentClubEventGallery(AuditInfoModel):
     )
     image = models.ImageField(
         _("Image"),
-        upload_to="clubs/gallery/",
+        upload_to=STUDENT_CLUB_EVENT_FILE_PATH,
         help_text=_("Upload an image to showcase."),
     )
     caption = models.CharField(

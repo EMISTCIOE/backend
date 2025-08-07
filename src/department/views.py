@@ -1,35 +1,35 @@
 # Django Imports
-from django.db import transaction
 import django_filters
+from django.db import transaction
 from django_filters.filterset import FilterSet
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
-from rest_framework.response import Response
 from rest_framework.exceptions import NotFound
 
 # Rest Framework Imports
 from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+
+from src.libs.utils import set_binary_files_null_if_empty
 
 # Project Imports
 from .messages import (
+    ACADEMIC_PROGRAM_DELETED_SUCCESS,
     ACADEMIC_PROGRAM_NOT_FOUND,
+    DEPARTMENT_DOWNLOAD_DELETED_SUCCESS,
     DEPARTMENT_DOWNLOAD_NOT_FOUND,
+    DEPARTMENT_EVENT_DELETED_SUCCESS,
     DEPARTMENT_EVENT_NOT_FOUND,
+    DEPARTMENT_PLANS_DELETED_SUCCESS,
     DEPARTMENT_PLANS_NOT_FOUND,
     EVENT_GALLERY_DELETED_SUCCESS,
     EVENT_GALLERY_NOT_FOUND,
     SOCIAL_LINK_DELETED_SUCCESS,
     SOCIAL_LINK_NOT_FOUND,
-    ACADEMIC_PROGRAM_DELETED_SUCCESS,
-    DEPARTMENT_DOWNLOAD_DELETED_SUCCESS,
-    STAFF_MEMBER_NOT_FOUND,
     STAFF_MEMBER_DELETED_SUCCESS,
-    DEPARTMENT_PLANS_DELETED_SUCCESS,
-    DEPARTMENT_EVENT_DELETED_SUCCESS,
+    STAFF_MEMBER_NOT_FOUND,
 )
-from src.libs.utils import set_binary_files_null_if_empty
-
 from .models import (
     AcademicProgram,
     Department,
@@ -141,14 +141,15 @@ class DepartmentSocialMediaDestroyAPIView(generics.DestroyAPIView):
             pk=self.kwargs[self.lookup_url_kwarg],
         ).first()
         if not obj:
-            raise NotFound({"message": SOCIAL_LINK_NOT_FOUND})
+            raise NotFound({"detail": SOCIAL_LINK_NOT_FOUND})
         return obj
 
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
         instance.delete()
         return Response(
-            {"message": SOCIAL_LINK_DELETED_SUCCESS}, status=status.HTTP_200_OK
+            {"message": SOCIAL_LINK_DELETED_SUCCESS},
+            status=status.HTTP_200_OK,
         )
 
 
@@ -196,7 +197,7 @@ class AcademicProgramViewSet(ModelViewSet):
             instance.thumbnail.delete(save=False)
         except Exception:
             return Response(
-                {"message": ACADEMIC_PROGRAM_NOT_FOUND},
+                {"detail": ACADEMIC_PROGRAM_NOT_FOUND},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -254,7 +255,7 @@ class DepartmentDownloadViewSet(ModelViewSet):
 
         except Exception:
             return Response(
-                {"message": DEPARTMENT_DOWNLOAD_NOT_FOUND},
+                {"detail": DEPARTMENT_DOWNLOAD_NOT_FOUND},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -311,18 +312,19 @@ class DepartmentEventViewSet(ModelViewSet):
             instance.thumbnail.delete(save=False)
         except Exception:
             return Response(
-                {"message": DEPARTMENT_EVENT_NOT_FOUND},
+                {"detail": DEPARTMENT_EVENT_NOT_FOUND},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
         instance.delete()
         return Response(
-            {"message": DEPARTMENT_EVENT_DELETED_SUCCESS}, status=status.HTTP_200_OK
+            {"message": DEPARTMENT_EVENT_DELETED_SUCCESS},
+            status=status.HTTP_200_OK,
         )
 
 
 class DepartmentEventGalleryDestroyAPIView(generics.DestroyAPIView):
-    permission_classes = [DepartmentPermission]
+    permission_classes = [DepartmentEventPermission]
     lookup_url_kwarg = "gallery_id"
     queryset = DepartmentEventGallery.objects.all()
 
@@ -332,7 +334,7 @@ class DepartmentEventGalleryDestroyAPIView(generics.DestroyAPIView):
             pk=self.kwargs[self.lookup_url_kwarg],
         ).first()
         if not obj:
-            raise NotFound({"message": EVENT_GALLERY_NOT_FOUND})
+            raise NotFound({"detail": EVENT_GALLERY_NOT_FOUND})
         return obj
 
     def delete(self, request, *args, **kwargs):
@@ -340,7 +342,8 @@ class DepartmentEventGalleryDestroyAPIView(generics.DestroyAPIView):
         instance.image.delete(save=False)
         instance.delete()
         return Response(
-            {"message": EVENT_GALLERY_DELETED_SUCCESS}, status=status.HTTP_200_OK
+            {"message": EVENT_GALLERY_DELETED_SUCCESS},
+            status=status.HTTP_200_OK,
         )
 
 
@@ -388,7 +391,7 @@ class DepartmentPlanAndPolicyViewSet(ModelViewSet):
             instance.file.delete(save=False)
         except Exception:
             return Response(
-                {"message": DEPARTMENT_PLANS_NOT_FOUND},
+                {"detail": DEPARTMENT_PLANS_NOT_FOUND},
                 status=status.HTTP_404_NOT_FOUND,
             )
 
@@ -445,7 +448,7 @@ class StaffMemberViewSet(ModelViewSet):
             instance.photo.delete(save=False)
         except Exception:
             return Response(
-                {"message": STAFF_MEMBER_NOT_FOUND},
+                {"detail": STAFF_MEMBER_NOT_FOUND},
                 status=status.HTTP_404_NOT_FOUND,
             )
 

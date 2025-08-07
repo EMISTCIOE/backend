@@ -3,20 +3,48 @@ from rest_framework.routers import DefaultRouter
 
 # Project Imports
 from src.website.public.views import (
+    PublicCampusAcademicCalenderListAPIView,
     PublicCampusDownloadListAPIView,
-    PublicCampusEventListAPIView,
-    PublicCampusEventRetrieveAPIView,
+    PublicCampusEventViewSet,
     PublicCampusFeedbackCreateAPIView,
     PublicCampusInfoRetrieveAPIView,
     PublicCampusKeyOfficialListAPIView,
     PublicCampusReportListAPIView,
-    PublicCampusAcademicCalenderListAPIView,
+    PublicCampusUnionReadOnlyViewSet,
+    PublicStudentClubEventViewSet,
+    PublicStudentClubReadOnlyViewSet,
 )
 
-router = DefaultRouter()
+router = DefaultRouter(trailing_slash=False)
+
+router.register(
+    "unions",
+    PublicCampusUnionReadOnlyViewSet,
+    basename="public-campus-union",
+)
+router.register(
+    "clubs",
+    PublicStudentClubReadOnlyViewSet,
+    basename="public-campus-club",
+)
+router.register(
+    "club-events",
+    PublicStudentClubEventViewSet,
+    basename="public-club-event",
+)
+router.register(
+    "campus-events",
+    PublicCampusEventViewSet,
+    basename="public-campus-event",
+)
+
 
 urlpatterns = [
-    path("campus-info", PublicCampusInfoRetrieveAPIView.as_view(), name="campus-info"),
+    path(
+        "campus-info",
+        PublicCampusInfoRetrieveAPIView.as_view(),
+        name="public-campus-info",
+    ),
     path(
         "campus-downloads",
         PublicCampusDownloadListAPIView.as_view(),
@@ -32,21 +60,11 @@ urlpatterns = [
         PublicCampusAcademicCalenderListAPIView.as_view(),
         name="public-campus-academic-calenders",
     ),
-    path(
-        "campus-events",
-        PublicCampusEventListAPIView.as_view(),
-        name="public-campus-event-list",
-    ),
-    path(
-        "campus-events/<uuid:uuid>",
-        PublicCampusEventRetrieveAPIView.as_view(),
-        name="public-campus-event-detail",
-    ),
     path("campus-key-officials", PublicCampusKeyOfficialListAPIView.as_view()),
     path(
         "submit-feedback",
         PublicCampusFeedbackCreateAPIView.as_view(),
-        name="submit-feedback",
+        name="public-submit-feedback",
     ),
     path("", include(router.urls)),
 ]

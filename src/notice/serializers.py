@@ -1,5 +1,5 @@
-from rest_framework import serializers
 from django.core.files.storage import default_storage
+from rest_framework import serializers
 
 # Project Imports
 from src.base.serializers import AbstractInfoRetrieveSerializer
@@ -259,7 +259,7 @@ class NoticePatchSerializer(serializers.ModelSerializer):
                 if media_instance:
                     # Remove the old file from disk
                     if media_instance.file and default_storage.exists(
-                        media_instance.file.name
+                        media_instance.file.name,
                     ):
                         default_storage.delete(media_instance.file.name)
 

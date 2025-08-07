@@ -105,7 +105,7 @@ class RoleForUserView(ListAPIView):
     queryset = Role.objects.filter(is_active=True, is_system_managed=False)
     serializer_class = RoleForUserSerializer
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
-    filter_fields = ["id", "name", "codename"]
+    filterset_fields = ["id", "name", "codename"]
     search_fields = ["id", "name"]
     ordering_fields = ["id", "name"]
     ordering = ["name"]

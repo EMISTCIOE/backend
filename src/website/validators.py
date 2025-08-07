@@ -1,4 +1,5 @@
 import os
+
 from rest_framework.serializers import ValidationError
 
 # 5 MB in bytes
@@ -16,7 +17,7 @@ def validate_campus_download_file(value):
     allowed_extensions = [".pdf", ".docx", ".png", ".jpg", ".jpeg"]
     if ext not in allowed_extensions:
         raise ValidationError(
-            f"Unsupported file format. Allowed: {', '.join(allowed_extensions)}."
+            f"Unsupported file format. Allowed: {', '.join(allowed_extensions)}.",
         )
 
 
@@ -31,7 +32,7 @@ def validate_photo_thumbnail(file):
     ext = os.path.splitext(file.name)[1].lower()
     if ext not in ALLOWED_PHOTO_EXTENSIONS:
         raise ValidationError(
-            f"Unsupported file type: {ext}. Allowed types are {', '.join(ALLOWED_PHOTO_EXTENSIONS)}"
+            f"Unsupported file type: {ext}. Allowed types are {', '.join(ALLOWED_PHOTO_EXTENSIONS)}",
         )
 
     if file.size > MAX_PHOTO_SIZE:
