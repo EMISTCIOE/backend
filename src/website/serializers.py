@@ -1,26 +1,23 @@
-<<<<<<< HEAD
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema_field
-=======
+
 from django.core.files.storage import default_storage
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
 from src.base.serializers import AbstractInfoRetrieveSerializer
->>>>>>> b3d33a7c39930f71ced1ec7052078e8cc0b49d2c
+
 
 # Project Imports
 from src.libs.get_context import get_user_by_context
-<<<<<<< HEAD
 from src.base.serializers import AbstractInfoRetrieveSerializer
 from src.user.validators import validate_user_image
 from src.website.validators import validate_campus_download_file
 from src.libs.mixins import FileHandlingMixin
 from .constants import CAMPUS_KEY_OFFICIAL_FILE_PATH
 
-=======
+
 from src.libs.mixins import FileHandlingMixin
->>>>>>> b3d33a7c39930f71ced1ec7052078e8cc0b49d2c
 from src.website.validators import (
     validate_campus_download_file,
     validate_photo_thumbnail,
@@ -60,13 +57,9 @@ from .models import (
     CampusUnion,
     CampusUnionMember,
     SocialMediaLink,
-<<<<<<< HEAD
     CampusEventGallery,
     FiscalSessionBS,
     CampusEvent,
-)
-
-=======
     StudentClub,
     StudentClubEvent,
     StudentClubEventGallery,
@@ -278,7 +271,6 @@ class CampusKeyOfficialPatchSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         return {"message": CAMPUS_KEY_OFFICIAL_UPDATE_SUCCESS}
 
->>>>>>> b3d33a7c39930f71ced1ec7052078e8cc0b49d2c
 
 # Campus Feedback Serializers
 # ------------------------------------------------------------------------------------------------
@@ -1097,7 +1089,7 @@ class CampusUnionCreateSerializer(serializers.ModelSerializer):
             "website_url",
             "members",
         ]
-    
+
     def create(self, validated_data):
         current_user = get_user_by_context(self.context)
         members_data = validated_data.pop("members", [])
@@ -1144,7 +1136,7 @@ class CampusUnionPatchSerializer(FileHandlingMixin, serializers.ModelSerializer)
             "members",
             "is_active",
         ]
-    
+
     def update(self, instance, validated_data):
         current_user = get_user_by_context(self.context)
         union_members = validated_data.pop("members", [])
