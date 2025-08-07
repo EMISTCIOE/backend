@@ -70,26 +70,27 @@ class PublicCampusDownloadListAPIView(ListAPIView):
     filterset_fields = ["uuid"]
 
 
-class PublicCampusEventListAPIView(ListAPIView):
-    """Campus Event List API"""
+class PublicCampusEventViewSet(ReadOnlyModelViewSet):
+    """
+    Public API for listing and retrieving campus events with galleries.
+    """
 
     permission_classes = [AllowAny]
     queryset = CampusEvent.objects.filter(is_active=True)
-    serializer_class = PublicCampusEventListSerializer
-    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
+    filterset_fields = ["event_type", "event_start_date", "event_end_date"]
+    search_fields = ["title"]
     ordering = ["-created_at"]
     ordering_fields = ["event_start_date", "created_at"]
-    search_fields = ["title"]
-    filterset_fields = ["event_type", "event_start_date", "event_end_date"]
+    http_method_names = ["get", "head", "options"]
 
-
-class PublicCampusEventRetrieveAPIView(RetrieveAPIView):
-    """Specific Campus Event API"""
-
-    permission_classes = [AllowAny]
-    queryset = CampusEvent.objects.filter(is_active=True)
-    serializer_class = PublicCampusEventRetrieveSerializer
-    lookup_field = "uuid"
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return (
+                PublicCampusEventListSerializer
+                if self.action == "list"
+                else PublicCampusEventRetrieveSerializer
+            )
 
 
 class PublicCampusKeyOfficialListAPIView(ListAPIView):
@@ -144,9 +145,12 @@ class PublicCampusUnionReadOnlyViewSet(ReadOnlyModelViewSet):
     lookup_url_kwarg = "uuid"
 
     def get_serializer_class(self):
-        if self.action == "list":
-            return PublicCampusUnionListSerializer
-        return PublicCampusUnionRetrieveSerializer
+        if self.request.method == "GET":
+            return (
+                PublicCampusUnionListSerializer
+                if self.action == "list"
+                else PublicCampusUnionRetrieveSerializer
+            )
 
 
 class PublicStudentClubReadOnlyViewSet(ReadOnlyModelViewSet):
@@ -161,9 +165,12 @@ class PublicStudentClubReadOnlyViewSet(ReadOnlyModelViewSet):
     lookup_url_kwarg = "uuid"
 
     def get_serializer_class(self):
-        if self.action == "list":
-            return PublicStudentClubListSerializer
-        return PublicStudentClubRetrieveSerializer
+        if self.request.method == "GET":
+            return (
+                PublicStudentClubListSerializer
+                if self.action == "list"
+                else PublicStudentClubRetrieveSerializer
+            )
 
 
 class PublicStudentClubEventFilter(FilterSet):
@@ -180,7 +187,7 @@ class PublicStudentClubEventViewSet(ReadOnlyModelViewSet):
     """
 
     permission_classes = [AllowAny]
-    queryset = StudentClubEvent.objects.filter(is_archived=False)
+    queryset = StudentClubEvent.objects.filter(is_active=True)
     filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
     filterset_class = PublicStudentClubEventFilter
     search_fields = ["title", "description"]
@@ -188,6 +195,9 @@ class PublicStudentClubEventViewSet(ReadOnlyModelViewSet):
     http_method_names = ["get", "head", "options"]
 
     def get_serializer_class(self):
-        if self.action == "list":
-            return PublicStudentClubEventListSerializer
-        return PublicStudentClubEventRetrieveSerializer
+        if self.request.method == "GET":
+            return (
+                PublicStudentClubEventListSerializer
+                if self.action == "list"
+                else PublicStudentClubEventRetrieveSerializer
+            )

@@ -506,16 +506,20 @@ class CampusUnionViewSet(viewsets.ModelViewSet):
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
+        set_binary_files_null_if_empty(["thumbnail"], request.data)
         return super().create(request, *args, **kwargs)
 
     @transaction.atomic
     def update(self, request, *args, **kwargs):
+        set_binary_files_null_if_empty(["thumbnail"], request.data)
         return super().update(request, *args, **kwargs)
 
     @transaction.atomic
     def destroy(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
+            if instance.thumbnail:
+                instance.thumbnail.delete(save=False)
         except Exception:
             return Response(
                 {"detail": CAMPUS_UNION_NOT_FOUND},

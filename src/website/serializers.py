@@ -479,9 +479,6 @@ class AcademicCalendarCreateSerializer(serializers.ModelSerializer):
         start = attrs.get("start_year")
         end = attrs.get("end_year")
 
-        if start is None or end is None:
-            return attrs
-
         if start >= end:
             raise serializers.ValidationError({"end_year": YEAR_ORDER_ERROR})
 
@@ -502,10 +499,10 @@ class AcademicCalendarPatchSerializer(FileHandlingMixin, serializers.ModelSerial
         fields = ["program_type", "start_year", "end_year", "file", "is_active"]
 
     def validate(self, attrs):
-        start = attrs.get("start_year", getattr(self.instance, "start_year", None))
-        end = attrs.get("end_year", getattr(self.instance, "end_year", None))
+        start = attrs.get("start_year", getattr(self.instance, "start_year"))
+        end = attrs.get("end_year", getattr(self.instance, "end_year"))
 
-        if start is not None and end is not None and start >= end:
+        if start >= end:
             raise serializers.ValidationError({"end_year": YEAR_ORDER_ERROR})
 
         return attrs
@@ -714,7 +711,7 @@ class CampusUnionMemberListSerializer(serializers.ModelSerializer):
 class CampusUnionListSerializer(serializers.ModelSerializer):
     class Meta:
         model = CampusUnion
-        fields = ["id", "name", "description", "is_active"]
+        fields = ["id", "name", "short_description", "thumbnail", "is_active"]
 
 
 class CampusUnionRetrieveSerializer(AbstractInfoRetrieveSerializer):
@@ -722,7 +719,15 @@ class CampusUnionRetrieveSerializer(AbstractInfoRetrieveSerializer):
 
     class Meta(AbstractInfoRetrieveSerializer.Meta):
         model = CampusUnion
-        fields = ["id", "name", "description", "members"]
+        fields = [
+            "id",
+            "name",
+            "short_description",
+            "thumbnail",
+            "website_url",
+            "detailed_description",
+            "members",
+        ]
 
         fields += AbstractInfoRetrieveSerializer.Meta.fields
 
@@ -735,11 +740,23 @@ class CampusUnionMemberCreateSerializer(serializers.ModelSerializer):
 
 class CampusUnionCreateSerializer(serializers.ModelSerializer):
     members = CampusUnionMemberCreateSerializer(many=True, allow_null=True)
+    thumbnail = serializers.ImageField(
+        validators=[validate_photo_thumbnail],
+        allow_null=True,
+        required=False,
+    )
 
     class Meta:
         model = CampusUnion
-        fields = ["name", "description", "members"]
-
+        fields = [
+            "name",
+            "short_description",
+            "thumbnail",
+            "detailed_description",
+            "website_url",
+            "members",
+        ]
+    
     def create(self, validated_data):
         current_user = get_user_by_context(self.context)
         members_data = validated_data.pop("members", [])
@@ -772,16 +789,26 @@ class CampusUnionMemberPatchSerializer(serializers.ModelSerializer):
         fields = ["id", "full_name", "designation", "photo", "is_active"]
 
 
-class CampusUnionPatchSerializer(serializers.ModelSerializer):
+class CampusUnionPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
     members = CampusUnionMemberPatchSerializer(many=True, required=False)
 
     class Meta:
         model = CampusUnion
-        fields = ["name", "description", "members", "is_active"]
-
+        fields = [
+            "name",
+            "short_description",
+            "thumbnail",
+            "detailed_description",
+            "website_url",
+            "members",
+            "is_active",
+        ]
+    
     def update(self, instance, validated_data):
         current_user = get_user_by_context(self.context)
         union_members = validated_data.pop("members", [])
+
+        self.handle_file_update(instance, validated_data, "thumbnail")
 
         name = validated_data.pop("name", None)
         if name is not None:
@@ -838,6 +865,7 @@ class StudentClubRetrieveSerializer(AbstractInfoRetrieveSerializer):
             "name",
             "short_description",
             "thumbnail",
+            "website_url",
             "detailed_description",
             "members",
         ]
@@ -866,6 +894,7 @@ class StudentClubCreateSerializer(serializers.ModelSerializer):
             "short_description",
             "thumbnail",
             "detailed_description",
+            "website_url",
             "members",
         ]
 
@@ -916,6 +945,7 @@ class StudentClubPatchSerializer(FileHandlingMixin, serializers.ModelSerializer)
             "short_description",
             "thumbnail",
             "detailed_description",
+            "website_url",
             "members",
             "is_active",
         ]

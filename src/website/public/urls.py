@@ -5,8 +5,7 @@ from rest_framework.routers import DefaultRouter
 from src.website.public.views import (
     PublicCampusAcademicCalenderListAPIView,
     PublicCampusDownloadListAPIView,
-    PublicCampusEventListAPIView,
-    PublicCampusEventRetrieveAPIView,
+    PublicCampusEventViewSet,
     PublicCampusFeedbackCreateAPIView,
     PublicCampusInfoRetrieveAPIView,
     PublicCampusKeyOfficialListAPIView,
@@ -33,6 +32,11 @@ router.register(
     PublicStudentClubEventViewSet,
     basename="public-club-event",
 )
+router.register(
+    "campus-events",
+    PublicCampusEventViewSet,
+    basename="public-campus-event",
+)
 
 
 urlpatterns = [
@@ -55,16 +59,6 @@ urlpatterns = [
         "academic-calendars",
         PublicCampusAcademicCalenderListAPIView.as_view(),
         name="public-campus-academic-calenders",
-    ),
-    path(
-        "campus-events",
-        PublicCampusEventListAPIView.as_view(),
-        name="public-campus-event-list",
-    ),
-    path(
-        "campus-events/<uuid:uuid>",
-        PublicCampusEventRetrieveAPIView.as_view(),
-        name="public-campus-event-detail",
     ),
     path("campus-key-officials", PublicCampusKeyOfficialListAPIView.as_view()),
     path(

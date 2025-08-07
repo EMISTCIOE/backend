@@ -177,7 +177,7 @@ class PublicCampusUnionMemberSerializer(serializers.ModelSerializer):
 class PublicCampusUnionListSerializer(serializers.ModelSerializer):
     class Meta:
         model = CampusUnion
-        fields = ["uuid", "name"]
+        fields = ["uuid", "name", "thumbnail", "short_description"]
 
 
 class PublicCampusUnionRetrieveSerializer(serializers.ModelSerializer):
@@ -185,7 +185,15 @@ class PublicCampusUnionRetrieveSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CampusUnion
-        fields = ["uuid", "name", "description", "members"]
+        fields = [
+            "uuid",
+            "thumbnail",
+            "name",
+            "short_description",
+            "website_url",
+            "detailed_description",
+            "members",
+        ]
 
 
 class PublicStudentClubMemberSerializer(serializers.ModelSerializer):
@@ -210,6 +218,7 @@ class PublicStudentClubRetrieveSerializer(serializers.ModelSerializer):
             "name",
             "short_description",
             "detailed_description",
+            "website_url",
             "thumbnail",
             "members",
         ]
