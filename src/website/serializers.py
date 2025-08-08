@@ -11,6 +11,7 @@ from src.libs.mixins import FileHandlingMixin
 from src.website.validators import (
     validate_campus_download_file,
     validate_photo_thumbnail,
+    validate_nepali_year,
 )
 
 from .messages import (
@@ -471,6 +472,9 @@ class AcademicCalendarRetrieveSerializer(AbstractInfoRetrieveSerializer):
 
 
 class AcademicCalendarCreateSerializer(serializers.ModelSerializer):
+    start_year = serializers.IntegerField(validators=[validate_nepali_year])
+    end_year = serializers.IntegerField(validators=[validate_nepali_year])
+
     class Meta:
         model = AcademicCalendar
         fields = ["program_type", "start_year", "end_year", "file"]
@@ -494,6 +498,9 @@ class AcademicCalendarCreateSerializer(serializers.ModelSerializer):
 
 
 class AcademicCalendarPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
+    start_year = serializers.IntegerField(validators=[validate_nepali_year], required=False)
+    end_year = serializers.IntegerField(validators=[validate_nepali_year], required=False)
+
     class Meta:
         model = AcademicCalendar
         fields = ["program_type", "start_year", "end_year", "file", "is_active"]
