@@ -16,13 +16,20 @@ from src.department.models import (
 class PublicDepartmentSocialLinkSerializer(serializers.ModelSerializer):
     class Meta:
         model = DepartmentSocialMedia
-        fields = ["platform", "url"]
+        fields = ["uuid", "platform", "url"]
 
 
 class PublicDepartmentListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
-        fields = ["id", "name", "slug", "short_name", "brief_description", "thumbnail"]
+        fields = [
+            "uuid",
+            "name",
+            "slug",
+            "short_name",
+            "brief_description",
+            "thumbnail",
+        ]
 
 
 class PublicDepartmentDetailSerializer(serializers.ModelSerializer):
@@ -31,7 +38,7 @@ class PublicDepartmentDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Department
         fields = [
-            "id",
+            "uuid",
             "name",
             "slug",
             "short_name",
@@ -48,7 +55,7 @@ class PublicDepartmentStaffSerializer(serializers.ModelSerializer):
     class Meta:
         model = StaffMember
         fields = [
-            "id",
+            "uuid",
             "title",
             "name",
             "designation",
@@ -64,7 +71,7 @@ class PublicDepartmentProgramSerializer(serializers.ModelSerializer):
     class Meta:
         model = AcademicProgram
         fields = [
-            "id",
+            "uuid",
             "name",
             "short_name",
             "slug",
@@ -77,20 +84,20 @@ class PublicDepartmentProgramSerializer(serializers.ModelSerializer):
 class PublicDepartmentDownloadSerializer(serializers.ModelSerializer):
     class Meta:
         model = DepartmentDownload
-        fields = ["id", "title", "description", "file"]
+        fields = ["uuid", "title", "description", "file"]
 
 
 class PublicDepartmentPlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = DepartmentPlanAndPolicy
-        fields = ["id", "title", "description", "file"]
+        fields = ["uuid", "title", "description", "file"]
 
 
 class PublicDepartmentEventSerializer(serializers.ModelSerializer):
     class Meta:
         model = DepartmentEvent
         fields = [
-            "id",
+            "uuid",
             "title",
             "description_short",
             "event_type",
@@ -103,4 +110,4 @@ class PublicDepartmentEventSerializer(serializers.ModelSerializer):
 class PublicDepartmentEventGallerySerializer(serializers.ModelSerializer):
     class Meta:
         model = DepartmentEventGallery
-        fields = ["id", "image", "caption"]
+        fields = ["uuid", "image", "caption"]

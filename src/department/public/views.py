@@ -117,7 +117,7 @@ class PublicDepartmentEventGalleryListAPIView(ListAPIView):
 
     def get_queryset(self):
         return DepartmentEventGallery.objects.filter(
-            event_id=self.kwargs["event_id"], is_active=True
+            uuid=self.kwargs["event_id"], is_active=True
         )
 
 
