@@ -1,6 +1,6 @@
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from django.contrib.auth import get_user_model
 
 # Project Imports
 from src.base.models import AuditInfoModel
@@ -44,23 +44,35 @@ class Project(AuditInfoModel):
     slug = models.SlugField(_("Slug"), max_length=265, unique=True)
     abstract = models.CharField(_("Abstract"), max_length=500)
     batch_year = models.ForeignKey(
-        BatchYear, on_delete=models.CASCADE, related_name="projects"
+        BatchYear,
+        on_delete=models.CASCADE,
+        related_name="projects",
     )
     category = models.ForeignKey(
-        ProjectCategory, on_delete=models.CASCADE, related_name="projects"
+        ProjectCategory,
+        on_delete=models.CASCADE,
+        related_name="projects",
     )
     department = models.ForeignKey(
-        Department, on_delete=models.CASCADE, related_name="projects"
+        Department,
+        on_delete=models.CASCADE,
+        related_name="projects",
     )
     level = models.CharField(_("Level"), max_length=20, choices=LevelChoice.choices())
     supervisor = models.CharField(_("Supervisor"), max_length=255)
     project_details = models.TextField(_("Project Details"))
     technologies_used = models.CharField(_("Technologies Used"), max_length=1000)
     github_link = models.URLField(
-        _("GitHub Link"), max_length=5000, blank=True, null=True
+        _("GitHub Link"),
+        max_length=5000,
+        blank=True,
+        null=True,
     )
     documentation_link = models.URLField(
-        _("Documentation Link"), max_length=5000, blank=True, null=True
+        _("Documentation Link"),
+        max_length=5000,
+        blank=True,
+        null=True,
     )
     status = models.CharField(
         _("Status"),
@@ -90,12 +102,16 @@ class Project(AuditInfoModel):
 
 class ProjectTeamMember(AuditInfoModel):
     project = models.ForeignKey(
-        Project, on_delete=models.CASCADE, related_name="team_members"
+        Project,
+        on_delete=models.CASCADE,
+        related_name="team_members",
     )
     full_name = models.CharField(_("Full Name"), max_length=1000)
     roll_no = models.CharField(_("Roll No"), max_length=50)
     photo = models.ImageField(
-        _("Photo"), upload_to=PROJECT_MEMBER_IMAGE_PATH, null=True
+        _("Photo"),
+        upload_to=PROJECT_MEMBER_IMAGE_PATH,
+        null=True,
     )
 
     class Meta:
@@ -120,13 +136,18 @@ class ProjectFile(AuditInfoModel):
 
 class ProjectRating(AuditInfoModel):
     project = models.ForeignKey(
-        Project, on_delete=models.CASCADE, related_name="ratings"
+        Project,
+        on_delete=models.CASCADE,
+        related_name="ratings",
     )
     user = models.ForeignKey(
-        "user.User", on_delete=models.CASCADE, related_name="project_ratings"
+        "user.User",
+        on_delete=models.CASCADE,
+        related_name="project_ratings",
     )
     rating = models.PositiveSmallIntegerField(
-        _("Rating"), choices=[(i, str(i)) for i in range(1, 6)]
+        _("Rating"),
+        choices=[(i, str(i)) for i in range(1, 6)],
     )
 
     class Meta:
@@ -144,10 +165,14 @@ class ProjectRating(AuditInfoModel):
 
 class ProjectDiscussion(AuditInfoModel):
     project = models.ForeignKey(
-        Project, on_delete=models.CASCADE, related_name="discussions"
+        Project,
+        on_delete=models.CASCADE,
+        related_name="discussions",
     )
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="project_discussions"
+        User,
+        on_delete=models.CASCADE,
+        related_name="project_discussions",
     )
     comment = models.TextField(_("Comment"))
     parent = models.ForeignKey(
@@ -169,7 +194,7 @@ class ProjectDiscussion(AuditInfoModel):
             models.CheckConstraint(
                 check=~models.Q(id=models.F("parent")),
                 name="chk_parent_not_self",
-            )
+            ),
         ]
 
     def __str__(self):

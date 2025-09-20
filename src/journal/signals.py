@@ -29,16 +29,12 @@ def create_article(sender, instance, created, **kwargs):
             keywords=(
                 ", ".join(data["keywords"])
                 if type(data["keywords"]) == list
-                else data["keywords"]
-                if data["keywords"] != ""
-                else None
+                else data["keywords"] if data["keywords"] != "" else None
             ),
             discipline=(
                 ", ".join(data["discipline"])
                 if type(data["discipline"]) == list
-                else data["discipline"]
-                if data["discipline"] != ""
-                else None
+                else data["discipline"] if data["discipline"] != "" else None
             ),
             submission_id=(
                 data["submission_id"] if data["submission_id"] != "" else None

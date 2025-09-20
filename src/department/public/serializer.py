@@ -2,14 +2,14 @@ from rest_framework import serializers
 
 # Project Imports
 from src.department.models import (
-    Department,
-    DepartmentSocialMedia,
-    StaffMember,
     AcademicProgram,
+    Department,
     DepartmentDownload,
     DepartmentEvent,
     DepartmentEventGallery,
     DepartmentPlanAndPolicy,
+    DepartmentSocialMedia,
+    StaffMember,
 )
 
 

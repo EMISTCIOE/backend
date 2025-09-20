@@ -445,7 +445,7 @@ class CampusEventViewSet(viewsets.ModelViewSet):
             instance = self.get_object()
             if instance:
                 instance.thumbnail.delete(save=False)
-        except Exception as e:
+        except Exception:
             return Response(
                 {"detail": CAMPUS_EVENT_NOT_FOUND},
                 status=status.HTTP_404_NOT_FOUND,

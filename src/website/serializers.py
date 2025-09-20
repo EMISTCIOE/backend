@@ -118,13 +118,12 @@ class CampusInfoPatchSerializer(serializers.ModelSerializer):
             if "id" in social_link:
                 if media_ins.exclude(pk=social_link["id"].id).exists():
                     raise serializers.ValidationError(
-                        {"message": SOCIAL_MEDIA_ALREADY_EXISTS}
+                        {"message": SOCIAL_MEDIA_ALREADY_EXISTS},
                     )
-            else:
-                if media_ins.exists():
-                    raise serializers.ValidationError(
-                        {"message": SOCIAL_MEDIA_ALREADY_EXISTS}
-                    )
+            elif media_ins.exists():
+                raise serializers.ValidationError(
+                    {"message": SOCIAL_MEDIA_ALREADY_EXISTS},
+                )
 
         return attrs
 
@@ -196,7 +195,8 @@ class CampusKeyOfficialRetrieveSerializer(AbstractInfoRetrieveSerializer):
 
 class CampusKeyOfficialCreateSerializer(serializers.ModelSerializer):
     photo = serializers.ImageField(
-        allow_null=True, validators=[validate_photo_thumbnail]
+        allow_null=True,
+        validators=[validate_photo_thumbnail],
     )
 
     class Meta:
@@ -499,8 +499,8 @@ class AcademicCalendarPatchSerializer(FileHandlingMixin, serializers.ModelSerial
         fields = ["program_type", "start_year", "end_year", "file", "is_active"]
 
     def validate(self, attrs):
-        start = attrs.get("start_year", getattr(self.instance, "start_year"))
-        end = attrs.get("end_year", getattr(self.instance, "end_year"))
+        start = attrs.get("start_year", self.instance.start_year)
+        end = attrs.get("end_year", self.instance.end_year)
 
         if start >= end:
             raise serializers.ValidationError({"end_year": YEAR_ORDER_ERROR})
@@ -756,7 +756,7 @@ class CampusUnionCreateSerializer(serializers.ModelSerializer):
             "website_url",
             "members",
         ]
-    
+
     def create(self, validated_data):
         current_user = get_user_by_context(self.context)
         members_data = validated_data.pop("members", [])
@@ -803,7 +803,7 @@ class CampusUnionPatchSerializer(FileHandlingMixin, serializers.ModelSerializer)
             "members",
             "is_active",
         ]
-    
+
     def update(self, instance, validated_data):
         current_user = get_user_by_context(self.context)
         union_members = validated_data.pop("members", [])

@@ -6,17 +6,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('website', '0003_remove_campusevent_event_date_and_more'),
+        ("website", "0003_remove_campusevent_event_date_and_more"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='campusinfo',
-            options={'verbose_name': 'Campus Info', 'verbose_name_plural': 'Campus Info'},
+            name="campusinfo",
+            options={
+                "verbose_name": "Campus Info",
+                "verbose_name_plural": "Campus Info",
+            },
         ),
         migrations.AlterField(
-            model_name='socialmedialink',
-            name='url',
-            field=models.URLField(help_text='URL to the respective social media profile.', verbose_name='Platform URL'),
+            model_name="socialmedialink",
+            name="url",
+            field=models.URLField(
+                help_text="URL to the respective social media profile.",
+                verbose_name="Platform URL",
+            ),
         ),
     ]

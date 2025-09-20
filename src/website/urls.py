@@ -1,6 +1,7 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
+from .listing_apis.views import FiscalSessionBSForCampusReportListAPIView
 from .views import (
     AcademicCalendarViewSet,
     CampusDownloadViewSet,
@@ -16,7 +17,6 @@ from .views import (
     StudentClubEventViewSet,
     StudentClubViewSet,
 )
-from .listing_apis.views import FiscalSessionBSForCampusReportListAPIView
 
 router = DefaultRouter(trailing_slash=False)
 
