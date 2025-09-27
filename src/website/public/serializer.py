@@ -14,6 +14,7 @@ from src.website.models import (
     CampusReport,
     CampusUnion,
     CampusUnionMember,
+    ContactInquiry,
     SocialMediaLink,
     StudentClub,
     StudentClubEvent,
@@ -21,8 +22,8 @@ from src.website.models import (
     StudentClubMember,
 )
 from src.website.public.messages import (
-    FEEDBACK_FULL_NAME_REQUIRED,
-    FEEDBACK_MESSAGE_TOO_SHORT,
+    FULL_NAME_REQUIRED,
+    MESSAGE_TOO_SHORT,
 )
 
 
@@ -113,6 +114,10 @@ class PublicCampusKeyOfficialSerializer(serializers.ModelSerializer):
         ]
 
 
+# Campus Feedback and Contact Inquiry Serializers
+# ----------------------------------------------------------------------------------------------------
+
+
 class PublicCampusFeedbackSerializer(serializers.ModelSerializer):
     MIN_MESSAGE_LENGTH = 10
 
@@ -128,14 +133,47 @@ class PublicCampusFeedbackSerializer(serializers.ModelSerializer):
     def validate_full_name(self, value):
         cleaned_value = value.strip()
         if not cleaned_value:
-            raise serializers.ValidationError(FEEDBACK_FULL_NAME_REQUIRED)
+            raise serializers.ValidationError(FULL_NAME_REQUIRED)
         return cleaned_value
 
     def validate_message(self, value):
         cleaned_value = value.strip()
         if len(cleaned_value) < self.MIN_MESSAGE_LENGTH:
             raise serializers.ValidationError(
-                FEEDBACK_MESSAGE_TOO_SHORT.format(min_length=self.MIN_MESSAGE_LENGTH),
+                MESSAGE_TOO_SHORT.format(min_length=self.MIN_MESSAGE_LENGTH),
+            )
+        return cleaned_value
+
+    def create(self, validated_data):
+        validated_data["is_resolved"] = False
+        return super().create(validated_data)
+
+
+class PublicContactInquirySerializer(serializers.ModelSerializer):
+    MIN_MESSAGE_LENGTH = 10
+
+    class Meta:
+        model = ContactInquiry
+        fields = [
+            "full_name",
+            "email",
+            "phone_number",
+            "subject",
+            "message",
+            "subscribe_to_newsletter",
+        ]
+
+    def validate_full_name(self, value):
+        cleaned_value = value.strip()
+        if not cleaned_value:
+            raise serializers.ValidationError(FULL_NAME_REQUIRED)
+        return cleaned_value
+
+    def validate_message(self, value):
+        cleaned_value = value.strip()
+        if len(cleaned_value) < self.MIN_MESSAGE_LENGTH:
+            raise serializers.ValidationError(
+                MESSAGE_TOO_SHORT.format(min_length=self.MIN_MESSAGE_LENGTH),
             )
         return cleaned_value
 

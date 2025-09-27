@@ -34,6 +34,7 @@ from .serializer import (
     PublicCampusReportListSerializer,
     PublicCampusUnionListSerializer,
     PublicCampusUnionRetrieveSerializer,
+    PublicContactInquirySerializer,
     PublicStudentClubEventListSerializer,
     PublicStudentClubEventRetrieveSerializer,
     PublicStudentClubListSerializer,
@@ -201,3 +202,10 @@ class PublicStudentClubEventViewSet(ReadOnlyModelViewSet):
                 if self.action == "list"
                 else PublicStudentClubEventRetrieveSerializer
             )
+
+
+class PublicContactInquiryCreateAPIView(CreateAPIView):
+    """Campus Contact Inquiry Create API"""
+
+    permission_classes = [AllowAny]
+    serializer_class = PublicContactInquirySerializer
