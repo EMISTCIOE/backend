@@ -11,6 +11,7 @@ from src.website.public.views import (
     PublicCampusKeyOfficialListAPIView,
     PublicCampusReportListAPIView,
     PublicCampusUnionReadOnlyViewSet,
+    PublicContactInquiryCreateAPIView,
     PublicStudentClubEventViewSet,
     PublicStudentClubReadOnlyViewSet,
 )
@@ -65,6 +66,11 @@ urlpatterns = [
         "submit-feedback",
         PublicCampusFeedbackCreateAPIView.as_view(),
         name="public-submit-feedback",
+    ),
+    path(
+        "contact-inquiry",
+        PublicContactInquiryCreateAPIView.as_view(),
+        name="public-contact-inquiry",
     ),
     path("", include(router.urls)),
 ]

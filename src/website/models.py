@@ -590,3 +590,29 @@ class CampusFeedback(PublicAuditInfoModel):
 
     def __str__(self):
         return f"{self.full_name} - Feedback"
+
+
+class ContactInquiry(PublicAuditInfoModel):
+    """
+    Model to handle contact inquiries from campus visitors.
+    """
+
+    full_name = models.CharField(_("Full Name"), max_length=100)
+    email = models.EmailField(_("Email"))
+    phone_number = models.CharField(_("Phone Number"), max_length=20, blank=True)
+    subject = models.CharField(_("Subject"), max_length=200)
+    message = models.TextField(_("Message"))
+    subscribe_to_newsletter = models.BooleanField(
+        _("Subscribe to Newsletter"),
+        default=False,
+        help_text=_("Check if you want to receive our newsletter."),
+    )
+    is_resolved = models.BooleanField(_("Resolved"), default=False)
+
+    class Meta:
+        verbose_name = _("Contact Inquiry")
+        verbose_name_plural = _("Contact Inquiries")
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.full_name} - Inquiry: {self.subject}"
