@@ -404,7 +404,7 @@ class PublicResearchFacilityRetrieveSerializer(serializers.ModelSerializer):
 
 class PublicGlobalGallerySerializer(serializers.Serializer):
     uuid = serializers.CharField()
-    image = serializers.ImageField()
+    image = serializers.CharField(allow_blank=True, allow_null=True)
     caption = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     source_type = serializers.CharField()
     source_identifier = serializers.CharField()

@@ -7,6 +7,14 @@ def build_global_gallery_items():
     from src.website.models import CampusEventGallery, StudentClubEventGallery
     from src.department.models import DepartmentEventGallery
 
+    def _resolve_image_url(image_field):
+        if not image_field:
+            return ""
+        try:
+            return image_field.url or ""
+        except ValueError:
+            return ""
+
     items = []
 
     campus_gallery_qs = (
@@ -22,7 +30,7 @@ def build_global_gallery_items():
         items.append(
             {
                 "uuid": str(gallery.uuid),
-                "image": gallery.image,
+                "image": _resolve_image_url(gallery.image),
                 "caption": gallery.caption or "",
                 "source_type": "campus_event",
                 "source_identifier": str(gallery.event.uuid),
@@ -55,7 +63,7 @@ def build_global_gallery_items():
         items.append(
             {
                 "uuid": str(gallery.uuid),
-                "image": gallery.image,
+                "image": _resolve_image_url(gallery.image),
                 "caption": gallery.caption or "",
                 "source_type": "club_event",
                 "source_identifier": str(gallery.event.uuid),
@@ -88,7 +96,7 @@ def build_global_gallery_items():
         items.append(
             {
                 "uuid": str(gallery.uuid),
-                "image": gallery.image,
+                "image": _resolve_image_url(gallery.image),
                 "caption": gallery.caption or "",
                 "source_type": "department_event",
                 "source_identifier": str(gallery.event.uuid),
