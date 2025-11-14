@@ -101,8 +101,9 @@ class PublicCampusEventRetrieveSerializer(serializers.ModelSerializer):
 
 
 class PublicCampusKeyOfficialSerializer(serializers.ModelSerializer):
+    designation = serializers.SlugRelatedField(read_only=True, slug_field="code")
     designation_display = serializers.CharField(
-        source="get_designation_display",
+        source="designation.title",
         read_only=True,
     )
     title_prefix_display = serializers.CharField(
@@ -123,6 +124,7 @@ class PublicCampusKeyOfficialSerializer(serializers.ModelSerializer):
             "photo",
             "email",
             "phone_number",
+            "is_key_official",
         ]
 
 

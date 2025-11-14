@@ -1,6 +1,7 @@
 from ckeditor.fields import RichTextField
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
 # Project Imports
@@ -25,7 +26,6 @@ from src.website.constants import (
     STUDENT_CLUB_EVENT_FILE_PATH,
     STUDENT_CLUB_FILE_PATH,
     STUDENT_CLUB_MEMBER_FILE_PATH,
-    CampusDesignationChoices,
     CampusEventTypes,
     ReportTypes,
 )
@@ -85,9 +85,68 @@ class CampusInfo(AuditInfoModel):
         return self.name
 
 
+class CampusStaffDesignation(AuditInfoModel):
+    """
+    Represents campus-level staff designations/roles.
+    """
+
+    title = models.CharField(
+        _("Title"),
+        max_length=150,
+        unique=True,
+        help_text=_("Human readable name of the designation, e.g., Campus Chief."),
+    )
+    code = models.CharField(
+        _("Code"),
+        max_length=150,
+        unique=True,
+        help_text=_(
+            "System identifier generated from the title (used in APIs and references)."
+        ),
+    )
+    description = models.TextField(
+        _("Description"),
+        blank=True,
+        help_text=_("Optional notes about the responsibilities of this designation."),
+    )
+    display_order = models.PositiveSmallIntegerField(
+        _("Display Order"),
+        default=1,
+        help_text=_("Ordering weight when listing designations."),
+    )
+    is_active = models.BooleanField(
+        _("Is Active"),
+        default=True,
+        help_text=_("Inactive designations will be hidden from selection lists."),
+    )
+
+    class Meta:
+        verbose_name = _("Campus Designation")
+        verbose_name_plural = _("Campus Designations")
+        ordering = ["display_order", "title"]
+
+    def __str__(self) -> str:
+        return self.title
+
+    def save(self, *args, **kwargs):
+        if not self.code:
+            base_code = slugify(self.title).replace("-", "_").upper()
+            candidate = base_code or "DESIGNATION"
+            suffix = 1
+            while (
+                CampusStaffDesignation.objects.exclude(pk=self.pk)
+                .filter(code=candidate)
+                .exists()
+            ):
+                candidate = f"{base_code}_{suffix}"
+                suffix += 1
+            self.code = candidate
+        super().save(*args, **kwargs)
+
+
 class CampusKeyOfficial(AuditInfoModel):
     """
-    Key officials members of the campus (campus staffs).
+    Campus staff members (includes officials and supporting team).
     """
 
     title_prefix = models.CharField(
@@ -100,16 +159,25 @@ class CampusKeyOfficial(AuditInfoModel):
         _("Full Name"),
         max_length=100,
     )
-    designation = models.CharField(
-        _("Designation"),
-        choices=CampusDesignationChoices.choices(),
-        max_length=100,
-        help_text=_("Role or position, e.g., Campus Chief."),
+    designation = models.ForeignKey(
+        CampusStaffDesignation,
+        on_delete=models.PROTECT,
+        related_name="staff_members",
+        verbose_name=_("Designation"),
+        help_text=_("Select the role for this staff member."),
+        limit_choices_to={"is_active": True},
     )
     display_order = models.PositiveSmallIntegerField(
         _("Display Order"),
         default=1,
         help_text=_("Display Order (ranking) of staffs to display in website."),
+    )
+    is_key_official = models.BooleanField(
+        _("Is Key Official"),
+        default=True,
+        help_text=_(
+            "Mark true if this staff member should appear in key official listings."
+        ),
     )
     message = models.TextField(_("Message"), blank=True)
     photo = models.ImageField(
@@ -135,7 +203,10 @@ class CampusKeyOfficial(AuditInfoModel):
         verbose_name_plural = _("Campus Key Officials")
 
     def __str__(self):
-        return f"{self.title_prefix} {self.full_name} ({self.designation})"
+        designation_title = (
+            self.designation.title if getattr(self, "designation", None) else ""
+        )
+        return f"{self.title_prefix} {self.full_name} ({designation_title})"
 
 
 class SocialMediaLink(AuditInfoModel):
@@ -495,7 +566,7 @@ class CampusSection(AuditInfoModel):
         default=list,
         blank=True,
         help_text=_(
-            "Key official designations responsible for this section (uses campus key officials)."
+            "Staff designations responsible for this section (uses campus staff records)."
         ),
     )
     department_head = models.ForeignKey(
@@ -584,7 +655,7 @@ class CampusUnit(AuditInfoModel):
         default=list,
         blank=True,
         help_text=_(
-            "Key official designations responsible for this unit (uses campus key officials)."
+            "Staff designations responsible for this unit (uses campus staff records)."
         ),
     )
     department_head = models.ForeignKey(

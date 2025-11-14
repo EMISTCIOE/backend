@@ -7,8 +7,8 @@ CAMPUS_INFO_UPDATED_SUCCESS = _("Campus Info updated successfully")
 SOCIAL_MEDIA_NOT_FOUND = _("Social media link not found.")
 SOCIAL_MEDIA_DELETED_SUCCESS = _("Social media link deleted successfully.")
 
-CAMPUS_KEY_OFFICIAL_CREATE_SUCCESS = _("Key official created successfully")
-CAMPUS_KEY_OFFICIAL_UPDATE_SUCCESS = _("Key official updated successfully")
+CAMPUS_KEY_OFFICIAL_CREATE_SUCCESS = _("Staff member created successfully")
+CAMPUS_KEY_OFFICIAL_UPDATE_SUCCESS = _("Staff member updated successfully")
 
 SOCIAL_MEDIA_ALREADY_EXISTS = _("This social media already exists for the campus.")
 

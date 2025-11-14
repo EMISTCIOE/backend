@@ -9,6 +9,7 @@ from .views import (
     CampusFeedbackViewSet,
     CampusInfoAPIView,
     CampusKeyOfficialViewSet,
+    CampusStaffDesignationViewSet,
     CampusReportViewSet,
     CampusSectionViewSet,
     CampusUnitViewSet,
@@ -27,6 +28,11 @@ router.register(
     "campus-key-officials",
     CampusKeyOfficialViewSet,
     basename="campus-key-official",
+)
+router.register(
+    "campus-staff-designations",
+    CampusStaffDesignationViewSet,
+    basename="campus-staff-designation",
 )
 router.register("campus-feedbacks", CampusFeedbackViewSet, basename="campus-feedback")
 router.register("campus-downloads", CampusDownloadViewSet, basename="campus-download")

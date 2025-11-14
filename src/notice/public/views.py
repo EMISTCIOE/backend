@@ -54,10 +54,12 @@ class FilterForPublicNoticeListAPIView(FilterSet):
         label="Department",
     )
     category = django_filters.UUIDFilter(field_name="category__uuid", label="Category")
+    start_date = django_filters.DateFilter(field_name="published_at", lookup_expr="gte")
+    end_date = django_filters.DateFilter(field_name="published_at", lookup_expr="lte")
 
     class Meta:
         model = Notice
-        fields = ["uuid", "department", "is_featured", "category"]
+        fields = ["uuid", "department", "is_featured", "category", "start_date", "end_date"]
 
 
 class PublicNoticeListAPIView(generics.ListAPIView):

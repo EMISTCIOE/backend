@@ -8,6 +8,7 @@ from .models import (
     CampusInfo,
     CampusKeyOfficial,
     CampusSection,
+    CampusStaffDesignation,
     CampusUnit,
     CampusUnion,
     SocialMediaLink,
@@ -32,6 +33,13 @@ class SocialMediaLinkAdmin(admin.ModelAdmin):
     list_display = ["platform", "url", "is_active"]
 
 
+@admin.register(CampusStaffDesignation)
+class CampusStaffDesignationAdmin(admin.ModelAdmin):
+    list_display = ("title", "code", "display_order", "is_active")
+    search_fields = ("title", "code")
+    list_filter = ("is_active",)
+
+
 @admin.register(CampusKeyOfficial)
 class CampusKeyOfficialAdmin(admin.ModelAdmin):
     list_display = (
@@ -40,10 +48,11 @@ class CampusKeyOfficialAdmin(admin.ModelAdmin):
         "designation",
         "email",
         "phone_number",
+        "is_key_official",
         "is_active",
     )
-    search_fields = ("full_name", "designation", "email")
-    list_filter = ("designation", "is_active")
+    search_fields = ("full_name", "designation__title", "designation__code", "email")
+    list_filter = ("designation", "is_key_official", "is_active")
 
 
 admin.site.register(CampusFeedback)

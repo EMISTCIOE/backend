@@ -53,6 +53,7 @@ from .models import (
     CampusInfo,
     CampusKeyOfficial,
     CampusSection,
+    CampusStaffDesignation,
     CampusUnit,
     CampusReport,
     CampusUnion,
@@ -107,6 +108,7 @@ from .serializers import (
     CampusSectionListSerializer,
     CampusSectionPatchSerializer,
     CampusSectionRetrieveSerializer,
+    CampusStaffDesignationSerializer,
     CampusUnitCreateSerializer,
     CampusUnitListSerializer,
     CampusUnitPatchSerializer,
@@ -188,16 +190,30 @@ class SocialMediaLinkDeleteAPIView(APIView):
         )
 
 
+class CampusKeyOfficialFilterSet(FilterSet):
+    designation = django_filters.CharFilter(
+        field_name="designation__code", lookup_expr="iexact"
+    )
+    is_key_official = django_filters.BooleanFilter()
+    is_active = django_filters.BooleanFilter()
+
+    class Meta:
+        model = CampusKeyOfficial
+        fields = ["designation", "is_key_official", "is_active"]
+
+
 class CampusKeyOfficialViewSet(viewsets.ModelViewSet):
     """Campus Key Officials CRUD APIs"""
 
     permission_classes = [CampusKeyOfficialPermission]
-    queryset = CampusKeyOfficial.objects.filter(is_archived=False)
+    queryset = CampusKeyOfficial.objects.filter(is_archived=False).select_related(
+        "designation"
+    )
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
-    search_fields = ["full_name", "designation", "email"]
+    search_fields = ["full_name", "designation__title", "designation__code", "email"]
     ordering_fields = ["full_name", "created_at", "display_order"]
     ordering = ["display_order", "-created_at"]
-    filterset_fields = ["designation", "is_active"]
+    filterset_class = CampusKeyOfficialFilterSet
     http_method_names = ["get", "post", "patch", "delete", "head", "options"]
 
     def get_serializer_class(self):
@@ -221,6 +237,20 @@ class CampusKeyOfficialViewSet(viewsets.ModelViewSet):
             instance.photo.delete(save=False)
 
         return super().destroy(request, *args, **kwargs)
+
+
+class CampusStaffDesignationViewSet(ReadOnlyModelViewSet):
+    """Read-only viewset for listing available staff designations."""
+
+    permission_classes = [CampusKeyOfficialPermission]
+    serializer_class = CampusStaffDesignationSerializer
+    queryset = CampusStaffDesignation.objects.filter(is_archived=False)
+    filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
+    search_fields = ["title", "code"]
+    ordering = ["display_order", "title"]
+    ordering_fields = ["display_order", "title", "code"]
+    filterset_fields = ["is_active"]
+    http_method_names = ["get", "head", "options"]
 
 
 class FilterForCampusFeedbackViewSet(FilterSet):

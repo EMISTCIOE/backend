@@ -146,6 +146,9 @@ class GlobalGalleryPermission(BasePermission):
     }
 
     def has_permission(self, request, view):
+        if request.user and request.user.is_superuser:
+            return True
+
         if request.method not in SAFE_METHODS:
             return False
 

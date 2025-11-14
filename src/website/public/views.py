@@ -102,17 +102,30 @@ class PublicCampusEventViewSet(ReadOnlyModelViewSet):
             )
 
 
+class PublicCampusKeyOfficialFilterSet(FilterSet):
+    designation = django_filters.CharFilter(
+        field_name="designation__code", lookup_expr="iexact"
+    )
+    is_key_official = django_filters.BooleanFilter()
+
+    class Meta:
+        model = CampusKeyOfficial
+        fields = ["designation", "is_key_official"]
+
+
 class PublicCampusKeyOfficialListAPIView(ListAPIView):
     """Campus Key Officials List API"""
 
     permission_classes = [AllowAny]
     serializer_class = PublicCampusKeyOfficialSerializer
-    queryset = CampusKeyOfficial.objects.filter(is_active=True)
+    queryset = CampusKeyOfficial.objects.filter(is_active=True).select_related(
+        "designation"
+    )
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     ordering = ["display_order"]
-    search_fields = ["full_name"]
+    search_fields = ["full_name", "designation__title"]
     ordering_fields = ["display_order", "created_at"]
-    filterset_fields = ["uuid", "designation"]
+    filterset_class = PublicCampusKeyOfficialFilterSet
 
 
 class PublicCampusAcademicCalenderListAPIView(ListAPIView):

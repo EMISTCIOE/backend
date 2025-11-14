@@ -9,7 +9,6 @@ from src.base.serializers import AbstractInfoRetrieveSerializer
 from src.core.models import FiscalSessionBS
 from src.libs.get_context import get_user_by_context
 from src.libs.mixins import FileHandlingMixin
-from src.website.constants import CampusDesignationChoices
 from src.website.validators import (
     validate_campus_download_file,
     validate_photo_thumbnail,
@@ -50,6 +49,7 @@ from .models import (
     CampusInfo,
     CampusKeyOfficial,
     CampusSection,
+    CampusStaffDesignation,
     CampusUnit,
     CampusReport,
     CampusUnion,
@@ -60,6 +60,31 @@ from .models import (
     StudentClubEventGallery,
     StudentClubMember,
 )
+
+
+def _validate_designation_codes(codes):
+    if not codes:
+        return []
+
+    cleaned_codes = [code for code in codes if code]
+    if not cleaned_codes:
+        return []
+
+    existing_codes = set(
+        CampusStaffDesignation.objects.filter(code__in=cleaned_codes).values_list(
+            "code", flat=True
+        )
+    )
+    invalid_codes = sorted(
+        {code for code in cleaned_codes if code not in existing_codes}
+    )
+    if invalid_codes:
+        raise serializers.ValidationError(
+            f"Invalid designation codes: {', '.join(invalid_codes)}"
+        )
+
+    # Preserve original order while removing duplicates
+    return list(dict.fromkeys(cleaned_codes))
 
 # Campus Info Serializers
 # ---------------------------------------------------------------------------------------------------
@@ -171,8 +196,12 @@ class CampusInfoPatchSerializer(serializers.ModelSerializer):
 
 
 class CampusKeyOfficialListSerializer(serializers.ModelSerializer):
+    designation = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field="code",
+    )
     designation_display = serializers.CharField(
-        source="get_designation_display",
+        source="designation.title",
         read_only=True,
     )
     title_prefix_display = serializers.CharField(
@@ -193,13 +222,18 @@ class CampusKeyOfficialListSerializer(serializers.ModelSerializer):
             "photo",
             "email",
             "phone_number",
+            "is_key_official",
             "is_active",
         ]
 
 
 class CampusKeyOfficialRetrieveSerializer(AbstractInfoRetrieveSerializer):
+    designation = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field="code",
+    )
     designation_display = serializers.CharField(
-        source="get_designation_display",
+        source="designation.title",
         read_only=True,
     )
 
@@ -215,6 +249,7 @@ class CampusKeyOfficialRetrieveSerializer(AbstractInfoRetrieveSerializer):
             "photo",
             "email",
             "phone_number",
+            "is_key_official",
         ]
 
         fields += AbstractInfoRetrieveSerializer.Meta.fields
@@ -223,6 +258,10 @@ class CampusKeyOfficialRetrieveSerializer(AbstractInfoRetrieveSerializer):
 class CampusKeyOfficialCreateSerializer(serializers.ModelSerializer):
     photo = serializers.ImageField(
         allow_null=True, validators=[validate_photo_thumbnail]
+    )
+    designation = serializers.SlugRelatedField(
+        slug_field="code",
+        queryset=CampusStaffDesignation.objects.filter(is_active=True),
     )
 
     class Meta:
@@ -235,6 +274,7 @@ class CampusKeyOfficialCreateSerializer(serializers.ModelSerializer):
             "email",
             "message",
             "phone_number",
+             "is_key_official",
             "is_active",
         ]
 
@@ -250,6 +290,12 @@ class CampusKeyOfficialCreateSerializer(serializers.ModelSerializer):
 
 
 class CampusKeyOfficialPatchSerializer(serializers.ModelSerializer):
+    designation = serializers.SlugRelatedField(
+        slug_field="code",
+        queryset=CampusStaffDesignation.objects.all(),
+        required=False,
+    )
+
     class Meta:
         model = CampusKeyOfficial
         fields = [
@@ -260,6 +306,7 @@ class CampusKeyOfficialPatchSerializer(serializers.ModelSerializer):
             "message",
             "email",
             "phone_number",
+            "is_key_official",
             "is_active",
         ]
 
@@ -280,6 +327,19 @@ class CampusKeyOfficialPatchSerializer(serializers.ModelSerializer):
         instance.updated_by = updated_by
         instance.save()
         return instance
+
+
+class CampusStaffDesignationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusStaffDesignation
+        fields = [
+            "id",
+            "code",
+            "title",
+            "description",
+            "display_order",
+            "is_active",
+        ]
 
     def to_representation(self, instance):
         return {"message": CAMPUS_KEY_OFFICIAL_UPDATE_SUCCESS}
@@ -932,18 +992,22 @@ class CampusSectionRetrieveSerializer(AbstractInfoRetrieveSerializer):
 
 class CampusSectionCreateSerializer(serializers.ModelSerializer):
     designations = serializers.ListField(
-        child=serializers.ChoiceField(choices=CampusDesignationChoices.choices()),
+        child=serializers.CharField(),
         required=False,
         allow_empty=True,
     )
     members = serializers.PrimaryKeyRelatedField(
-        queryset=CampusKeyOfficial.objects.filter(is_active=True),
+        queryset=CampusKeyOfficial.objects.filter(
+            is_active=True, is_key_official=True
+        ),
         many=True,
         required=False,
         allow_empty=True,
     )
     department_head = serializers.PrimaryKeyRelatedField(
-        queryset=CampusKeyOfficial.objects.filter(is_active=True),
+        queryset=CampusKeyOfficial.objects.filter(
+            is_active=True, is_key_official=True
+        ),
         allow_null=True,
         required=False,
     )
@@ -1003,22 +1067,31 @@ class CampusSectionCreateSerializer(serializers.ModelSerializer):
         self._sync_designations_from_members(instance, members_list)
         return instance
 
+    def validate_designations(self, value):
+        return _validate_designation_codes(value)
+
     @staticmethod
     def _sync_designations_from_members(instance, members_list):
         members = members_list or []
         designations = []
         for member in members:
             designation = getattr(member, "designation", None)
-            if designation and designation not in designations:
-                designations.append(designation)
+            designation_code = (
+                designation.code if designation and designation.code else None
+            )
+            if designation_code and designation_code not in designations:
+                designations.append(designation_code)
 
         head_designation = (
             instance.department_head.designation
             if instance.department_head and instance.department_head.designation
             else None
         )
-        if head_designation and head_designation not in designations:
-            designations.append(head_designation)
+        head_designation_code = (
+            head_designation.code if head_designation and head_designation.code else None
+        )
+        if head_designation_code and head_designation_code not in designations:
+            designations.append(head_designation_code)
 
         if not designations:
             return
@@ -1032,18 +1105,22 @@ class CampusSectionCreateSerializer(serializers.ModelSerializer):
 
 class CampusSectionPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
     designations = serializers.ListField(
-        child=serializers.ChoiceField(choices=CampusDesignationChoices.choices()),
+        child=serializers.CharField(),
         required=False,
         allow_empty=True,
     )
     members = serializers.PrimaryKeyRelatedField(
-        queryset=CampusKeyOfficial.objects.filter(is_active=True),
+        queryset=CampusKeyOfficial.objects.filter(
+            is_active=True, is_key_official=True
+        ),
         many=True,
         required=False,
         allow_empty=True,
     )
     department_head = serializers.PrimaryKeyRelatedField(
-        queryset=CampusKeyOfficial.objects.filter(is_active=True),
+        queryset=CampusKeyOfficial.objects.filter(
+            is_active=True, is_key_official=True
+        ),
         allow_null=True,
         required=False,
     )
@@ -1183,18 +1260,22 @@ class CampusUnitRetrieveSerializer(AbstractInfoRetrieveSerializer):
 
 class CampusUnitCreateSerializer(serializers.ModelSerializer):
     designations = serializers.ListField(
-        child=serializers.ChoiceField(choices=CampusDesignationChoices.choices()),
+        child=serializers.CharField(),
         required=False,
         allow_empty=True,
     )
     members = serializers.PrimaryKeyRelatedField(
-        queryset=CampusKeyOfficial.objects.filter(is_active=True),
+        queryset=CampusKeyOfficial.objects.filter(
+            is_active=True, is_key_official=True
+        ),
         many=True,
         required=False,
         allow_empty=True,
     )
     department_head = serializers.PrimaryKeyRelatedField(
-        queryset=CampusKeyOfficial.objects.filter(is_active=True),
+        queryset=CampusKeyOfficial.objects.filter(
+            is_active=True, is_key_official=True
+        ),
         allow_null=True,
         required=False,
     )
@@ -1254,22 +1335,31 @@ class CampusUnitCreateSerializer(serializers.ModelSerializer):
         self._sync_designations_from_members(instance, members_list)
         return instance
 
+    def validate_designations(self, value):
+        return _validate_designation_codes(value)
+
     @staticmethod
     def _sync_designations_from_members(instance, members_list):
         members = members_list or []
         designations = []
         for member in members:
             designation = getattr(member, "designation", None)
-            if designation and designation not in designations:
-                designations.append(designation)
+            designation_code = (
+                designation.code if designation and designation.code else None
+            )
+            if designation_code and designation_code not in designations:
+                designations.append(designation_code)
 
         head_designation = (
             instance.department_head.designation
             if instance.department_head and instance.department_head.designation
             else None
         )
-        if head_designation and head_designation not in designations:
-            designations.append(head_designation)
+        head_designation_code = (
+            head_designation.code if head_designation and head_designation.code else None
+        )
+        if head_designation_code and head_designation_code not in designations:
+            designations.append(head_designation_code)
 
         if not designations:
             return
@@ -1283,18 +1373,22 @@ class CampusUnitCreateSerializer(serializers.ModelSerializer):
 
 class CampusUnitPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
     designations = serializers.ListField(
-        child=serializers.ChoiceField(choices=CampusDesignationChoices.choices()),
+        child=serializers.CharField(),
         required=False,
         allow_empty=True,
     )
     members = serializers.PrimaryKeyRelatedField(
-        queryset=CampusKeyOfficial.objects.filter(is_active=True),
+        queryset=CampusKeyOfficial.objects.filter(
+            is_active=True, is_key_official=True
+        ),
         many=True,
         required=False,
         allow_empty=True,
     )
     department_head = serializers.PrimaryKeyRelatedField(
-        queryset=CampusKeyOfficial.objects.filter(is_active=True),
+        queryset=CampusKeyOfficial.objects.filter(
+            is_active=True, is_key_official=True
+        ),
         allow_null=True,
         required=False,
     )
@@ -1361,6 +1455,16 @@ class CampusUnitPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
         instance.updated_by = current_user
         instance.save()
         return instance
+
+    def validate_designations(self, value):
+        if value is None:
+            return None
+        return _validate_designation_codes(value)
+
+    def validate_designations(self, value):
+        if value is None:
+            return None
+        return _validate_designation_codes(value)
 
     def to_representation(self, instance):
         return {"message": CAMPUS_UNIT_UPDATED_SUCCESS}
