@@ -13,6 +13,7 @@ from src.website.models import (
     CampusKeyOfficial,
     CampusSection,
     CampusUnit,
+    ResearchFacility,
     CampusReport,
     CampusUnion,
     CampusUnionMember,
@@ -369,6 +370,35 @@ class PublicCampusUnitRetrieveSerializer(serializers.ModelSerializer):
             "display_order",
             "officials",
             "department_head",
+        ]
+
+
+class PublicResearchFacilityListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ResearchFacility
+        fields = [
+            "uuid",
+            "name",
+            "slug",
+            "short_description",
+            "thumbnail",
+            "display_order",
+        ]
+
+
+class PublicResearchFacilityRetrieveSerializer(serializers.ModelSerializer):
+    detailed_description = serializers.CharField(source="description", read_only=True)
+    class Meta:
+        model = ResearchFacility
+        fields = [
+            "uuid",
+            "name",
+            "slug",
+            "short_description",
+            "detailed_description",
+            "objectives",
+            "thumbnail",
+            "display_order",
         ]
 
 

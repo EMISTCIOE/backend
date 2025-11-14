@@ -10,4 +10,5 @@ urlpatterns = [
     path("contact-mod/", include("src.contact.public.urls")),
     path("project-mod/", include("src.project.public.urls")),
     path("research-mod/", include("src.research.public.urls")),
+    path("curriculum-mod/", include("src.curriculum.urls")),
 ]

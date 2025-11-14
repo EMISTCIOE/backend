@@ -11,6 +11,7 @@ from .models import (
     CampusStaffDesignation,
     CampusUnit,
     CampusUnion,
+    ResearchFacility,
     SocialMediaLink,
     StudentClub,
 )
@@ -21,6 +22,7 @@ admin.site.register(CampusUnion)
 admin.site.register(StudentClub)
 admin.site.register(CampusSection)
 admin.site.register(CampusUnit)
+admin.site.register(ResearchFacility)
 
 
 @admin.register(CampusInfo)

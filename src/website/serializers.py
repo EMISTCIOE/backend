@@ -35,6 +35,10 @@ from .messages import (
     CAMPUS_UNIT_CREATED_SUCCESS,
     CAMPUS_UNIT_UPDATED_SUCCESS,
     EVENT_DATE_ERROR,
+    RESEARCH_FACILITY_CREATED_SUCCESS,
+    RESEARCH_FACILITY_DELETED_SUCCESS,
+    RESEARCH_FACILITY_NOT_FOUND,
+    RESEARCH_FACILITY_UPDATED_SUCCESS,
     SOCIAL_MEDIA_ALREADY_EXISTS,
     STUDENT_CLUB_EVENT_CREATED_SUCCESS,
     STUDENT_CLUB_EVENT_UPDATED_SUCCESS,
@@ -51,6 +55,7 @@ from .models import (
     CampusSection,
     CampusStaffDesignation,
     CampusUnit,
+    ResearchFacility,
     CampusReport,
     CampusUnion,
     CampusUnionMember,
@@ -1468,6 +1473,118 @@ class CampusUnitPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
 
     def to_representation(self, instance):
         return {"message": CAMPUS_UNIT_UPDATED_SUCCESS}
+
+
+# Research Facility Serializers
+# ------------------------------------------------------------------------------------------------------
+
+
+class ResearchFacilityListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ResearchFacility
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "short_description",
+            "thumbnail",
+            "display_order",
+            "is_active",
+        ]
+
+
+class ResearchFacilityRetrieveSerializer(AbstractInfoRetrieveSerializer):
+    class Meta(AbstractInfoRetrieveSerializer.Meta):
+        model = ResearchFacility
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "short_description",
+            "description",
+            "objectives",
+            "thumbnail",
+            "display_order",
+        ]
+        fields += AbstractInfoRetrieveSerializer.Meta.fields
+
+
+class ResearchFacilityCreateSerializer(serializers.ModelSerializer):
+    thumbnail = serializers.ImageField(
+        validators=[validate_photo_thumbnail],
+        allow_null=True,
+        required=False,
+    )
+
+    class Meta:
+        model = ResearchFacility
+        fields = [
+            "name",
+            "slug",
+            "short_description",
+            "description",
+            "objectives",
+            "thumbnail",
+            "display_order",
+            "is_active",
+        ]
+
+    def create(self, validated_data):
+        current_user = get_user_by_context(self.context)
+        slug_value = validated_data.get("slug") or validated_data["name"]
+        validated_data["slug"] = slugify(slug_value)
+        validated_data["created_by"] = current_user
+        return ResearchFacility.objects.create(**validated_data)
+
+    def to_representation(self, instance):
+        return {"message": RESEARCH_FACILITY_CREATED_SUCCESS}
+
+
+class ResearchFacilityPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
+    thumbnail = serializers.ImageField(
+        validators=[validate_photo_thumbnail],
+        allow_null=True,
+        required=False,
+    )
+
+    class Meta:
+        model = ResearchFacility
+        fields = [
+            "name",
+            "slug",
+            "short_description",
+            "description",
+            "objectives",
+            "thumbnail",
+            "display_order",
+            "is_active",
+        ]
+
+    def update(self, instance, validated_data):
+        current_user = get_user_by_context(self.context)
+        slug_value = validated_data.pop("slug", None)
+        name = validated_data.get("name")
+
+        self.handle_file_update(instance, validated_data, "thumbnail")
+
+        if slug_value:
+            slugified = slugify(slug_value)
+            if slugified:
+                instance.slug = slugified
+        elif name:
+            slugified = slugify(name)
+            if slugified:
+                instance.slug = slugified
+
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+
+        instance.updated_by = current_user
+        instance.save()
+        return instance
+
+    def to_representation(self, instance):
+        return {"message": RESEARCH_FACILITY_UPDATED_SUCCESS}
 
 
 # Student Club Serializers

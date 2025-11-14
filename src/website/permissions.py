@@ -116,6 +116,17 @@ class CampusUnitPermission(BasePermission):
         return validate_permissions(request, user_permissions_dict)
 
 
+class ResearchFacilityPermission(BasePermission):
+    def has_permission(self, request, view):
+        user_permissions_dict = {
+            "SAFE_METHODS": "view_researchfacility",
+            "POST": "add_researchfacility",
+            "PATCH": "edit_researchfacility",
+            "DELETE": "delete_researchfacility",
+        }
+        return validate_permissions(request, user_permissions_dict)
+
+
 class StudentClubPermission(BasePermission):
     def has_permission(self, request, view):
         user_permissions_dict = {

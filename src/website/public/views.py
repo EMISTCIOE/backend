@@ -19,6 +19,7 @@ from src.website.models import (
     CampusKeyOfficial,
     CampusSection,
     CampusUnit,
+    ResearchFacility,
     CampusReport,
     CampusUnion,
     StudentClub,
@@ -46,6 +47,8 @@ from .serializer import (
     PublicStudentClubEventRetrieveSerializer,
     PublicStudentClubListSerializer,
     PublicStudentClubRetrieveSerializer,
+    PublicResearchFacilityListSerializer,
+    PublicResearchFacilityRetrieveSerializer,
     PublicGlobalGallerySerializer,
 )
 
@@ -212,6 +215,26 @@ class PublicCampusUnitReadOnlyViewSet(ReadOnlyModelViewSet):
                 PublicCampusUnitListSerializer
                 if self.action == "list"
                 else PublicCampusUnitRetrieveSerializer
+            )
+
+
+class PublicResearchFacilityReadOnlyViewSet(ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
+    queryset = ResearchFacility.objects.filter(is_active=True)
+    filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
+    filterset_fields = ["slug", "name"]
+    search_fields = ["name", "short_description", "description", "objectives"]
+    ordering_fields = ["display_order", "name"]
+    http_method_names = ["get", "head", "options"]
+    lookup_field = "slug"
+    lookup_url_kwarg = "slug"
+
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return (
+                PublicResearchFacilityListSerializer
+                if self.action == "list"
+                else PublicResearchFacilityRetrieveSerializer
             )
 
 

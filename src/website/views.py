@@ -32,6 +32,8 @@ from src.website.messages import (
     CAMPUS_SECTION_NOT_FOUND,
     CAMPUS_UNIT_DELETED_SUCCESS,
     CAMPUS_UNIT_NOT_FOUND,
+    RESEARCH_FACILITY_DELETED_SUCCESS,
+    RESEARCH_FACILITY_NOT_FOUND,
     CAMPUS_UNION_DELETED_SUCCESS,
     CAMPUS_UNION_NOT_FOUND,
     EVENT_GALLERY_DELETED_SUCCESS,
@@ -57,6 +59,7 @@ from .models import (
     CampusUnit,
     CampusReport,
     CampusUnion,
+    ResearchFacility,
     CampusUnionMember,
     SocialMediaLink,
     StudentClub,
@@ -74,6 +77,7 @@ from .permissions import (
     CampusReportPermission,
     CampusSectionPermission,
     CampusUnitPermission,
+    ResearchFacilityPermission,
     CampusUnionPermission,
     StudentClubEventPermission,
     StudentClubPermission,
@@ -117,6 +121,10 @@ from .serializers import (
     CampusUnionListSerializer,
     CampusUnionPatchSerializer,
     CampusUnionRetrieveSerializer,
+    ResearchFacilityCreateSerializer,
+    ResearchFacilityListSerializer,
+    ResearchFacilityPatchSerializer,
+    ResearchFacilityRetrieveSerializer,
     GlobalGallerySerializer,
     StudentClubCreateSerializer,
     StudentClubEventCreateSerializer,
@@ -742,6 +750,64 @@ class CampusUnitViewSet(viewsets.ModelViewSet):
         instance.delete()
         return Response(
             {"message": CAMPUS_UNIT_DELETED_SUCCESS},
+            status=status.HTTP_200_OK,
+        )
+
+
+class FilterForResearchFacilityViewSet(FilterSet):
+    class Meta:
+        model = ResearchFacility
+        fields = ["is_active", "slug"]
+
+
+class ResearchFacilityViewSet(viewsets.ModelViewSet):
+    permission_classes = [ResearchFacilityPermission]
+    queryset = ResearchFacility.objects.filter(is_archived=False)
+    filterset_class = FilterForResearchFacilityViewSet
+    filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
+    search_fields = ["name", "short_description", "description", "objectives"]
+    ordering_fields = ["display_order", "name", "created_at"]
+    http_method_names = ["get", "head", "options", "post", "patch", "delete"]
+
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return (
+                ResearchFacilityListSerializer
+                if self.action == "list"
+                else ResearchFacilityRetrieveSerializer
+            )
+        if self.request.method == "POST":
+            return ResearchFacilityCreateSerializer
+        if self.request.method == "PATCH":
+            return ResearchFacilityPatchSerializer
+        return ResearchFacilityRetrieveSerializer
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        set_binary_files_null_if_empty(["thumbnail"], request.data)
+        return super().create(request, *args, **kwargs)
+
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        set_binary_files_null_if_empty(["thumbnail"], request.data)
+        return super().update(request, *args, **kwargs)
+
+    @transaction.atomic
+    def destroy(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+        except Exception:
+            return Response(
+                {"detail": RESEARCH_FACILITY_NOT_FOUND},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if instance.thumbnail:
+            instance.thumbnail.delete(save=False)
+
+        instance.delete()
+        return Response(
+            {"message": RESEARCH_FACILITY_DELETED_SUCCESS},
             status=status.HTTP_200_OK,
         )
 

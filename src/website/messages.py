@@ -58,6 +58,11 @@ CAMPUS_UNIT_UPDATED_SUCCESS = _("Unit updated successfully")
 CAMPUS_UNIT_NOT_FOUND = _("Unit not found")
 CAMPUS_UNIT_DELETED_SUCCESS = _("Unit deleted successfully")
 
+RESEARCH_FACILITY_CREATED_SUCCESS = _("Research facility created successfully")
+RESEARCH_FACILITY_UPDATED_SUCCESS = _("Research facility updated successfully")
+RESEARCH_FACILITY_DELETED_SUCCESS = _("Research facility deleted successfully")
+RESEARCH_FACILITY_NOT_FOUND = _("Research facility not found")
+
 CAMPUS_CLUB_CREATED_SUCCESS = _("Club created successfully")
 CAMPUS_CLUB_UPDATED_SUCCESS = _("Club updated successfully")
 CAMPUS_CLUB_NOT_FOUND = _("Club not found")

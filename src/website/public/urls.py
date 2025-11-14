@@ -12,6 +12,7 @@ from src.website.public.views import (
     PublicCampusReportListAPIView,
     PublicCampusSectionReadOnlyViewSet,
     PublicCampusUnitReadOnlyViewSet,
+    PublicResearchFacilityReadOnlyViewSet,
     PublicCampusUnionReadOnlyViewSet,
     PublicStudentClubEventViewSet,
     PublicStudentClubReadOnlyViewSet,
@@ -49,6 +50,11 @@ router.register(
     "campus-units",
     PublicCampusUnitReadOnlyViewSet,
     basename="public-campus-unit",
+)
+router.register(
+    "research-facilities",
+    PublicResearchFacilityReadOnlyViewSet,
+    basename="public-research-facility",
 )
 
 

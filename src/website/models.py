@@ -23,6 +23,7 @@ from src.website.constants import (
     CAMPUS_UNION_MEMBER_FILE_PATH,
     CAMPUS_SECTION_FILE_PATH,
     CAMPUS_UNIT_FILE_PATH,
+    RESEARCH_FACILITY_FILE_PATH,
     STUDENT_CLUB_EVENT_FILE_PATH,
     STUDENT_CLUB_FILE_PATH,
     STUDENT_CLUB_MEMBER_FILE_PATH,
@@ -677,6 +678,65 @@ class CampusUnit(AuditInfoModel):
         verbose_name = _("Campus Unit")
         verbose_name_plural = _("Campus Units")
         ordering = ["display_order", "name"]
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class ResearchFacility(AuditInfoModel):
+    """Represents research facilities available at the campus."""
+
+    name = models.CharField(
+        _("Facility Name"),
+        max_length=200,
+        unique=True,
+        help_text=_("Name of the research facility."),
+    )
+    slug = models.SlugField(
+        _("Slug"),
+        max_length=220,
+        unique=True,
+        blank=True,
+        help_text=_("Auto-generated slug used for URLs."),
+    )
+    short_description = models.TextField(
+        _("Short Description"),
+        max_length=500,
+        blank=True,
+        help_text=_("Brief summary displayed in listings."),
+    )
+    description = RichTextField(
+        _("Description"),
+        blank=True,
+        help_text=_("Full description for the facility."),
+    )
+    objectives = RichTextField(
+        _("Objectives"),
+        blank=True,
+        help_text=_("Key goals or focus areas for the facility."),
+    )
+    thumbnail = models.ImageField(
+        _("Image"),
+        upload_to=RESEARCH_FACILITY_FILE_PATH,
+        null=True,
+        blank=True,
+        help_text=_("Image used in listings and detail view."),
+    )
+    display_order = models.PositiveSmallIntegerField(
+        _("Display Order"),
+        default=1,
+        help_text=_("Ordering weight for public listings."),
+    )
+
+    class Meta:
+        verbose_name = _("Research Facility")
+        verbose_name_plural = _("Research Facilities")
+        ordering = ["display_order", "name"]
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
 
     def __str__(self) -> str:
         return self.name

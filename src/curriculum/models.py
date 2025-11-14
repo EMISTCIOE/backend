@@ -3,6 +3,7 @@ import uuid
 from ckeditor.fields import RichTextField
 from django.db import models
 from django.utils.text import slugify
+from django.utils.translation import gettext_lazy as _
 
 Programs = [
     ("Bachelor of Electronics, Information and Communication Engineering", "BEI"),
@@ -76,6 +77,15 @@ class Subject(models.Model):
         choices=Programs,
         null=False,
         blank=False,
+    )
+
+    academic_program = models.ForeignKey(
+        "department.AcademicProgram",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="subjects",
+        help_text=_("Optional reference to a department-level academic program."),
     )
 
     # course_objective = RichTextField()
