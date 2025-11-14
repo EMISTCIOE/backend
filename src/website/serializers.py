@@ -9,6 +9,7 @@ from src.base.serializers import AbstractInfoRetrieveSerializer
 from src.core.models import FiscalSessionBS
 from src.libs.get_context import get_user_by_context
 from src.libs.mixins import FileHandlingMixin
+from src.website.constants import CampusDesignationChoices
 from src.website.validators import (
     validate_campus_download_file,
     validate_photo_thumbnail,
@@ -49,9 +50,7 @@ from .models import (
     CampusInfo,
     CampusKeyOfficial,
     CampusSection,
-    CampusSectionMember,
     CampusUnit,
-    CampusUnitMember,
     CampusReport,
     CampusUnion,
     CampusUnionMember,
@@ -176,12 +175,18 @@ class CampusKeyOfficialListSerializer(serializers.ModelSerializer):
         source="get_designation_display",
         read_only=True,
     )
+    title_prefix_display = serializers.CharField(
+        source="get_title_prefix_display",
+        read_only=True,
+    )
 
     class Meta:
         model = CampusKeyOfficial
         fields = [
+            "uuid",
             "id",
             "title_prefix",
+            "title_prefix_display",
             "full_name",
             "designation",
             "designation_display",
@@ -864,30 +869,15 @@ class CampusUnionPatchSerializer(FileHandlingMixin, serializers.ModelSerializer)
 # ------------------------------------------------------------------------------------------------------
 
 
-class CampusSectionMemberListSerializer(serializers.ModelSerializer):
-    title_prefix_display = serializers.CharField(
-        source="get_title_prefix_display",
+class CampusSectionListSerializer(serializers.ModelSerializer):
+    officials = CampusKeyOfficialListSerializer(
+        source="members", many=True, read_only=True
+    )
+    department_head_detail = CampusKeyOfficialListSerializer(
+        source="department_head",
         read_only=True,
     )
 
-    class Meta:
-        model = CampusSectionMember
-        fields = [
-            "id",
-            "title_prefix",
-            "title_prefix_display",
-            "full_name",
-            "designation",
-            "photo",
-            "email",
-            "phone_number",
-            "bio",
-            "display_order",
-            "is_active",
-        ]
-
-
-class CampusSectionListSerializer(serializers.ModelSerializer):
     class Meta:
         model = CampusSection
         fields = [
@@ -897,12 +887,22 @@ class CampusSectionListSerializer(serializers.ModelSerializer):
             "short_description",
             "thumbnail",
             "display_order",
+            "designations",
+            "officials",
+            "department_head",
+            "department_head_detail",
             "is_active",
         ]
 
 
 class CampusSectionRetrieveSerializer(AbstractInfoRetrieveSerializer):
-    members = CampusSectionMemberListSerializer(many=True)
+    officials = CampusKeyOfficialListSerializer(
+        source="members", many=True, read_only=True
+    )
+    department_head_detail = CampusKeyOfficialListSerializer(
+        source="department_head",
+        read_only=True,
+    )
 
     class Meta(AbstractInfoRetrieveSerializer.Meta):
         model = CampusSection
@@ -920,36 +920,33 @@ class CampusSectionRetrieveSerializer(AbstractInfoRetrieveSerializer):
             "contact_email",
             "contact_phone",
             "display_order",
+            "designations",
+            "officials",
             "members",
+            "department_head",
+            "department_head_detail",
         ]
 
         fields += AbstractInfoRetrieveSerializer.Meta.fields
 
 
-class CampusSectionMemberCreateSerializer(serializers.ModelSerializer):
-    photo = serializers.ImageField(
-        validators=[validate_photo_thumbnail],
+class CampusSectionCreateSerializer(serializers.ModelSerializer):
+    designations = serializers.ListField(
+        child=serializers.ChoiceField(choices=CampusDesignationChoices.choices()),
+        required=False,
+        allow_empty=True,
+    )
+    members = serializers.PrimaryKeyRelatedField(
+        queryset=CampusKeyOfficial.objects.filter(is_active=True),
+        many=True,
+        required=False,
+        allow_empty=True,
+    )
+    department_head = serializers.PrimaryKeyRelatedField(
+        queryset=CampusKeyOfficial.objects.filter(is_active=True),
         allow_null=True,
         required=False,
     )
-
-    class Meta:
-        model = CampusSectionMember
-        fields = [
-            "title_prefix",
-            "full_name",
-            "designation",
-            "photo",
-            "email",
-            "phone_number",
-            "bio",
-            "display_order",
-            "is_active",
-        ]
-
-
-class CampusSectionCreateSerializer(serializers.ModelSerializer):
-    members = CampusSectionMemberCreateSerializer(many=True, required=False)
     thumbnail = serializers.ImageField(
         validators=[validate_photo_thumbnail],
         allow_null=True,
@@ -976,64 +973,80 @@ class CampusSectionCreateSerializer(serializers.ModelSerializer):
             "contact_email",
             "contact_phone",
             "display_order",
+            "designations",
             "members",
+            "department_head",
             "is_active",
         ]
 
     def create(self, validated_data):
         current_user = get_user_by_context(self.context)
+        designations = validated_data.pop("designations", [])
         members = validated_data.pop("members", [])
+        department_head = validated_data.get("department_head")
         slug = validated_data.get("slug")
         if not slug:
             validated_data["slug"] = slugify(validated_data["name"])
         else:
             validated_data["slug"] = slugify(slug)
 
+        validated_data["designations"] = list(dict.fromkeys(designations))
         validated_data["created_by"] = current_user
-        section = CampusSection.objects.create(**validated_data)
+        members_list = list(members)
+        if department_head and department_head not in members_list:
+            members_list.append(department_head)
 
+        instance = CampusSection.objects.create(**validated_data)
+        if members_list:
+            instance.members.set(members_list)
+
+        self._sync_designations_from_members(instance, members_list)
+        return instance
+
+    @staticmethod
+    def _sync_designations_from_members(instance, members_list):
+        members = members_list or []
+        designations = []
         for member in members:
-            CampusSectionMember.objects.create(
-                section=section,
-                created_by=current_user,
-                **member,
-            )
+            designation = getattr(member, "designation", None)
+            if designation and designation not in designations:
+                designations.append(designation)
 
-        return section
+        head_designation = (
+            instance.department_head.designation
+            if instance.department_head and instance.department_head.designation
+            else None
+        )
+        if head_designation and head_designation not in designations:
+            designations.append(head_designation)
+
+        if not designations:
+            return
+
+        instance.designations = designations
+        instance.save(update_fields=["designations"])
 
     def to_representation(self, instance):
         return {"message": CAMPUS_SECTION_CREATED_SUCCESS}
 
 
-class CampusSectionMemberPatchSerializer(serializers.ModelSerializer):
-    id = serializers.PrimaryKeyRelatedField(
-        queryset=CampusSectionMember.objects.filter(is_archived=False),
+class CampusSectionPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
+    designations = serializers.ListField(
+        child=serializers.ChoiceField(choices=CampusDesignationChoices.choices()),
         required=False,
+        allow_empty=True,
     )
-    photo = serializers.ImageField(
-        validators=[validate_photo_thumbnail],
+    members = serializers.PrimaryKeyRelatedField(
+        queryset=CampusKeyOfficial.objects.filter(is_active=True),
+        many=True,
+        required=False,
+        allow_empty=True,
+    )
+    department_head = serializers.PrimaryKeyRelatedField(
+        queryset=CampusKeyOfficial.objects.filter(is_active=True),
         allow_null=True,
         required=False,
     )
-
-    class Meta:
-        model = CampusSectionMember
-        fields = [
-            "id",
-            "title_prefix",
-            "full_name",
-            "designation",
-            "photo",
-            "email",
-            "phone_number",
-            "bio",
-            "display_order",
-            "is_active",
-        ]
-
-
-class CampusSectionPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
-    members = CampusSectionMemberPatchSerializer(many=True, required=False)
 
     class Meta:
         model = CampusSection
@@ -1050,13 +1063,17 @@ class CampusSectionPatchSerializer(FileHandlingMixin, serializers.ModelSerialize
             "contact_email",
             "contact_phone",
             "display_order",
+            "designations",
             "members",
+            "department_head",
             "is_active",
         ]
 
     def update(self, instance, validated_data):
         current_user = get_user_by_context(self.context)
-        members = validated_data.pop("members", [])
+        designations = validated_data.pop("designations", None)
+        members = validated_data.pop("members", None)
+        head_changed = "department_head" in validated_data
 
         self.handle_file_update(instance, validated_data, "thumbnail")
         self.handle_file_update(instance, validated_data, "hero_image")
@@ -1072,21 +1089,23 @@ class CampusSectionPatchSerializer(FileHandlingMixin, serializers.ModelSerialize
         for key, value in validated_data.items():
             setattr(instance, key, value)
 
-        for member in members:
-            obj = member.pop("id", None)
-            if obj:
-                if "photo" in member and member["photo"] and obj.photo:
-                    obj.photo.delete(save=False)
-                for key, value in member.items():
-                    setattr(obj, key, value)
-                obj.updated_by = current_user
-                obj.save()
-            else:
-                CampusSectionMember.objects.create(
-                    section=instance,
-                    created_by=current_user,
-                    **member,
-                )
+        if designations is not None:
+            instance.designations = list(dict.fromkeys(designations))
+        if members is not None:
+            members_list = list(members)
+            department_head = validated_data.get(
+                "department_head", instance.department_head
+            )
+            if department_head and department_head not in members_list:
+                members_list.append(department_head)
+            instance.members.set(members_list)
+            CampusSectionCreateSerializer._sync_designations_from_members(
+                instance, members_list
+            )
+        elif head_changed:
+            CampusSectionCreateSerializer._sync_designations_from_members(
+                instance, list(instance.members.all())
+            )
 
         instance.updated_by = current_user
         instance.save()
@@ -1101,30 +1120,15 @@ class CampusSectionPatchSerializer(FileHandlingMixin, serializers.ModelSerialize
 # ------------------------------------------------------------------------------------------------------
 
 
-class CampusUnitMemberListSerializer(serializers.ModelSerializer):
-    title_prefix_display = serializers.CharField(
-        source="get_title_prefix_display",
+class CampusUnitListSerializer(serializers.ModelSerializer):
+    officials = CampusKeyOfficialListSerializer(
+        source="members", many=True, read_only=True
+    )
+    department_head_detail = CampusKeyOfficialListSerializer(
+        source="department_head",
         read_only=True,
     )
 
-    class Meta:
-        model = CampusUnitMember
-        fields = [
-            "id",
-            "title_prefix",
-            "title_prefix_display",
-            "full_name",
-            "designation",
-            "photo",
-            "email",
-            "phone_number",
-            "bio",
-            "display_order",
-            "is_active",
-        ]
-
-
-class CampusUnitListSerializer(serializers.ModelSerializer):
     class Meta:
         model = CampusUnit
         fields = [
@@ -1134,12 +1138,22 @@ class CampusUnitListSerializer(serializers.ModelSerializer):
             "short_description",
             "thumbnail",
             "display_order",
+            "designations",
+            "officials",
+            "department_head",
+            "department_head_detail",
             "is_active",
         ]
 
 
 class CampusUnitRetrieveSerializer(AbstractInfoRetrieveSerializer):
-    members = CampusUnitMemberListSerializer(many=True)
+    officials = CampusKeyOfficialListSerializer(
+        source="members", many=True, read_only=True
+    )
+    department_head_detail = CampusKeyOfficialListSerializer(
+        source="department_head",
+        read_only=True,
+    )
 
     class Meta(AbstractInfoRetrieveSerializer.Meta):
         model = CampusUnit
@@ -1157,36 +1171,33 @@ class CampusUnitRetrieveSerializer(AbstractInfoRetrieveSerializer):
             "contact_email",
             "contact_phone",
             "display_order",
+            "designations",
+            "officials",
             "members",
+            "department_head",
+            "department_head_detail",
         ]
 
         fields += AbstractInfoRetrieveSerializer.Meta.fields
 
 
-class CampusUnitMemberCreateSerializer(serializers.ModelSerializer):
-    photo = serializers.ImageField(
-        validators=[validate_photo_thumbnail],
+class CampusUnitCreateSerializer(serializers.ModelSerializer):
+    designations = serializers.ListField(
+        child=serializers.ChoiceField(choices=CampusDesignationChoices.choices()),
+        required=False,
+        allow_empty=True,
+    )
+    members = serializers.PrimaryKeyRelatedField(
+        queryset=CampusKeyOfficial.objects.filter(is_active=True),
+        many=True,
+        required=False,
+        allow_empty=True,
+    )
+    department_head = serializers.PrimaryKeyRelatedField(
+        queryset=CampusKeyOfficial.objects.filter(is_active=True),
         allow_null=True,
         required=False,
     )
-
-    class Meta:
-        model = CampusUnitMember
-        fields = [
-            "title_prefix",
-            "full_name",
-            "designation",
-            "photo",
-            "email",
-            "phone_number",
-            "bio",
-            "display_order",
-            "is_active",
-        ]
-
-
-class CampusUnitCreateSerializer(serializers.ModelSerializer):
-    members = CampusUnitMemberCreateSerializer(many=True, required=False)
     thumbnail = serializers.ImageField(
         validators=[validate_photo_thumbnail],
         allow_null=True,
@@ -1213,64 +1224,80 @@ class CampusUnitCreateSerializer(serializers.ModelSerializer):
             "contact_email",
             "contact_phone",
             "display_order",
+            "designations",
             "members",
+            "department_head",
             "is_active",
         ]
 
     def create(self, validated_data):
         current_user = get_user_by_context(self.context)
+        designations = validated_data.pop("designations", [])
         members = validated_data.pop("members", [])
+        department_head = validated_data.get("department_head")
         slug = validated_data.get("slug")
         if not slug:
             validated_data["slug"] = slugify(validated_data["name"])
         else:
             validated_data["slug"] = slugify(slug)
 
+        validated_data["designations"] = list(dict.fromkeys(designations))
         validated_data["created_by"] = current_user
-        unit = CampusUnit.objects.create(**validated_data)
+        members_list = list(members)
+        if department_head and department_head not in members_list:
+            members_list.append(department_head)
 
+        instance = CampusUnit.objects.create(**validated_data)
+        if members_list:
+            instance.members.set(members_list)
+
+        self._sync_designations_from_members(instance, members_list)
+        return instance
+
+    @staticmethod
+    def _sync_designations_from_members(instance, members_list):
+        members = members_list or []
+        designations = []
         for member in members:
-            CampusUnitMember.objects.create(
-                unit=unit,
-                created_by=current_user,
-                **member,
-            )
+            designation = getattr(member, "designation", None)
+            if designation and designation not in designations:
+                designations.append(designation)
 
-        return unit
+        head_designation = (
+            instance.department_head.designation
+            if instance.department_head and instance.department_head.designation
+            else None
+        )
+        if head_designation and head_designation not in designations:
+            designations.append(head_designation)
+
+        if not designations:
+            return
+
+        instance.designations = designations
+        instance.save(update_fields=["designations"])
 
     def to_representation(self, instance):
         return {"message": CAMPUS_UNIT_CREATED_SUCCESS}
 
 
-class CampusUnitMemberPatchSerializer(serializers.ModelSerializer):
-    id = serializers.PrimaryKeyRelatedField(
-        queryset=CampusUnitMember.objects.filter(is_archived=False),
+class CampusUnitPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
+    designations = serializers.ListField(
+        child=serializers.ChoiceField(choices=CampusDesignationChoices.choices()),
         required=False,
+        allow_empty=True,
     )
-    photo = serializers.ImageField(
-        validators=[validate_photo_thumbnail],
+    members = serializers.PrimaryKeyRelatedField(
+        queryset=CampusKeyOfficial.objects.filter(is_active=True),
+        many=True,
+        required=False,
+        allow_empty=True,
+    )
+    department_head = serializers.PrimaryKeyRelatedField(
+        queryset=CampusKeyOfficial.objects.filter(is_active=True),
         allow_null=True,
         required=False,
     )
-
-    class Meta:
-        model = CampusUnitMember
-        fields = [
-            "id",
-            "title_prefix",
-            "full_name",
-            "designation",
-            "photo",
-            "email",
-            "phone_number",
-            "bio",
-            "display_order",
-            "is_active",
-        ]
-
-
-class CampusUnitPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
-    members = CampusUnitMemberPatchSerializer(many=True, required=False)
 
     class Meta:
         model = CampusUnit
@@ -1287,13 +1314,17 @@ class CampusUnitPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
             "contact_email",
             "contact_phone",
             "display_order",
+            "designations",
             "members",
+            "department_head",
             "is_active",
         ]
 
     def update(self, instance, validated_data):
         current_user = get_user_by_context(self.context)
-        members = validated_data.pop("members", [])
+        designations = validated_data.pop("designations", None)
+        members = validated_data.pop("members", None)
+        head_changed = "department_head" in validated_data
 
         self.handle_file_update(instance, validated_data, "thumbnail")
         self.handle_file_update(instance, validated_data, "hero_image")
@@ -1309,21 +1340,23 @@ class CampusUnitPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
         for key, value in validated_data.items():
             setattr(instance, key, value)
 
-        for member in members:
-            obj = member.pop("id", None)
-            if obj:
-                if "photo" in member and member["photo"] and obj.photo:
-                    obj.photo.delete(save=False)
-                for key, value in member.items():
-                    setattr(obj, key, value)
-                obj.updated_by = current_user
-                obj.save()
-            else:
-                CampusUnitMember.objects.create(
-                    unit=instance,
-                    created_by=current_user,
-                    **member,
-                )
+        if designations is not None:
+            instance.designations = list(dict.fromkeys(designations))
+        if members is not None:
+            members_list = list(members)
+            department_head = validated_data.get(
+                "department_head", instance.department_head
+            )
+            if department_head and department_head not in members_list:
+                members_list.append(department_head)
+            instance.members.set(members_list)
+            CampusUnitCreateSerializer._sync_designations_from_members(
+                instance, members_list
+            )
+        elif head_changed:
+            CampusUnitCreateSerializer._sync_designations_from_members(
+                instance, list(instance.members.all())
+            )
 
         instance.updated_by = current_user
         instance.save()
@@ -1335,6 +1368,17 @@ class CampusUnitPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
 
 # Student Club Serializers
 # ------------------------------------------------------------------------------------------------------
+
+
+class GlobalGallerySerializer(serializers.Serializer):
+    uuid = serializers.CharField()
+    image = serializers.ImageField()
+    caption = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    source_type = serializers.CharField()
+    source_identifier = serializers.CharField()
+    source_name = serializers.CharField()
+    source_context = serializers.CharField(required=False, allow_blank=True)
+    created_at = serializers.DateTimeField()
 
 
 class StudentClubMemberListSerializer(serializers.ModelSerializer):

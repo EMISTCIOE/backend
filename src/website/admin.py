@@ -8,9 +8,7 @@ from .models import (
     CampusInfo,
     CampusKeyOfficial,
     CampusSection,
-    CampusSectionMember,
     CampusUnit,
-    CampusUnitMember,
     CampusUnion,
     SocialMediaLink,
     StudentClub,
@@ -22,8 +20,6 @@ admin.site.register(CampusUnion)
 admin.site.register(StudentClub)
 admin.site.register(CampusSection)
 admin.site.register(CampusUnit)
-admin.site.register(CampusSectionMember)
-admin.site.register(CampusUnitMember)
 
 
 @admin.register(CampusInfo)

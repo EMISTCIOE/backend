@@ -17,6 +17,7 @@ from .views import (
     StudentClubEventGalleryDestroyAPIView,
     StudentClubEventViewSet,
     StudentClubViewSet,
+    GlobalGalleryListAPIView,
 )
 from .listing_apis.views import FiscalSessionBSForCampusReportListAPIView
 
@@ -67,5 +68,6 @@ urlpatterns = [
         "campus-reports/fiscal-sessions",
         FiscalSessionBSForCampusReportListAPIView.as_view(),
     ),
+    path("global-gallery", GlobalGalleryListAPIView.as_view(), name="global-gallery"),
     path("", include(router.urls)),
 ]

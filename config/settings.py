@@ -84,6 +84,8 @@ LOCAL_APPS = [
     "src.department",
     "src.curriculum",
     "src.contact",
+    "src.project",
+    "src.research",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

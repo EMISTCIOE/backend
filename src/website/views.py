@@ -10,9 +10,11 @@ from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ReadOnlyModelViewSet
+from rest_framework.pagination import LimitOffsetPagination
 
 # Project Imports
 from src.libs.utils import set_binary_files_null_if_empty
+from src.website.utils import build_global_gallery_items
 from src.website.messages import (
     ACADEMIC_CALENDER_DELETED_SUCCESS,
     ACADEMIC_CALENDER_NOT_FOUND,
@@ -51,9 +53,7 @@ from .models import (
     CampusInfo,
     CampusKeyOfficial,
     CampusSection,
-    CampusSectionMember,
     CampusUnit,
-    CampusUnitMember,
     CampusReport,
     CampusUnion,
     CampusUnionMember,
@@ -76,6 +76,7 @@ from .permissions import (
     CampusUnionPermission,
     StudentClubEventPermission,
     StudentClubPermission,
+    GlobalGalleryPermission,
 )
 from .serializers import (
     AcademicCalendarCreateSerializer,
@@ -114,6 +115,7 @@ from .serializers import (
     CampusUnionListSerializer,
     CampusUnionPatchSerializer,
     CampusUnionRetrieveSerializer,
+    GlobalGallerySerializer,
     StudentClubCreateSerializer,
     StudentClubEventCreateSerializer,
     StudentClubEventListSerializer,
@@ -644,49 +646,13 @@ class CampusSectionViewSet(viewsets.ModelViewSet):
         if instance.hero_image:
             instance.hero_image.delete(save=False)
 
-        for member in instance.members.all():
-            if member.photo:
-                member.photo.delete(save=False)
-            member.delete()
-
+        if hasattr(instance, "members"):
+            instance.members.clear()
         instance.delete()
         return Response(
             {"message": CAMPUS_SECTION_DELETED_SUCCESS},
             status=status.HTTP_200_OK,
         )
-
-    @action(
-        detail=True,
-        methods=["delete"],
-        url_path="member/(?P<member_id>[^/.]+)",
-        name="Delete Section Member",
-    )
-    def delete_member(self, request, pk=None, member_id=None):
-        try:
-            section = self.get_object()
-        except Exception:
-            return Response(
-                {"detail": CAMPUS_SECTION_NOT_FOUND},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        try:
-            member = section.members.get(pk=member_id, section=pk)
-        except CampusSectionMember.DoesNotExist:
-            return Response(
-                {"detail": MEMBER_NOT_FOUND},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        if member.photo:
-            member.photo.delete(save=False)
-
-        member.delete()
-        return Response(
-            {"message": MEMBER_DELETED_SUCCESS},
-            status=status.HTTP_200_OK,
-        )
-
 
 class FilterForCampusUnitViewSet(FilterSet):
     class Meta:
@@ -741,49 +707,13 @@ class CampusUnitViewSet(viewsets.ModelViewSet):
         if instance.hero_image:
             instance.hero_image.delete(save=False)
 
-        for member in instance.members.all():
-            if member.photo:
-                member.photo.delete(save=False)
-            member.delete()
-
+        if hasattr(instance, "members"):
+            instance.members.clear()
         instance.delete()
         return Response(
             {"message": CAMPUS_UNIT_DELETED_SUCCESS},
             status=status.HTTP_200_OK,
         )
-
-    @action(
-        detail=True,
-        methods=["delete"],
-        url_path="member/(?P<member_id>[^/.]+)",
-        name="Delete Unit Member",
-    )
-    def delete_member(self, request, pk=None, member_id=None):
-        try:
-            unit = self.get_object()
-        except Exception:
-            return Response(
-                {"detail": CAMPUS_UNIT_NOT_FOUND},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        try:
-            member = unit.members.get(pk=member_id, unit=pk)
-        except CampusUnitMember.DoesNotExist:
-            return Response(
-                {"detail": MEMBER_NOT_FOUND},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        if member.photo:
-            member.photo.delete(save=False)
-
-        member.delete()
-        return Response(
-            {"message": MEMBER_DELETED_SUCCESS},
-            status=status.HTTP_200_OK,
-        )
-
 
 class StudentClubViewSet(viewsets.ModelViewSet):
     permission_classes = [StudentClubPermission]
@@ -959,3 +889,36 @@ class StudentClubEventGalleryDestroyAPIView(generics.DestroyAPIView):
             {"message": EVENT_GALLERY_DELETED_SUCCESS},
             status=status.HTTP_200_OK,
         )
+
+
+class GlobalGalleryPagination(LimitOffsetPagination):
+    default_limit = 24
+    max_limit = 120
+
+
+class GlobalGalleryListAPIView(generics.GenericAPIView):
+    serializer_class = GlobalGallerySerializer
+    permission_classes = [GlobalGalleryPermission]
+    pagination_class = GlobalGalleryPagination
+
+    def get(self, request, *args, **kwargs):
+        items = build_global_gallery_items()
+        source_type = request.query_params.get("source_type")
+        if source_type:
+            items = [item for item in items if item["source_type"] == source_type]
+
+        search = request.query_params.get("search", "")
+        if search:
+            search_lower = search.lower()
+            items = [
+                item
+                for item in items
+                if search_lower in (item.get("source_name") or "").lower()
+                or search_lower in (item.get("caption") or "").lower()
+                or search_lower in (item.get("source_context") or "").lower()
+            ]
+
+        items.sort(key=lambda item: item["created_at"], reverse=True)
+        page = self.paginate_queryset(items, request, view=self)
+        serializer = self.get_serializer(page, many=True)
+        return self.get_paginated_response(serializer.data)

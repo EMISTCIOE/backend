@@ -21,9 +21,7 @@ from src.website.constants import (
     CAMPUS_UNION_FILE_PATH,
     CAMPUS_UNION_MEMBER_FILE_PATH,
     CAMPUS_SECTION_FILE_PATH,
-    CAMPUS_SECTION_MEMBER_FILE_PATH,
     CAMPUS_UNIT_FILE_PATH,
-    CAMPUS_UNIT_MEMBER_FILE_PATH,
     STUDENT_CLUB_EVENT_FILE_PATH,
     STUDENT_CLUB_FILE_PATH,
     STUDENT_CLUB_MEMBER_FILE_PATH,
@@ -492,6 +490,28 @@ class CampusSection(AuditInfoModel):
         default=1,
         help_text=_("Controls ordering in menus and listing views."),
     )
+    designations = models.JSONField(
+        _("Linked Designations"),
+        default=list,
+        blank=True,
+        help_text=_(
+            "Key official designations responsible for this section (uses campus key officials)."
+        ),
+    )
+    department_head = models.ForeignKey(
+        "CampusKeyOfficial",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="headed_sections",
+        help_text=_("Primary key official leading this section."),
+    )
+    members = models.ManyToManyField(
+        "CampusKeyOfficial",
+        blank=True,
+        related_name="campus_sections",
+        help_text=_("Key officials actively assigned to this section."),
+    )
 
     class Meta:
         verbose_name = _("Campus Section")
@@ -500,52 +520,6 @@ class CampusSection(AuditInfoModel):
 
     def __str__(self) -> str:
         return self.name
-
-
-class CampusSectionMember(AuditInfoModel):
-    """
-    Staff or team members associated with a campus section.
-    """
-
-    section = models.ForeignKey(
-        CampusSection,
-        on_delete=models.CASCADE,
-        related_name="members",
-        verbose_name=_("Section"),
-    )
-    title_prefix = models.CharField(
-        _("Title Prefix"),
-        choices=StaffMemberTitle.choices(),
-        max_length=10,
-        blank=True,
-    )
-    full_name = models.CharField(_("Full Name"), max_length=120)
-    designation = models.CharField(_("Designation"), max_length=150)
-    photo = models.ImageField(
-        _("Photo"),
-        upload_to=CAMPUS_SECTION_MEMBER_FILE_PATH,
-        null=True,
-        blank=True,
-    )
-    email = models.EmailField(_("Email"), blank=True)
-    phone_number = models.CharField(
-        _("Phone Number"),
-        max_length=30,
-        blank=True,
-    )
-    bio = models.TextField(_("Bio"), blank=True)
-    display_order = models.PositiveSmallIntegerField(
-        _("Display Order"),
-        default=1,
-    )
-
-    class Meta:
-        verbose_name = _("Campus Section Member")
-        verbose_name_plural = _("Campus Section Members")
-        ordering = ["display_order", "full_name"]
-
-    def __str__(self) -> str:
-        return f"{self.full_name} ({self.section.name})"
 
 
 class CampusUnit(AuditInfoModel):
@@ -605,6 +579,28 @@ class CampusUnit(AuditInfoModel):
         _("Display Order"),
         default=1,
     )
+    designations = models.JSONField(
+        _("Linked Designations"),
+        default=list,
+        blank=True,
+        help_text=_(
+            "Key official designations responsible for this unit (uses campus key officials)."
+        ),
+    )
+    department_head = models.ForeignKey(
+        "CampusKeyOfficial",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="headed_units",
+        help_text=_("Primary person responsible for this unit."),
+    )
+    members = models.ManyToManyField(
+        "CampusKeyOfficial",
+        blank=True,
+        related_name="campus_units",
+        help_text=_("Key officials actively working with this unit."),
+    )
 
     class Meta:
         verbose_name = _("Campus Unit")
@@ -613,52 +609,6 @@ class CampusUnit(AuditInfoModel):
 
     def __str__(self) -> str:
         return self.name
-
-
-class CampusUnitMember(AuditInfoModel):
-    """
-    Team members working inside a campus unit.
-    """
-
-    unit = models.ForeignKey(
-        CampusUnit,
-        on_delete=models.CASCADE,
-        related_name="members",
-        verbose_name=_("Unit"),
-    )
-    title_prefix = models.CharField(
-        _("Title Prefix"),
-        choices=StaffMemberTitle.choices(),
-        max_length=10,
-        blank=True,
-    )
-    full_name = models.CharField(_("Full Name"), max_length=120)
-    designation = models.CharField(_("Designation"), max_length=150)
-    photo = models.ImageField(
-        _("Photo"),
-        upload_to=CAMPUS_UNIT_MEMBER_FILE_PATH,
-        null=True,
-        blank=True,
-    )
-    email = models.EmailField(_("Email"), blank=True)
-    phone_number = models.CharField(
-        _("Phone Number"),
-        max_length=30,
-        blank=True,
-    )
-    bio = models.TextField(_("Bio"), blank=True)
-    display_order = models.PositiveSmallIntegerField(
-        _("Display Order"),
-        default=1,
-    )
-
-    class Meta:
-        verbose_name = _("Campus Unit Member")
-        verbose_name_plural = _("Campus Unit Members")
-        ordering = ["display_order", "full_name"]
-
-    def __str__(self) -> str:
-        return f"{self.full_name} ({self.unit.name})"
 
 
 class StudentClub(AuditInfoModel):

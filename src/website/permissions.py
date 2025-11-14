@@ -1,6 +1,7 @@
 from rest_framework.permissions import BasePermission
 
-from src.libs.permissions import validate_permissions
+from src.libs.permissions import validate_permissions, get_user_permissions
+from rest_framework.permissions import SAFE_METHODS
 
 
 class CampusInfoPermission(BasePermission):
@@ -135,3 +136,19 @@ class StudentClubEventPermission(BasePermission):
             "DELETE": "delete_student_club_event",
         }
         return validate_permissions(request, user_permissions_dict)
+
+
+class GlobalGalleryPermission(BasePermission):
+    SAFE_PERMISSIONS = {
+        "view_campus_event",
+        "view_student_club_event",
+        "view_department_event",
+    }
+
+    def has_permission(self, request, view):
+        if request.method not in SAFE_METHODS:
+            return False
+
+        user_permissions = get_user_permissions(request)
+        user_codenames = {perm.codename for perm in user_permissions}
+        return any(code in user_codenames for code in self.SAFE_PERMISSIONS)

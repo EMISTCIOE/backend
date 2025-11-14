@@ -8,6 +8,8 @@ urlpatterns = [
     path("website-mod/", include("src.website.urls")),
     path("department-mod/", include("src.department.urls")),
     path("contact-mod/", include("src.contact.urls")),
+    path("project-mod/", include("src.project.urls")),
+    path("research-mod/", include("src.research.urls")),
     # path("curriculum-mod/", include("src.curriculum.urls")),
     # path("journal-mod/", include("src.journal.urls")),
 ]

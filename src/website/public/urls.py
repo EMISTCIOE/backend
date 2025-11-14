@@ -15,6 +15,7 @@ from src.website.public.views import (
     PublicCampusUnionReadOnlyViewSet,
     PublicStudentClubEventViewSet,
     PublicStudentClubReadOnlyViewSet,
+    PublicGlobalGalleryListAPIView,
 )
 
 router = DefaultRouter(trailing_slash=False)
@@ -77,6 +78,11 @@ urlpatterns = [
         "submit-feedback",
         PublicCampusFeedbackCreateAPIView.as_view(),
         name="public-submit-feedback",
+    ),
+    path(
+        "global-gallery",
+        PublicGlobalGalleryListAPIView.as_view(),
+        name="public-global-gallery",
     ),
     path("", include(router.urls)),
 ]

@@ -4,7 +4,8 @@ from django_filters.filterset import FilterSet
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView
+from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView, GenericAPIView
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
@@ -24,6 +25,7 @@ from src.website.models import (
     StudentClubEvent,
 )
 from src.website.public.messages import CAMPUS_INFO_NOT_FOUND
+from src.website.utils import build_global_gallery_items
 
 from .serializer import (
     PublicAcademicCalendarListSerializer,
@@ -44,6 +46,7 @@ from .serializer import (
     PublicStudentClubEventRetrieveSerializer,
     PublicStudentClubListSerializer,
     PublicStudentClubRetrieveSerializer,
+    PublicGlobalGallerySerializer,
 )
 
 
@@ -247,3 +250,36 @@ class PublicStudentClubEventViewSet(ReadOnlyModelViewSet):
                 if self.action == "list"
                 else PublicStudentClubEventRetrieveSerializer
             )
+
+
+class PublicGlobalGalleryPagination(LimitOffsetPagination):
+    default_limit = 24
+    max_limit = 120
+
+
+class PublicGlobalGalleryListAPIView(GenericAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = PublicGlobalGallerySerializer
+    pagination_class = PublicGlobalGalleryPagination
+
+    def get(self, request, *args, **kwargs):
+        items = build_global_gallery_items()
+        source_type = request.query_params.get("source_type")
+        if source_type:
+            items = [item for item in items if item["source_type"] == source_type]
+
+        search = request.query_params.get("search", "")
+        if search:
+            search_lower = search.lower()
+            items = [
+                item
+                for item in items
+                if search_lower in (item.get("source_name") or "").lower()
+                or search_lower in (item.get("caption") or "").lower()
+                or search_lower in (item.get("source_context") or "").lower()
+            ]
+
+        items.sort(key=lambda item: item["created_at"], reverse=True)
+        page = self.paginate_queryset(items, request, view=self)
+        serializer = self.get_serializer(page, many=True)
+        return self.get_paginated_response(serializer.data)

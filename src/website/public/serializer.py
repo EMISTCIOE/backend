@@ -12,9 +12,7 @@ from src.website.models import (
     CampusInfo,
     CampusKeyOfficial,
     CampusSection,
-    CampusSectionMember,
     CampusUnit,
-    CampusUnitMember,
     CampusReport,
     CampusUnion,
     CampusUnionMember,
@@ -107,12 +105,17 @@ class PublicCampusKeyOfficialSerializer(serializers.ModelSerializer):
         source="get_designation_display",
         read_only=True,
     )
+    title_prefix_display = serializers.CharField(
+        source="get_title_prefix_display",
+        read_only=True,
+    )
 
     class Meta:
         model = CampusKeyOfficial
         fields = [
             "uuid",
             "title_prefix",
+            "title_prefix_display",
             "full_name",
             "designation",
             "designation_display",
@@ -265,28 +268,14 @@ class PublicStudentClubEventRetrieveSerializer(serializers.ModelSerializer):
         ]
 
 
-class PublicCampusSectionMemberSerializer(serializers.ModelSerializer):
-    title_prefix_display = serializers.CharField(
-        source="get_title_prefix_display",
+class PublicCampusSectionListSerializer(serializers.ModelSerializer):
+    officials = PublicCampusKeyOfficialSerializer(
+        source="members", many=True, read_only=True
+    )
+    department_head = PublicCampusKeyOfficialSerializer(
         read_only=True,
     )
 
-    class Meta:
-        model = CampusSectionMember
-        fields = [
-            "uuid",
-            "title_prefix",
-            "title_prefix_display",
-            "full_name",
-            "designation",
-            "photo",
-            "email",
-            "phone_number",
-            "bio",
-        ]
-
-
-class PublicCampusSectionListSerializer(serializers.ModelSerializer):
     class Meta:
         model = CampusSection
         fields = [
@@ -296,11 +285,18 @@ class PublicCampusSectionListSerializer(serializers.ModelSerializer):
             "short_description",
             "thumbnail",
             "display_order",
+            "officials",
+            "department_head",
         ]
 
 
 class PublicCampusSectionRetrieveSerializer(serializers.ModelSerializer):
-    members = PublicCampusSectionMemberSerializer(many=True, read_only=True)
+    officials = PublicCampusKeyOfficialSerializer(
+        source="members", many=True, read_only=True
+    )
+    department_head = PublicCampusKeyOfficialSerializer(
+        read_only=True,
+    )
 
     class Meta:
         model = CampusSection
@@ -318,32 +314,19 @@ class PublicCampusSectionRetrieveSerializer(serializers.ModelSerializer):
             "contact_email",
             "contact_phone",
             "display_order",
-            "members",
-        ]
-
-
-class PublicCampusUnitMemberSerializer(serializers.ModelSerializer):
-    title_prefix_display = serializers.CharField(
-        source="get_title_prefix_display",
-        read_only=True,
-    )
-
-    class Meta:
-        model = CampusUnitMember
-        fields = [
-            "uuid",
-            "title_prefix",
-            "title_prefix_display",
-            "full_name",
-            "designation",
-            "photo",
-            "email",
-            "phone_number",
-            "bio",
+            "officials",
+            "department_head",
         ]
 
 
 class PublicCampusUnitListSerializer(serializers.ModelSerializer):
+    officials = PublicCampusKeyOfficialSerializer(
+        source="members", many=True, read_only=True
+    )
+    department_head = PublicCampusKeyOfficialSerializer(
+        read_only=True,
+    )
+
     class Meta:
         model = CampusUnit
         fields = [
@@ -353,11 +336,18 @@ class PublicCampusUnitListSerializer(serializers.ModelSerializer):
             "short_description",
             "thumbnail",
             "display_order",
+            "officials",
+            "department_head",
         ]
 
 
 class PublicCampusUnitRetrieveSerializer(serializers.ModelSerializer):
-    members = PublicCampusUnitMemberSerializer(many=True, read_only=True)
+    officials = PublicCampusKeyOfficialSerializer(
+        source="members", many=True, read_only=True
+    )
+    department_head = PublicCampusKeyOfficialSerializer(
+        read_only=True,
+    )
 
     class Meta:
         model = CampusUnit
@@ -375,5 +365,17 @@ class PublicCampusUnitRetrieveSerializer(serializers.ModelSerializer):
             "contact_email",
             "contact_phone",
             "display_order",
-            "members",
+            "officials",
+            "department_head",
         ]
+
+
+class PublicGlobalGallerySerializer(serializers.Serializer):
+    uuid = serializers.CharField()
+    image = serializers.ImageField()
+    caption = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    source_type = serializers.CharField()
+    source_identifier = serializers.CharField()
+    source_name = serializers.CharField()
+    source_context = serializers.CharField(required=False, allow_blank=True)
+    created_at = serializers.DateTimeField()
