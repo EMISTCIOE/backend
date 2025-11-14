@@ -71,17 +71,17 @@ class NoticeViewSet(ModelViewSet):
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         # set blank file fields to None/null
-        file_fields = ["thumbnail"]
-        if file_fields:
-            set_binary_files_null_if_empty(file_fields, request.data)
+        fields_to_normalize = ["thumbnail", "department"]
+        if fields_to_normalize:
+            set_binary_files_null_if_empty(fields_to_normalize, request.data)
         return super().create(request, *args, **kwargs)
 
     @transaction.atomic
     def update(self, request, *args, **kwargs):
         # set blank file fields to None/null
-        file_fields = ["thumbnail"]
-        if file_fields:
-            set_binary_files_null_if_empty(file_fields, request.data)
+        fields_to_normalize = ["thumbnail", "department"]
+        if fields_to_normalize:
+            set_binary_files_null_if_empty(fields_to_normalize, request.data)
         return super().update(request, *args, **kwargs)
 
     @transaction.atomic

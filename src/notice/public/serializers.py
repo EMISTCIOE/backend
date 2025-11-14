@@ -34,7 +34,7 @@ class PublicUserForNoticeListSerializer(serializers.ModelSerializer):
 
 
 class PublicNoticeListSerializer(serializers.ModelSerializer):
-    department = PublicDepartmentForNoticeListSerializer()
+    department = PublicDepartmentForNoticeListSerializer(allow_null=True)
     category = PublicCategoryForNoticeListSerializer()
     medias = PublicNoticeMediaForNoticeListSerializer(many=True)
     author = PublicUserForNoticeListSerializer(source="created_by")

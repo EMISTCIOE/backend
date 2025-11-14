@@ -29,7 +29,12 @@ CORS_ALLOWED_ORGINS = env.list("CORS_ALLOWED_ORIGINS")
 
 CSRF_TRUSTED_ORIGINS = env.list(
     "CSRF_TRUSTED_ORIGINS",
-    default=["https://api.tcioe.edu.np"],
+    default=[
+        "https://tcioe.edu.np",
+        "http://tcioe.edu.np", 
+        "https://*.tcioe.edu.np",
+        "http://*.tcioe.edu.np",
+    ],
 )
 
 
@@ -37,6 +42,10 @@ CSP_FRAME_ANCESTORS = [
     "'self'",
     "http://localhost:3000",
     "https://tcioe-cms.vercel.app",
+    "https://tcioe.edu.np",
+    "http://tcioe.edu.np",
+    "https://*.tcioe.edu.np",
+    "http://*.tcioe.edu.np",
 ]
 CSP_DEFAULT_SRC = ("'self'",)
 CSP_IMG_SRC = ("'self'", "data:", "https://cdn.jsdelivr.net")  # Allow Swagger icons

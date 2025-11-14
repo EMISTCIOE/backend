@@ -1,0 +1,11 @@
+{
+  "name": "backend",
+  "type": "python",
+  "path": "/srv/apps/backend",
+  "venv": "/srv/apps/backend/venv",
+  "wsgi": "config.wsgi:application",
+  "port": 8009,
+  "domain": "cdn.tcioe.edu.np",
+  "build": "python3 -m venv venv && venv/bin/pip install --upgrade pip && venv/bin/pip install -r requirements.txt && venv/bin/python manage.py collectstatic --noinput && venv/bin/python manage.py migrate",
+  "start": "/srv/apps/backend/venv/bin/gunicorn --workers 3 --bind 0.0.0.0:8009 config.wsgi:application"
+}

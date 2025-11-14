@@ -99,6 +99,11 @@ class PublicCampusEventRetrieveSerializer(serializers.ModelSerializer):
 
 
 class PublicCampusKeyOfficialSerializer(serializers.ModelSerializer):
+    designation_display = serializers.CharField(
+        source="get_designation_display",
+        read_only=True,
+    )
+
     class Meta:
         model = CampusKeyOfficial
         fields = [
@@ -106,6 +111,7 @@ class PublicCampusKeyOfficialSerializer(serializers.ModelSerializer):
             "title_prefix",
             "full_name",
             "designation",
+            "designation_display",
             "message",
             "photo",
             "email",

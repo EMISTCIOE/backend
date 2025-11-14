@@ -59,6 +59,7 @@ class Notice(AuditInfoModel):
     department = models.ForeignKey(
         Department,
         null=True,
+        blank=True,
         on_delete=models.SET_NULL,
         verbose_name=_("Department"),
         help_text=_("Department associated with this notice."),

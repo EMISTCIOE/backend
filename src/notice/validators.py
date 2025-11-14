@@ -15,6 +15,4 @@ def validate_notice_media_file(file, media_type):
         raise ValidationError(_("Invalid media type selected."))
 
     if ext not in [e.strip(".") for e in ALLOWED_EXTENSIONS[media_type]]:
-        raise ValidationError(
-            {"error": _("Unsupported file type for the selected media type.")},
-        )
+        raise ValidationError(_("Unsupported file type for the selected media type."))

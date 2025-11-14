@@ -163,6 +163,11 @@ class CampusInfoPatchSerializer(serializers.ModelSerializer):
 
 
 class CampusKeyOfficialListSerializer(serializers.ModelSerializer):
+    designation_display = serializers.CharField(
+        source="get_designation_display",
+        read_only=True,
+    )
+
     class Meta:
         model = CampusKeyOfficial
         fields = [
@@ -170,6 +175,7 @@ class CampusKeyOfficialListSerializer(serializers.ModelSerializer):
             "title_prefix",
             "full_name",
             "designation",
+            "designation_display",
             "photo",
             "email",
             "phone_number",
@@ -178,6 +184,11 @@ class CampusKeyOfficialListSerializer(serializers.ModelSerializer):
 
 
 class CampusKeyOfficialRetrieveSerializer(AbstractInfoRetrieveSerializer):
+    designation_display = serializers.CharField(
+        source="get_designation_display",
+        read_only=True,
+    )
+
     class Meta(AbstractInfoRetrieveSerializer.Meta):
         model = CampusKeyOfficial
         fields = [
@@ -185,6 +196,7 @@ class CampusKeyOfficialRetrieveSerializer(AbstractInfoRetrieveSerializer):
             "title_prefix",
             "full_name",
             "designation",
+            "designation_display",
             "message",
             "photo",
             "email",

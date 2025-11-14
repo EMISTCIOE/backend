@@ -58,7 +58,7 @@ class NoticeListSerializer(serializers.ModelSerializer):
 
 
 class NoticeRetrieveSerializer(AbstractInfoRetrieveSerializer):
-    department = DepartmentForNoticeListSerializer()
+    department = DepartmentForNoticeListSerializer(allow_null=True)
     category = CategoryForNoticeListSerializer()
     medias = NoticeMediaForNoticeListSerializer(many=True)
     author = UserForNoticeListSerializer(source="created_by")
@@ -107,6 +107,7 @@ class NoticeCreateSerializer(serializers.ModelSerializer):
     department = serializers.PrimaryKeyRelatedField(
         queryset=Department.objects.filter(is_active=True),
         allow_null=True,
+        required=False,
     )
     category = serializers.PrimaryKeyRelatedField(
         queryset=NoticeCategory.objects.filter(is_active=True),
@@ -142,9 +143,9 @@ class NoticeCreateSerializer(serializers.ModelSerializer):
         medias_data = validated_data.pop("medias", [])
 
         notice = Notice.objects.create(
-            title=validated_data.get("title").strip(),
-            description=validated_data.get("description").strip(),
-            department=validated_data["department"],
+            title=(validated_data.get("title") or "").strip(),
+            description=(validated_data.get("description") or "").strip(),
+            department=validated_data.get("department"),
             thumbnail=validated_data.get("thumbnail", None),
             is_featured=validated_data["is_featured"],
             category=validated_data["category"],
