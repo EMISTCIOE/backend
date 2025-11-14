@@ -114,7 +114,7 @@ class PublicCampusKeyOfficialFilterSet(FilterSet):
 
 
 class PublicCampusKeyOfficialListAPIView(ListAPIView):
-    """Campus Key Officials List API"""
+    """Campus Staff List API"""
 
     permission_classes = [AllowAny]
     serializer_class = PublicCampusKeyOfficialSerializer

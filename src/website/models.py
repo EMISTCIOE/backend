@@ -199,8 +199,8 @@ class CampusKeyOfficial(AuditInfoModel):
     )
 
     class Meta:
-        verbose_name = _("Campus Key Official")
-        verbose_name_plural = _("Campus Key Officials")
+        verbose_name = _("Campus Key Staffs")
+        verbose_name_plural = _("Campus Staffs")
 
     def __str__(self):
         designation_title = (

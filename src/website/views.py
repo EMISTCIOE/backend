@@ -203,7 +203,7 @@ class CampusKeyOfficialFilterSet(FilterSet):
 
 
 class CampusKeyOfficialViewSet(viewsets.ModelViewSet):
-    """Campus Key Officials CRUD APIs"""
+    """Campus Staff CRUD APIs"""
 
     permission_classes = [CampusKeyOfficialPermission]
     queryset = CampusKeyOfficial.objects.filter(is_archived=False).select_related(
