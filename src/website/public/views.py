@@ -16,6 +16,8 @@ from src.website.models import (
     CampusEvent,
     CampusInfo,
     CampusKeyOfficial,
+    CampusSection,
+    CampusUnit,
     CampusReport,
     CampusUnion,
     StudentClub,
@@ -32,6 +34,10 @@ from .serializer import (
     PublicCampusInfoSerializer,
     PublicCampusKeyOfficialSerializer,
     PublicCampusReportListSerializer,
+    PublicCampusSectionListSerializer,
+    PublicCampusSectionRetrieveSerializer,
+    PublicCampusUnitListSerializer,
+    PublicCampusUnitRetrieveSerializer,
     PublicCampusUnionListSerializer,
     PublicCampusUnionRetrieveSerializer,
     PublicStudentClubEventListSerializer,
@@ -150,6 +156,46 @@ class PublicCampusUnionReadOnlyViewSet(ReadOnlyModelViewSet):
                 PublicCampusUnionListSerializer
                 if self.action == "list"
                 else PublicCampusUnionRetrieveSerializer
+            )
+
+
+class PublicCampusSectionReadOnlyViewSet(ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
+    queryset = CampusSection.objects.filter(is_active=True)
+    filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
+    filterset_fields = ["slug", "name"]
+    search_fields = ["name", "short_description"]
+    ordering_fields = ["display_order", "-created_at"]
+    http_method_names = ["get", "head", "options"]
+    lookup_field = "slug"
+    lookup_url_kwarg = "slug"
+
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return (
+                PublicCampusSectionListSerializer
+                if self.action == "list"
+                else PublicCampusSectionRetrieveSerializer
+            )
+
+
+class PublicCampusUnitReadOnlyViewSet(ReadOnlyModelViewSet):
+    permission_classes = [AllowAny]
+    queryset = CampusUnit.objects.filter(is_active=True)
+    filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
+    filterset_fields = ["slug", "name"]
+    search_fields = ["name", "short_description"]
+    ordering_fields = ["display_order", "-created_at"]
+    http_method_names = ["get", "head", "options"]
+    lookup_field = "slug"
+    lookup_url_kwarg = "slug"
+
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return (
+                PublicCampusUnitListSerializer
+                if self.action == "list"
+                else PublicCampusUnitRetrieveSerializer
             )
 
 

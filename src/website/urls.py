@@ -10,6 +10,8 @@ from .views import (
     CampusInfoAPIView,
     CampusKeyOfficialViewSet,
     CampusReportViewSet,
+    CampusSectionViewSet,
+    CampusUnitViewSet,
     CampusUnionViewSet,
     SocialMediaLinkDeleteAPIView,
     StudentClubEventGalleryDestroyAPIView,
@@ -36,6 +38,8 @@ router.register(
 router.register("campus-events", CampusEventViewSet, basename="campus-event")
 router.register("student-clubs", StudentClubViewSet, basename="student-club")
 router.register("campus-unions", CampusUnionViewSet, basename="campus-unions")
+router.register("campus-sections", CampusSectionViewSet, basename="campus-section")
+router.register("campus-units", CampusUnitViewSet, basename="campus-unit")
 router.register(
     "student-club-events",
     StudentClubEventViewSet,

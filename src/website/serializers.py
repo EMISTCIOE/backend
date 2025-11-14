@@ -1,4 +1,5 @@
 from django.core.files.storage import default_storage
+from django.utils.text import slugify
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
@@ -27,8 +28,12 @@ from .messages import (
     CAMPUS_KEY_OFFICIAL_UPDATE_SUCCESS,
     CAMPUS_REPORT_CREATED_SUCCESS,
     CAMPUS_REPORT_UPDATED_SUCCESS,
+    CAMPUS_SECTION_CREATED_SUCCESS,
+    CAMPUS_SECTION_UPDATED_SUCCESS,
     CAMPUS_UNION_CREATED_SUCCESS,
     CAMPUS_UNION_UPDATED_SUCCESS,
+    CAMPUS_UNIT_CREATED_SUCCESS,
+    CAMPUS_UNIT_UPDATED_SUCCESS,
     EVENT_DATE_ERROR,
     SOCIAL_MEDIA_ALREADY_EXISTS,
     STUDENT_CLUB_EVENT_CREATED_SUCCESS,
@@ -43,6 +48,10 @@ from .models import (
     CampusFeedback,
     CampusInfo,
     CampusKeyOfficial,
+    CampusSection,
+    CampusSectionMember,
+    CampusUnit,
+    CampusUnitMember,
     CampusReport,
     CampusUnion,
     CampusUnionMember,
@@ -849,6 +858,479 @@ class CampusUnionPatchSerializer(FileHandlingMixin, serializers.ModelSerializer)
 
     def to_representation(self, instance):
         return {"message": CAMPUS_UNION_UPDATED_SUCCESS}
+
+
+# Campus Section Serializers
+# ------------------------------------------------------------------------------------------------------
+
+
+class CampusSectionMemberListSerializer(serializers.ModelSerializer):
+    title_prefix_display = serializers.CharField(
+        source="get_title_prefix_display",
+        read_only=True,
+    )
+
+    class Meta:
+        model = CampusSectionMember
+        fields = [
+            "id",
+            "title_prefix",
+            "title_prefix_display",
+            "full_name",
+            "designation",
+            "photo",
+            "email",
+            "phone_number",
+            "bio",
+            "display_order",
+            "is_active",
+        ]
+
+
+class CampusSectionListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusSection
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "short_description",
+            "thumbnail",
+            "display_order",
+            "is_active",
+        ]
+
+
+class CampusSectionRetrieveSerializer(AbstractInfoRetrieveSerializer):
+    members = CampusSectionMemberListSerializer(many=True)
+
+    class Meta(AbstractInfoRetrieveSerializer.Meta):
+        model = CampusSection
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "short_description",
+            "detailed_description",
+            "objectives",
+            "achievements",
+            "thumbnail",
+            "hero_image",
+            "location",
+            "contact_email",
+            "contact_phone",
+            "display_order",
+            "members",
+        ]
+
+        fields += AbstractInfoRetrieveSerializer.Meta.fields
+
+
+class CampusSectionMemberCreateSerializer(serializers.ModelSerializer):
+    photo = serializers.ImageField(
+        validators=[validate_photo_thumbnail],
+        allow_null=True,
+        required=False,
+    )
+
+    class Meta:
+        model = CampusSectionMember
+        fields = [
+            "title_prefix",
+            "full_name",
+            "designation",
+            "photo",
+            "email",
+            "phone_number",
+            "bio",
+            "display_order",
+            "is_active",
+        ]
+
+
+class CampusSectionCreateSerializer(serializers.ModelSerializer):
+    members = CampusSectionMemberCreateSerializer(many=True, required=False)
+    thumbnail = serializers.ImageField(
+        validators=[validate_photo_thumbnail],
+        allow_null=True,
+        required=False,
+    )
+    hero_image = serializers.ImageField(
+        validators=[validate_photo_thumbnail],
+        allow_null=True,
+        required=False,
+    )
+
+    class Meta:
+        model = CampusSection
+        fields = [
+            "name",
+            "slug",
+            "short_description",
+            "detailed_description",
+            "objectives",
+            "achievements",
+            "thumbnail",
+            "hero_image",
+            "location",
+            "contact_email",
+            "contact_phone",
+            "display_order",
+            "members",
+            "is_active",
+        ]
+
+    def create(self, validated_data):
+        current_user = get_user_by_context(self.context)
+        members = validated_data.pop("members", [])
+        slug = validated_data.get("slug")
+        if not slug:
+            validated_data["slug"] = slugify(validated_data["name"])
+        else:
+            validated_data["slug"] = slugify(slug)
+
+        validated_data["created_by"] = current_user
+        section = CampusSection.objects.create(**validated_data)
+
+        for member in members:
+            CampusSectionMember.objects.create(
+                section=section,
+                created_by=current_user,
+                **member,
+            )
+
+        return section
+
+    def to_representation(self, instance):
+        return {"message": CAMPUS_SECTION_CREATED_SUCCESS}
+
+
+class CampusSectionMemberPatchSerializer(serializers.ModelSerializer):
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=CampusSectionMember.objects.filter(is_archived=False),
+        required=False,
+    )
+    photo = serializers.ImageField(
+        validators=[validate_photo_thumbnail],
+        allow_null=True,
+        required=False,
+    )
+
+    class Meta:
+        model = CampusSectionMember
+        fields = [
+            "id",
+            "title_prefix",
+            "full_name",
+            "designation",
+            "photo",
+            "email",
+            "phone_number",
+            "bio",
+            "display_order",
+            "is_active",
+        ]
+
+
+class CampusSectionPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
+    members = CampusSectionMemberPatchSerializer(many=True, required=False)
+
+    class Meta:
+        model = CampusSection
+        fields = [
+            "name",
+            "slug",
+            "short_description",
+            "detailed_description",
+            "objectives",
+            "achievements",
+            "thumbnail",
+            "hero_image",
+            "location",
+            "contact_email",
+            "contact_phone",
+            "display_order",
+            "members",
+            "is_active",
+        ]
+
+    def update(self, instance, validated_data):
+        current_user = get_user_by_context(self.context)
+        members = validated_data.pop("members", [])
+
+        self.handle_file_update(instance, validated_data, "thumbnail")
+        self.handle_file_update(instance, validated_data, "hero_image")
+
+        name = validated_data.pop("name", None)
+        if name is not None:
+            instance.name = name.strip()
+
+        slug = validated_data.pop("slug", None)
+        if slug is not None:
+            instance.slug = slugify(slug) or instance.slug
+
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+
+        for member in members:
+            obj = member.pop("id", None)
+            if obj:
+                if "photo" in member and member["photo"] and obj.photo:
+                    obj.photo.delete(save=False)
+                for key, value in member.items():
+                    setattr(obj, key, value)
+                obj.updated_by = current_user
+                obj.save()
+            else:
+                CampusSectionMember.objects.create(
+                    section=instance,
+                    created_by=current_user,
+                    **member,
+                )
+
+        instance.updated_by = current_user
+        instance.save()
+
+        return instance
+
+    def to_representation(self, instance):
+        return {"message": CAMPUS_SECTION_UPDATED_SUCCESS}
+
+
+# Campus Unit Serializers
+# ------------------------------------------------------------------------------------------------------
+
+
+class CampusUnitMemberListSerializer(serializers.ModelSerializer):
+    title_prefix_display = serializers.CharField(
+        source="get_title_prefix_display",
+        read_only=True,
+    )
+
+    class Meta:
+        model = CampusUnitMember
+        fields = [
+            "id",
+            "title_prefix",
+            "title_prefix_display",
+            "full_name",
+            "designation",
+            "photo",
+            "email",
+            "phone_number",
+            "bio",
+            "display_order",
+            "is_active",
+        ]
+
+
+class CampusUnitListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusUnit
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "short_description",
+            "thumbnail",
+            "display_order",
+            "is_active",
+        ]
+
+
+class CampusUnitRetrieveSerializer(AbstractInfoRetrieveSerializer):
+    members = CampusUnitMemberListSerializer(many=True)
+
+    class Meta(AbstractInfoRetrieveSerializer.Meta):
+        model = CampusUnit
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "short_description",
+            "detailed_description",
+            "objectives",
+            "achievements",
+            "thumbnail",
+            "hero_image",
+            "location",
+            "contact_email",
+            "contact_phone",
+            "display_order",
+            "members",
+        ]
+
+        fields += AbstractInfoRetrieveSerializer.Meta.fields
+
+
+class CampusUnitMemberCreateSerializer(serializers.ModelSerializer):
+    photo = serializers.ImageField(
+        validators=[validate_photo_thumbnail],
+        allow_null=True,
+        required=False,
+    )
+
+    class Meta:
+        model = CampusUnitMember
+        fields = [
+            "title_prefix",
+            "full_name",
+            "designation",
+            "photo",
+            "email",
+            "phone_number",
+            "bio",
+            "display_order",
+            "is_active",
+        ]
+
+
+class CampusUnitCreateSerializer(serializers.ModelSerializer):
+    members = CampusUnitMemberCreateSerializer(many=True, required=False)
+    thumbnail = serializers.ImageField(
+        validators=[validate_photo_thumbnail],
+        allow_null=True,
+        required=False,
+    )
+    hero_image = serializers.ImageField(
+        validators=[validate_photo_thumbnail],
+        allow_null=True,
+        required=False,
+    )
+
+    class Meta:
+        model = CampusUnit
+        fields = [
+            "name",
+            "slug",
+            "short_description",
+            "detailed_description",
+            "objectives",
+            "achievements",
+            "thumbnail",
+            "hero_image",
+            "location",
+            "contact_email",
+            "contact_phone",
+            "display_order",
+            "members",
+            "is_active",
+        ]
+
+    def create(self, validated_data):
+        current_user = get_user_by_context(self.context)
+        members = validated_data.pop("members", [])
+        slug = validated_data.get("slug")
+        if not slug:
+            validated_data["slug"] = slugify(validated_data["name"])
+        else:
+            validated_data["slug"] = slugify(slug)
+
+        validated_data["created_by"] = current_user
+        unit = CampusUnit.objects.create(**validated_data)
+
+        for member in members:
+            CampusUnitMember.objects.create(
+                unit=unit,
+                created_by=current_user,
+                **member,
+            )
+
+        return unit
+
+    def to_representation(self, instance):
+        return {"message": CAMPUS_UNIT_CREATED_SUCCESS}
+
+
+class CampusUnitMemberPatchSerializer(serializers.ModelSerializer):
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=CampusUnitMember.objects.filter(is_archived=False),
+        required=False,
+    )
+    photo = serializers.ImageField(
+        validators=[validate_photo_thumbnail],
+        allow_null=True,
+        required=False,
+    )
+
+    class Meta:
+        model = CampusUnitMember
+        fields = [
+            "id",
+            "title_prefix",
+            "full_name",
+            "designation",
+            "photo",
+            "email",
+            "phone_number",
+            "bio",
+            "display_order",
+            "is_active",
+        ]
+
+
+class CampusUnitPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
+    members = CampusUnitMemberPatchSerializer(many=True, required=False)
+
+    class Meta:
+        model = CampusUnit
+        fields = [
+            "name",
+            "slug",
+            "short_description",
+            "detailed_description",
+            "objectives",
+            "achievements",
+            "thumbnail",
+            "hero_image",
+            "location",
+            "contact_email",
+            "contact_phone",
+            "display_order",
+            "members",
+            "is_active",
+        ]
+
+    def update(self, instance, validated_data):
+        current_user = get_user_by_context(self.context)
+        members = validated_data.pop("members", [])
+
+        self.handle_file_update(instance, validated_data, "thumbnail")
+        self.handle_file_update(instance, validated_data, "hero_image")
+
+        name = validated_data.pop("name", None)
+        if name is not None:
+            instance.name = name.strip()
+
+        slug = validated_data.pop("slug", None)
+        if slug is not None:
+            instance.slug = slugify(slug) or instance.slug
+
+        for key, value in validated_data.items():
+            setattr(instance, key, value)
+
+        for member in members:
+            obj = member.pop("id", None)
+            if obj:
+                if "photo" in member and member["photo"] and obj.photo:
+                    obj.photo.delete(save=False)
+                for key, value in member.items():
+                    setattr(obj, key, value)
+                obj.updated_by = current_user
+                obj.save()
+            else:
+                CampusUnitMember.objects.create(
+                    unit=instance,
+                    created_by=current_user,
+                    **member,
+                )
+
+        instance.updated_by = current_user
+        instance.save()
+        return instance
+
+    def to_representation(self, instance):
+        return {"message": CAMPUS_UNIT_UPDATED_SUCCESS}
 
 
 # Student Club Serializers

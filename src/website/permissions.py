@@ -93,6 +93,28 @@ class CampusUnionPermission(BasePermission):
         return validate_permissions(request, user_permissions_dict)
 
 
+class CampusSectionPermission(BasePermission):
+    def has_permission(self, request, view):
+        user_permissions_dict = {
+            "SAFE_METHODS": "view_campus_section",
+            "POST": "add_campus_section",
+            "PATCH": "edit_campus_section",
+            "DELETE": "delete_campus_section",
+        }
+        return validate_permissions(request, user_permissions_dict)
+
+
+class CampusUnitPermission(BasePermission):
+    def has_permission(self, request, view):
+        user_permissions_dict = {
+            "SAFE_METHODS": "view_campus_unit",
+            "POST": "add_campus_unit",
+            "PATCH": "edit_campus_unit",
+            "DELETE": "delete_campus_unit",
+        }
+        return validate_permissions(request, user_permissions_dict)
+
+
 class StudentClubPermission(BasePermission):
     def has_permission(self, request, view):
         user_permissions_dict = {

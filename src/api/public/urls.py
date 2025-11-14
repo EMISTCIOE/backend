@@ -7,4 +7,5 @@ urlpatterns = [
     path("notice-mod/", include("src.notice.public.urls")),
     path("website-mod/", include("src.website.public.urls")),
     path("department-mod/", include("src.department.public.urls")),
+    path("contact-mod/", include("src.contact.public.urls")),
 ]

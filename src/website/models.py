@@ -20,6 +20,10 @@ from src.website.constants import (
     CAMPUS_REPORT_FILE_PATH,
     CAMPUS_UNION_FILE_PATH,
     CAMPUS_UNION_MEMBER_FILE_PATH,
+    CAMPUS_SECTION_FILE_PATH,
+    CAMPUS_SECTION_MEMBER_FILE_PATH,
+    CAMPUS_UNIT_FILE_PATH,
+    CAMPUS_UNIT_MEMBER_FILE_PATH,
     STUDENT_CLUB_EVENT_FILE_PATH,
     STUDENT_CLUB_FILE_PATH,
     STUDENT_CLUB_MEMBER_FILE_PATH,
@@ -416,6 +420,245 @@ class CampusUnionMember(AuditInfoModel):
 
     def __str__(self):
         return f"{self.full_name} - {self.designation}"
+
+
+class CampusSection(AuditInfoModel):
+    """
+    Represents an administrative/academic section within the campus hierarchy.
+    Stores descriptive content, objectives and hero assets shown on the website.
+    """
+
+    name = models.CharField(
+        _("Section Name"),
+        max_length=150,
+        unique=True,
+    )
+    slug = models.SlugField(
+        _("Slug"),
+        max_length=160,
+        unique=True,
+        help_text=_("Used for public URLs, e.g. /about/sections/<slug>."),
+    )
+    short_description = models.TextField(
+        _("Short Description"),
+        max_length=500,
+        help_text=_("Brief summary shown in listing cards."),
+    )
+    detailed_description = RichTextField(
+        _("Detailed Description"),
+        blank=True,
+        help_text=_("Rich text content describing objectives and responsibilities."),
+    )
+    objectives = RichTextField(
+        _("Objectives"),
+        blank=True,
+        help_text=_("Bullet list or paragraph describing goals of the section."),
+    )
+    achievements = RichTextField(
+        _("Key Achievements"),
+        blank=True,
+        help_text=_("Optional highlights, milestones or services."),
+    )
+    thumbnail = models.ImageField(
+        _("Thumbnail"),
+        upload_to=CAMPUS_SECTION_FILE_PATH,
+        null=True,
+        blank=True,
+        help_text=_("Image used in listing cards."),
+    )
+    hero_image = models.ImageField(
+        _("Hero Image"),
+        upload_to=CAMPUS_SECTION_FILE_PATH,
+        null=True,
+        blank=True,
+        help_text=_("Large banner image used on the section detail page."),
+    )
+    location = models.CharField(
+        _("Location"),
+        max_length=200,
+        blank=True,
+    )
+    contact_email = models.EmailField(
+        _("Email"),
+        blank=True,
+    )
+    contact_phone = models.CharField(
+        _("Phone Number"),
+        max_length=30,
+        blank=True,
+    )
+    display_order = models.PositiveSmallIntegerField(
+        _("Display Order"),
+        default=1,
+        help_text=_("Controls ordering in menus and listing views."),
+    )
+
+    class Meta:
+        verbose_name = _("Campus Section")
+        verbose_name_plural = _("Campus Sections")
+        ordering = ["display_order", "name"]
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class CampusSectionMember(AuditInfoModel):
+    """
+    Staff or team members associated with a campus section.
+    """
+
+    section = models.ForeignKey(
+        CampusSection,
+        on_delete=models.CASCADE,
+        related_name="members",
+        verbose_name=_("Section"),
+    )
+    title_prefix = models.CharField(
+        _("Title Prefix"),
+        choices=StaffMemberTitle.choices(),
+        max_length=10,
+        blank=True,
+    )
+    full_name = models.CharField(_("Full Name"), max_length=120)
+    designation = models.CharField(_("Designation"), max_length=150)
+    photo = models.ImageField(
+        _("Photo"),
+        upload_to=CAMPUS_SECTION_MEMBER_FILE_PATH,
+        null=True,
+        blank=True,
+    )
+    email = models.EmailField(_("Email"), blank=True)
+    phone_number = models.CharField(
+        _("Phone Number"),
+        max_length=30,
+        blank=True,
+    )
+    bio = models.TextField(_("Bio"), blank=True)
+    display_order = models.PositiveSmallIntegerField(
+        _("Display Order"),
+        default=1,
+    )
+
+    class Meta:
+        verbose_name = _("Campus Section Member")
+        verbose_name_plural = _("Campus Section Members")
+        ordering = ["display_order", "full_name"]
+
+    def __str__(self) -> str:
+        return f"{self.full_name} ({self.section.name})"
+
+
+class CampusUnit(AuditInfoModel):
+    """
+    Represents campus level units such as EMIS, R&D, Consultancy etc.
+    """
+
+    name = models.CharField(_("Unit Name"), max_length=150, unique=True)
+    slug = models.SlugField(
+        _("Slug"),
+        max_length=160,
+        unique=True,
+        help_text=_("Used for public URLs, e.g. /about/units/<slug>."),
+    )
+    short_description = models.TextField(
+        _("Short Description"),
+        max_length=500,
+        help_text=_("Summary displayed in cards and hero section."),
+    )
+    detailed_description = RichTextField(
+        _("Detailed Description"),
+        blank=True,
+        help_text=_("History, responsibilities and services of the unit."),
+    )
+    objectives = RichTextField(
+        _("Objectives"),
+        blank=True,
+        help_text=_("List of objectives/goals shown on the public page."),
+    )
+    achievements = RichTextField(
+        _("Key Achievements"),
+        blank=True,
+        help_text=_("Optional achievements, milestones or services."),
+    )
+    thumbnail = models.ImageField(
+        _("Thumbnail"),
+        upload_to=CAMPUS_UNIT_FILE_PATH,
+        null=True,
+        blank=True,
+        help_text=_("Image used in listing cards and menus."),
+    )
+    hero_image = models.ImageField(
+        _("Hero Image"),
+        upload_to=CAMPUS_UNIT_FILE_PATH,
+        null=True,
+        blank=True,
+        help_text=_("Primary image displayed on the detail page."),
+    )
+    location = models.CharField(_("Location"), max_length=200, blank=True)
+    contact_email = models.EmailField(_("Email"), blank=True)
+    contact_phone = models.CharField(
+        _("Phone Number"),
+        max_length=30,
+        blank=True,
+    )
+    display_order = models.PositiveSmallIntegerField(
+        _("Display Order"),
+        default=1,
+    )
+
+    class Meta:
+        verbose_name = _("Campus Unit")
+        verbose_name_plural = _("Campus Units")
+        ordering = ["display_order", "name"]
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class CampusUnitMember(AuditInfoModel):
+    """
+    Team members working inside a campus unit.
+    """
+
+    unit = models.ForeignKey(
+        CampusUnit,
+        on_delete=models.CASCADE,
+        related_name="members",
+        verbose_name=_("Unit"),
+    )
+    title_prefix = models.CharField(
+        _("Title Prefix"),
+        choices=StaffMemberTitle.choices(),
+        max_length=10,
+        blank=True,
+    )
+    full_name = models.CharField(_("Full Name"), max_length=120)
+    designation = models.CharField(_("Designation"), max_length=150)
+    photo = models.ImageField(
+        _("Photo"),
+        upload_to=CAMPUS_UNIT_MEMBER_FILE_PATH,
+        null=True,
+        blank=True,
+    )
+    email = models.EmailField(_("Email"), blank=True)
+    phone_number = models.CharField(
+        _("Phone Number"),
+        max_length=30,
+        blank=True,
+    )
+    bio = models.TextField(_("Bio"), blank=True)
+    display_order = models.PositiveSmallIntegerField(
+        _("Display Order"),
+        default=1,
+    )
+
+    class Meta:
+        verbose_name = _("Campus Unit Member")
+        verbose_name_plural = _("Campus Unit Members")
+        ordering = ["display_order", "full_name"]
+
+    def __str__(self) -> str:
+        return f"{self.full_name} ({self.unit.name})"
 
 
 class StudentClub(AuditInfoModel):

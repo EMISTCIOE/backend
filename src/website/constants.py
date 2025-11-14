@@ -13,6 +13,10 @@ CAMPUS_UNION_MEMBER_FILE_PATH = "website/unions/members"
 STUDENT_CLUB_FILE_PATH = "website/clubs"
 STUDENT_CLUB_MEMBER_FILE_PATH = "website/clubs/members"
 STUDENT_CLUB_EVENT_FILE_PATH = "website/clubs"
+CAMPUS_SECTION_FILE_PATH = "website/sections"
+CAMPUS_SECTION_MEMBER_FILE_PATH = "website/sections/members"
+CAMPUS_UNIT_FILE_PATH = "website/units"
+CAMPUS_UNIT_MEMBER_FILE_PATH = "website/units/members"
 
 
 class ReportTypes(BaseEnum):

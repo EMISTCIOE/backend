@@ -48,6 +48,16 @@ CAMPUS_UNION_UPDATED_SUCCESS = _("Union updated successfully")
 CAMPUS_UNION_NOT_FOUND = _("Union not found")
 CAMPUS_UNION_DELETED_SUCCESS = _("Union delete successfully")
 
+CAMPUS_SECTION_CREATED_SUCCESS = _("Section created successfully")
+CAMPUS_SECTION_UPDATED_SUCCESS = _("Section updated successfully")
+CAMPUS_SECTION_NOT_FOUND = _("Section not found")
+CAMPUS_SECTION_DELETED_SUCCESS = _("Section deleted successfully")
+
+CAMPUS_UNIT_CREATED_SUCCESS = _("Unit created successfully")
+CAMPUS_UNIT_UPDATED_SUCCESS = _("Unit updated successfully")
+CAMPUS_UNIT_NOT_FOUND = _("Unit not found")
+CAMPUS_UNIT_DELETED_SUCCESS = _("Unit deleted successfully")
+
 CAMPUS_CLUB_CREATED_SUCCESS = _("Club created successfully")
 CAMPUS_CLUB_UPDATED_SUCCESS = _("Club updated successfully")
 CAMPUS_CLUB_NOT_FOUND = _("Club not found")

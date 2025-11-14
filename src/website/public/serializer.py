@@ -11,6 +11,10 @@ from src.website.models import (
     CampusFeedback,
     CampusInfo,
     CampusKeyOfficial,
+    CampusSection,
+    CampusSectionMember,
+    CampusUnit,
+    CampusUnitMember,
     CampusReport,
     CampusUnion,
     CampusUnionMember,
@@ -258,4 +262,118 @@ class PublicStudentClubEventRetrieveSerializer(serializers.ModelSerializer):
             "thumbnail",
             "club_name",
             "gallery",
+        ]
+
+
+class PublicCampusSectionMemberSerializer(serializers.ModelSerializer):
+    title_prefix_display = serializers.CharField(
+        source="get_title_prefix_display",
+        read_only=True,
+    )
+
+    class Meta:
+        model = CampusSectionMember
+        fields = [
+            "uuid",
+            "title_prefix",
+            "title_prefix_display",
+            "full_name",
+            "designation",
+            "photo",
+            "email",
+            "phone_number",
+            "bio",
+        ]
+
+
+class PublicCampusSectionListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusSection
+        fields = [
+            "uuid",
+            "name",
+            "slug",
+            "short_description",
+            "thumbnail",
+            "display_order",
+        ]
+
+
+class PublicCampusSectionRetrieveSerializer(serializers.ModelSerializer):
+    members = PublicCampusSectionMemberSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = CampusSection
+        fields = [
+            "uuid",
+            "name",
+            "slug",
+            "short_description",
+            "detailed_description",
+            "objectives",
+            "achievements",
+            "thumbnail",
+            "hero_image",
+            "location",
+            "contact_email",
+            "contact_phone",
+            "display_order",
+            "members",
+        ]
+
+
+class PublicCampusUnitMemberSerializer(serializers.ModelSerializer):
+    title_prefix_display = serializers.CharField(
+        source="get_title_prefix_display",
+        read_only=True,
+    )
+
+    class Meta:
+        model = CampusUnitMember
+        fields = [
+            "uuid",
+            "title_prefix",
+            "title_prefix_display",
+            "full_name",
+            "designation",
+            "photo",
+            "email",
+            "phone_number",
+            "bio",
+        ]
+
+
+class PublicCampusUnitListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusUnit
+        fields = [
+            "uuid",
+            "name",
+            "slug",
+            "short_description",
+            "thumbnail",
+            "display_order",
+        ]
+
+
+class PublicCampusUnitRetrieveSerializer(serializers.ModelSerializer):
+    members = PublicCampusUnitMemberSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = CampusUnit
+        fields = [
+            "uuid",
+            "name",
+            "slug",
+            "short_description",
+            "detailed_description",
+            "objectives",
+            "achievements",
+            "thumbnail",
+            "hero_image",
+            "location",
+            "contact_email",
+            "contact_phone",
+            "display_order",
+            "members",
         ]

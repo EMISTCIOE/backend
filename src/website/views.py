@@ -26,6 +26,10 @@ from src.website.messages import (
     CAMPUS_INFO_NOT_FOUND,
     CAMPUS_REPORT_DELETED_SUCCESS,
     CAMPUS_REPORT_NOT_FOUND,
+    CAMPUS_SECTION_DELETED_SUCCESS,
+    CAMPUS_SECTION_NOT_FOUND,
+    CAMPUS_UNIT_DELETED_SUCCESS,
+    CAMPUS_UNIT_NOT_FOUND,
     CAMPUS_UNION_DELETED_SUCCESS,
     CAMPUS_UNION_NOT_FOUND,
     EVENT_GALLERY_DELETED_SUCCESS,
@@ -46,6 +50,10 @@ from .models import (
     CampusFeedback,
     CampusInfo,
     CampusKeyOfficial,
+    CampusSection,
+    CampusSectionMember,
+    CampusUnit,
+    CampusUnitMember,
     CampusReport,
     CampusUnion,
     CampusUnionMember,
@@ -63,6 +71,8 @@ from .permissions import (
     CampusInfoPermission,
     CampusKeyOfficialPermission,
     CampusReportPermission,
+    CampusSectionPermission,
+    CampusUnitPermission,
     CampusUnionPermission,
     StudentClubEventPermission,
     StudentClubPermission,
@@ -92,6 +102,14 @@ from .serializers import (
     CampusReportListSerializer,
     CampusReportPatchSerializer,
     CampusReportRetrieveSerializer,
+    CampusSectionCreateSerializer,
+    CampusSectionListSerializer,
+    CampusSectionPatchSerializer,
+    CampusSectionRetrieveSerializer,
+    CampusUnitCreateSerializer,
+    CampusUnitListSerializer,
+    CampusUnitPatchSerializer,
+    CampusUnitRetrieveSerializer,
     CampusUnionCreateSerializer,
     CampusUnionListSerializer,
     CampusUnionPatchSerializer,
@@ -567,6 +585,200 @@ class CampusUnionViewSet(viewsets.ModelViewSet):
 
         member.delete()
 
+        return Response(
+            {"message": MEMBER_DELETED_SUCCESS},
+            status=status.HTTP_200_OK,
+        )
+
+
+class FilterForCampusSectionViewSet(FilterSet):
+    class Meta:
+        model = CampusSection
+        fields = ["is_active", "slug"]
+
+
+class CampusSectionViewSet(viewsets.ModelViewSet):
+    permission_classes = [CampusSectionPermission]
+    queryset = CampusSection.objects.filter(is_archived=False)
+    filterset_class = FilterForCampusSectionViewSet
+    filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
+    search_fields = ["name", "short_description", "detailed_description"]
+    ordering_fields = ["display_order", "name", "created_at"]
+    http_method_names = ["get", "head", "options", "post", "patch", "delete"]
+
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return (
+                CampusSectionListSerializer
+                if self.action == "list"
+                else CampusSectionRetrieveSerializer
+            )
+        if self.request.method == "POST":
+            return CampusSectionCreateSerializer
+        if self.request.method == "PATCH":
+            return CampusSectionPatchSerializer
+        return CampusSectionRetrieveSerializer
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        set_binary_files_null_if_empty(["thumbnail", "hero_image"], request.data)
+        return super().create(request, *args, **kwargs)
+
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        set_binary_files_null_if_empty(["thumbnail", "hero_image"], request.data)
+        return super().update(request, *args, **kwargs)
+
+    @transaction.atomic
+    def destroy(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+        except Exception:
+            return Response(
+                {"detail": CAMPUS_SECTION_NOT_FOUND},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if instance.thumbnail:
+            instance.thumbnail.delete(save=False)
+        if instance.hero_image:
+            instance.hero_image.delete(save=False)
+
+        for member in instance.members.all():
+            if member.photo:
+                member.photo.delete(save=False)
+            member.delete()
+
+        instance.delete()
+        return Response(
+            {"message": CAMPUS_SECTION_DELETED_SUCCESS},
+            status=status.HTTP_200_OK,
+        )
+
+    @action(
+        detail=True,
+        methods=["delete"],
+        url_path="member/(?P<member_id>[^/.]+)",
+        name="Delete Section Member",
+    )
+    def delete_member(self, request, pk=None, member_id=None):
+        try:
+            section = self.get_object()
+        except Exception:
+            return Response(
+                {"detail": CAMPUS_SECTION_NOT_FOUND},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        try:
+            member = section.members.get(pk=member_id, section=pk)
+        except CampusSectionMember.DoesNotExist:
+            return Response(
+                {"detail": MEMBER_NOT_FOUND},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if member.photo:
+            member.photo.delete(save=False)
+
+        member.delete()
+        return Response(
+            {"message": MEMBER_DELETED_SUCCESS},
+            status=status.HTTP_200_OK,
+        )
+
+
+class FilterForCampusUnitViewSet(FilterSet):
+    class Meta:
+        model = CampusUnit
+        fields = ["is_active", "slug"]
+
+
+class CampusUnitViewSet(viewsets.ModelViewSet):
+    permission_classes = [CampusUnitPermission]
+    queryset = CampusUnit.objects.filter(is_archived=False)
+    filterset_class = FilterForCampusUnitViewSet
+    filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
+    search_fields = ["name", "short_description", "detailed_description"]
+    ordering_fields = ["display_order", "name", "created_at"]
+    http_method_names = ["get", "head", "options", "post", "patch", "delete"]
+
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return (
+                CampusUnitListSerializer
+                if self.action == "list"
+                else CampusUnitRetrieveSerializer
+            )
+        if self.request.method == "POST":
+            return CampusUnitCreateSerializer
+        if self.request.method == "PATCH":
+            return CampusUnitPatchSerializer
+        return CampusUnitRetrieveSerializer
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        set_binary_files_null_if_empty(["thumbnail", "hero_image"], request.data)
+        return super().create(request, *args, **kwargs)
+
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        set_binary_files_null_if_empty(["thumbnail", "hero_image"], request.data)
+        return super().update(request, *args, **kwargs)
+
+    @transaction.atomic
+    def destroy(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+        except Exception:
+            return Response(
+                {"detail": CAMPUS_UNIT_NOT_FOUND},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if instance.thumbnail:
+            instance.thumbnail.delete(save=False)
+        if instance.hero_image:
+            instance.hero_image.delete(save=False)
+
+        for member in instance.members.all():
+            if member.photo:
+                member.photo.delete(save=False)
+            member.delete()
+
+        instance.delete()
+        return Response(
+            {"message": CAMPUS_UNIT_DELETED_SUCCESS},
+            status=status.HTTP_200_OK,
+        )
+
+    @action(
+        detail=True,
+        methods=["delete"],
+        url_path="member/(?P<member_id>[^/.]+)",
+        name="Delete Unit Member",
+    )
+    def delete_member(self, request, pk=None, member_id=None):
+        try:
+            unit = self.get_object()
+        except Exception:
+            return Response(
+                {"detail": CAMPUS_UNIT_NOT_FOUND},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        try:
+            member = unit.members.get(pk=member_id, unit=pk)
+        except CampusUnitMember.DoesNotExist:
+            return Response(
+                {"detail": MEMBER_NOT_FOUND},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if member.photo:
+            member.photo.delete(save=False)
+
+        member.delete()
         return Response(
             {"message": MEMBER_DELETED_SUCCESS},
             status=status.HTTP_200_OK,
