@@ -140,9 +140,9 @@ class StudentClubEventPermission(BasePermission):
 
 class GlobalGalleryPermission(BasePermission):
     SAFE_PERMISSIONS = {
-        "view_campus_event",
-        "view_student_club_event",
-        "view_department_event",
+        "view_campusevent",
+        "view_studentclubevent",
+        "view_departmentevent",
     }
 
     def has_permission(self, request, view):
