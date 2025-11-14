@@ -148,14 +148,18 @@ admin.site.register(CampusFeedback)
 
 
 # Register Global Gallery (aggregated view from multiple sources)
-class GlobalGalleryProxy:
-    """Proxy class to register Global Gallery in admin."""
-    _meta = type('_meta', (), {
-        'app_label': 'website',
-        'model_name': 'globalgallery',
-        'verbose_name': 'Global Gallery',
-        'verbose_name_plural': 'Global Gallery',
-    })()
+class GlobalGallery:
+    """Proxy model for Global Gallery admin registration."""
+    class _meta:
+        app_label = 'website'
+        model_name = 'globalgallery'
+        verbose_name = 'Global Gallery'
+        verbose_name_plural = 'Global Gallery'
+        
+        def get_fields(self, *args, **kwargs):
+            return []
+    
+    objects = None
 
 
-admin.site.register(GlobalGalleryProxy, GlobalGalleryAdmin)
+admin.site.register(GlobalGallery, GlobalGalleryAdmin)
