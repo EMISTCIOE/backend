@@ -1,0 +1,158 @@
+from ckeditor.fields import RichTextField
+from django.db import models
+from django.utils import timezone
+from django.utils.text import slugify as django_slugify
+from django.utils.translation import gettext_lazy as _
+
+# Project Imports
+from src.base.models import AuditInfoModel
+from src.department.models import Department
+from src.notice.utils import notice_media_upload_path
+from src.notice.validators import validate_notice_media_file
+
+from .constants import NOTICE_THUMBNAIL_PATH, MediaType, NoticeStatus
+
+
+class NoticeCategory(AuditInfoModel):
+    name = models.CharField(_("Category Name"), max_length=100, default="General")
+
+    def __str__(self) -> str:
+        return self.name
+
+    class Meta:
+        ordering = ["-id"]
+        verbose_name = _("Category")
+        verbose_name_plural = _("Categories")
+
+
+class Notice(AuditInfoModel):
+    slug = models.SlugField(
+        _("Slug"),
+        max_length=255,
+        help_text=_("A unique, URL-friendly identifier for this object. "),
+    )
+    title = models.CharField(
+        _("Title"),
+        max_length=200,
+        blank=True,
+        help_text=_("Title of the notice."),
+    )
+    description = RichTextField(
+        _("Description"),
+        blank=True,
+        help_text=_("Optional detailed content or body of the notice."),
+    )
+    thumbnail = models.ImageField(
+        upload_to=NOTICE_THUMBNAIL_PATH,
+        null=True,
+        verbose_name=_("Thumbnail"),
+        help_text=_("Optional image representing the notice."),
+    )
+    category = models.ForeignKey(
+        NoticeCategory,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="category_notices",
+        verbose_name=_("Notice Category"),
+        help_text=_("Category to which this notice belongs."),
+    )
+    department = models.ForeignKey(
+        Department,
+        null=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Department"),
+        help_text=_("Department associated with this notice."),
+    )
+    is_featured = models.BooleanField(
+        default=False,
+        verbose_name=_("Featured"),
+        help_text=_("Mark this notice as featured."),
+    )
+    published_at = models.DateTimeField(
+        default=timezone.now,
+        verbose_name=_("Published Date"),
+        help_text=_("Date when the notice was published."),
+    )
+    status = models.CharField(
+        _("Approval Status"),
+        max_length=10,
+        choices=NoticeStatus.choices(),
+        default=NoticeStatus.APPROVED.value,
+        db_index=True,
+        help_text=_("Current approval status of the notice."),
+    )
+    views = models.PositiveIntegerField(_("views"), default=0)
+    shares = models.PositiveIntegerField(_("shares"), default=0)
+
+    @property
+    def get_author_full_name(self) -> str:
+        return self.created_by.get_full_name
+
+    def set_viewed(self) -> None:
+        self.views += 1
+        self.save(update_fields=["views"])
+
+    def set_shared(self) -> None:
+        self.shares += 1
+        self.save(update_fields=["shares"])
+
+    def __str__(self) -> str:
+        return self.title
+
+    def slugify(self) -> str:
+        base_slug = django_slugify(self.title)
+        return f"{base_slug}-{self.uuid}"
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = self.slugify()
+        super().save(*args, **kwargs)
+
+    class Meta:
+        ordering = ["-published_at"]
+        verbose_name = _("Notice")
+        verbose_name_plural = _("Notices")
+        indexes = [
+            models.Index(fields=["category"]),
+            models.Index(fields=["department"]),
+            models.Index(fields=["slug"]),
+        ]
+
+
+class NoticeMedia(AuditInfoModel):
+    """Model to store media files associated with a notice."""
+
+    notice = models.ForeignKey(
+        Notice,
+        on_delete=models.CASCADE,
+        related_name="medias",
+        help_text=_("The notice this media is associated with."),
+    )
+    file = models.FileField(
+        _("Media File"),
+        max_length=255,
+        upload_to=notice_media_upload_path,
+        help_text=_("Upload an image, video, or document."),
+    )
+    caption = models.CharField(
+        _("Caption"),
+        max_length=255,
+        blank=True,
+        help_text=_("Caption for particular image, document or video."),
+    )
+    media_type = models.CharField(
+        _("Media Type"),
+        max_length=10,
+        choices=MediaType.choices(),
+        help_text=_("Type of the uploaded media."),
+    )
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def clean(self):
+        """Validate allowed file types based on media type."""
+        validate_notice_media_file(self.file, self.media_type)
+
+    def __str__(self) -> str:
+        return f"{self.media_type} - {self.file.name}"
