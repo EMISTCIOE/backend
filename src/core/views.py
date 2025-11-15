@@ -217,8 +217,8 @@ class DashboardStatsView(APIView):
             from src.website.models import CampusEvent
             event_qs = self._active_queryset(CampusEvent)
             pending_events = event_qs.filter(
-                event_date__gte=now.date(),
-                status='upcoming'
+                event_start_date__gte=now.date(),
+                is_active=True,
             ).count()
         except ImportError:
             pending_events = 0
