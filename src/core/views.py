@@ -105,7 +105,7 @@ class DashboardStatsView(APIView):
         from src.research.models import Research
         from src.journal.models import Article, Author, BoardMember
         from src.curriculum.models import Subject, Routine, Suggestion
-        from src.contact.models import Contact
+        from src.website.models import CampusFeedback
         
         now = timezone.now()
         thirty_days_ago = now - timedelta(days=30)
@@ -211,9 +211,9 @@ class DashboardStatsView(APIView):
         total_routines = Routine.objects.filter(is_archived=False).count()
         total_suggestions = Suggestion.objects.filter(is_archived=False).count()
         
-        # ===== CONTACT STATISTICS =====
-        total_contact_submissions = Contact.objects.filter(is_archived=False).count()
-        pending_inquiries = Contact.objects.filter(is_archived=False, is_resolved=False).count()
+        # ===== FEEDBACK STATISTICS =====
+        total_feedback_submissions = CampusFeedback.objects.filter(is_archived=False).count()
+        pending_feedback = CampusFeedback.objects.filter(is_archived=False, is_resolved=False).count()
         
         # ===== GRAPH DATA - TRENDS =====
         # Notices trend (last 6 months)
@@ -256,8 +256,8 @@ class DashboardStatsView(APIView):
             'total_subjects': total_subjects,
             'total_routines': total_routines,
             'total_suggestions': total_suggestions,
-            'total_contact_submissions': total_contact_submissions,
-            'pending_inquiries': pending_inquiries,
+            'total_feedback_submissions': total_feedback_submissions,
+            'pending_feedback': pending_feedback,
             'notices_trend': notices_trend,
             'users_growth': users_growth,
             'research_publications_trend': research_publications_trend,

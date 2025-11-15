@@ -152,9 +152,9 @@ class DashboardStatsSerializer(serializers.ModelSerializer):
             'total_subjects',
             'total_routines',
             'total_suggestions',
-            # Contact Stats
-            'total_contact_submissions',
-            'pending_inquiries',
+            # Feedback Stats
+            'total_feedback_submissions',
+            'pending_feedback',
             # Graph Data
             'notices_trend',
             'users_growth',
@@ -211,9 +211,9 @@ class DashboardStatsSerializer(serializers.ModelSerializer):
                 'total_routines': data['total_routines'],
                 'total_suggestions': data['total_suggestions'],
             },
-            'contact_statistics': {
-                'total_submissions': data['total_contact_submissions'],
-                'pending_inquiries': data['pending_inquiries'],
+            'feedback_statistics': {
+                'total_submissions': data['total_feedback_submissions'],
+                'pending_feedback': data['pending_feedback'],
             },
             'chart_data': {
                 'notices_trend': data['notices_trend'],

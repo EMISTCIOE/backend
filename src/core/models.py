@@ -133,9 +133,9 @@ class DashboardStats(models.Model):
     total_routines = models.IntegerField(default=0, help_text=_("Total class routines"))
     total_suggestions = models.IntegerField(default=0, help_text=_("Total suggestions received"))
     
-    # Contact Statistics
-    total_contact_submissions = models.IntegerField(default=0, help_text=_("Total contact form submissions"))
-    pending_inquiries = models.IntegerField(default=0, help_text=_("Pending inquiries"))
+    # Feedback Statistics
+    total_feedback_submissions = models.IntegerField(default=0, help_text=_("Total feedback submissions"))
+    pending_feedback = models.IntegerField(default=0, help_text=_("Pending feedback"))
     
     # Graph Data - Time Series
     notices_trend = models.JSONField(
