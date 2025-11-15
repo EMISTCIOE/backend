@@ -217,7 +217,7 @@ class PublicStudentClubReadOnlyViewSet(ReadOnlyModelViewSet):
     permission_classes = [AllowAny]
     queryset = StudentClub.objects.filter(is_active=True)
     filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
-    filterset_fields = ["name"]
+    filterset_fields = ["name", "department__uuid"]
     search_fields = ["name"]
     ordering_fields = ["-created_at", "name"]
     http_method_names = ["get", "head", "options"]

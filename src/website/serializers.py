@@ -1878,7 +1878,7 @@ class StudentClubListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StudentClub
-        fields = ["id", "name", "short_description", "thumbnail", "is_active", "department"]
+        fields = ["id", "name", "short_description", "thumbnail", "website_url", "is_active", "department"]
 
 
 class StudentClubRetrieveSerializer(AbstractInfoRetrieveSerializer):

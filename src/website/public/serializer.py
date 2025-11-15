@@ -203,7 +203,7 @@ class PublicStudentClubListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StudentClub
-        fields = ["uuid", "name", "short_description", "thumbnail", "department"]
+        fields = ["uuid", "name", "short_description", "thumbnail", "website_url", "department"]
 
 
 class PublicStudentClubRetrieveSerializer(serializers.ModelSerializer):
