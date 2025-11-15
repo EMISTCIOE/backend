@@ -208,6 +208,24 @@ class DashboardStatsView(APIView):
         total_feedback_submissions = feedback_qs.count()
         pending_feedback = feedback_qs.filter(is_resolved=False).count()
         
+        # ===== PENDING/ACTION ITEMS =====
+        pending_notices = draft_notices  # Already calculated above
+        pending_research = research_qs.filter(status__in=['draft', 'under_review']).count()
+        
+        # Calculate pending events (upcoming events)
+        try:
+            from src.website.models import CampusEvent
+            event_qs = self._active_queryset(CampusEvent)
+            pending_events = event_qs.filter(
+                event_date__gte=now.date(),
+                status='upcoming'
+            ).count()
+        except ImportError:
+            pending_events = 0
+        
+        # Calculate pending projects (ongoing/in-progress)
+        pending_projects = project_qs.filter(status__in=['ongoing', 'in_progress', 'planning']).count()
+        
         # ===== GRAPH DATA - TRENDS =====
         notices_trend = self._get_monthly_trend(Notice, 6)
         users_growth = self._get_monthly_trend(User, 6)
@@ -215,6 +233,16 @@ class DashboardStatsView(APIView):
             research_qs.filter(status='published'),
             12
         )
+        
+        # Events trend
+        try:
+            from src.website.models import CampusEvent
+            events_trend = self._get_monthly_trend(CampusEvent, 6)
+        except ImportError:
+            events_trend = []
+        
+        # Projects trend
+        projects_trend = self._get_monthly_trend(Project, 6)
         
         return {
             'total_users': total_users,
@@ -246,9 +274,15 @@ class DashboardStatsView(APIView):
             'total_suggestions': total_suggestions,
             'total_feedback_submissions': total_feedback_submissions,
             'pending_feedback': pending_feedback,
+            'pending_notices': pending_notices,
+            'pending_research': pending_research,
+            'pending_events': pending_events,
+            'pending_projects': pending_projects,
             'notices_trend': notices_trend,
             'users_growth': users_growth,
             'research_publications_trend': research_publications_trend,
+            'events_trend': events_trend,
+            'projects_trend': projects_trend,
         }
     
     def _get_monthly_trend(self, queryset_or_model, months=6):

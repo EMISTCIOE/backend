@@ -155,10 +155,17 @@ class DashboardStatsSerializer(serializers.ModelSerializer):
             # Feedback Stats
             'total_feedback_submissions',
             'pending_feedback',
+            # Pending/Action Items
+            'pending_notices',
+            'pending_research',
+            'pending_events',
+            'pending_projects',
             # Graph Data
             'notices_trend',
             'users_growth',
             'research_publications_trend',
+            'events_trend',
+            'projects_trend',
         ]
     
     def to_representation(self, instance):
@@ -215,9 +222,18 @@ class DashboardStatsSerializer(serializers.ModelSerializer):
                 'total_submissions': data['total_feedback_submissions'],
                 'pending_feedback': data['pending_feedback'],
             },
+            'pending_items': {
+                'notices': data['pending_notices'],
+                'research': data['pending_research'],
+                'events': data['pending_events'],
+                'projects': data['pending_projects'],
+                'feedback': data['pending_feedback'],
+            },
             'chart_data': {
                 'notices_trend': data['notices_trend'],
                 'users_growth': data['users_growth'],
                 'research_publications_trend': data['research_publications_trend'],
+                'events_trend': data['events_trend'],
+                'projects_trend': data['projects_trend'],
             }
         }

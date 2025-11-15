@@ -137,6 +137,12 @@ class DashboardStats(models.Model):
     total_feedback_submissions = models.IntegerField(default=0, help_text=_("Total feedback submissions"))
     pending_feedback = models.IntegerField(default=0, help_text=_("Pending feedback"))
     
+    # Pending/Action Items Statistics
+    pending_notices = models.IntegerField(default=0, help_text=_("Draft notices pending publication"))
+    pending_research = models.IntegerField(default=0, help_text=_("Research papers pending review/publication"))
+    pending_events = models.IntegerField(default=0, help_text=_("Upcoming events not yet started"))
+    pending_projects = models.IntegerField(default=0, help_text=_("Ongoing/incomplete projects"))
+    
     # Graph Data - Time Series
     notices_trend = models.JSONField(
         default=list, 
@@ -152,6 +158,16 @@ class DashboardStats(models.Model):
         default=list, 
         blank=True, 
         help_text=_("Research publications over last 12 months")
+    )
+    events_trend = models.JSONField(
+        default=list, 
+        blank=True, 
+        help_text=_("Events created over last 6 months")
+    )
+    projects_trend = models.JSONField(
+        default=list, 
+        blank=True, 
+        help_text=_("Projects created over last 6 months")
     )
     
     class Meta:
