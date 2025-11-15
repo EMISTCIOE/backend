@@ -47,6 +47,9 @@ from src.website.messages import (
     GLOBAL_GALLERY_COLLECTION_CREATED_SUCCESS,
     GLOBAL_GALLERY_COLLECTION_UPDATED_SUCCESS,
     GLOBAL_GALLERY_COLLECTION_DELETED_SUCCESS,
+    GLOBAL_EVENT_CREATED_SUCCESS,
+    GLOBAL_EVENT_UPDATED_SUCCESS,
+    GLOBAL_EVENT_DELETED_SUCCESS,
 )
 
 from .models import (
@@ -71,6 +74,7 @@ from .models import (
     StudentClubMember,
     GlobalGalleryCollection,
     GlobalGalleryImage,
+    GlobalEvent,
 )
 from .permissions import (
     AcademicCalendarPermission,
@@ -88,6 +92,7 @@ from .permissions import (
     StudentClubPermission,
     GlobalGalleryPermission,
     GlobalGalleryCollectionPermission,
+    GlobalEventPermission,
 )
 from .serializers import (
     AcademicCalendarCreateSerializer,
@@ -135,6 +140,10 @@ from .serializers import (
     GlobalGalleryCollectionListSerializer,
     GlobalGalleryCollectionCreateSerializer,
     GlobalGalleryCollectionPatchSerializer,
+    GlobalEventCreateSerializer,
+    GlobalEventListSerializer,
+    GlobalEventPatchSerializer,
+    GlobalEventRetrieveSerializer,
     StudentClubCreateSerializer,
     StudentClubEventCreateSerializer,
     StudentClubEventListSerializer,
@@ -1013,6 +1022,7 @@ class GlobalGalleryCollectionViewSet(viewsets.ModelViewSet):
             "department_event",
             "union",
             "club",
+            "global_event",
             "department",
         )
         .prefetch_related("images")
@@ -1026,6 +1036,7 @@ class GlobalGalleryCollectionViewSet(viewsets.ModelViewSet):
         "department_event",
         "union",
         "club",
+        "global_event",
         "department",
     ]
     ordering_fields = ["created_at", "title"]
@@ -1074,6 +1085,75 @@ class GlobalGalleryCollectionViewSet(viewsets.ModelViewSet):
         instance.delete()
         return Response(
             {"message": GLOBAL_GALLERY_COLLECTION_DELETED_SUCCESS},
+            status=status.HTTP_200_OK,
+        )
+
+
+class FilterForGlobalEventViewSet(FilterSet):
+    union = django_filters.UUIDFilter(field_name="unions__uuid")
+    club = django_filters.UUIDFilter(field_name="clubs__uuid")
+    department = django_filters.UUIDFilter(field_name="departments__uuid")
+
+    class Meta:
+        model = GlobalEvent
+        fields = ["is_active", "event_type", "unions", "clubs", "departments"]
+
+
+class GlobalEventViewSet(viewsets.ModelViewSet):
+    permission_classes = [GlobalEventPermission]
+    queryset = GlobalEvent.objects.filter(is_archived=False)
+    filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
+    filterset_class = FilterForGlobalEventViewSet
+    ordering_fields = ["event_start_date", "-created_at", "title"]
+    http_method_names = ["get", "post", "patch", "delete"]
+
+    def get_serializer_class(self):
+        if self.action in ["list", "retrieve"]:
+            return (
+                GlobalEventListSerializer
+                if self.action == "list"
+                else GlobalEventRetrieveSerializer
+            )
+        if self.action == "create":
+            return GlobalEventCreateSerializer
+        return GlobalEventPatchSerializer
+
+    @transaction.atomic
+    def create(self, request, *args, **kwargs):
+        set_binary_files_null_if_empty(["thumbnail"], request.data)
+        serializer = self.get_serializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {"message": GLOBAL_EVENT_CREATED_SUCCESS},
+            status=status.HTTP_201_CREATED,
+        )
+
+    @transaction.atomic
+    def update(self, request, *args, **kwargs):
+        set_binary_files_null_if_empty(["thumbnail"], request.data)
+        instance = self.get_object()
+        serializer = self.get_serializer(
+            instance,
+            data=request.data,
+            partial=kwargs.get("partial", False),
+            context={"request": request},
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {"message": GLOBAL_EVENT_UPDATED_SUCCESS},
+            status=status.HTTP_200_OK,
+        )
+
+    @transaction.atomic
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.thumbnail:
+            instance.thumbnail.delete(save=False)
+        instance.delete()
+        return Response(
+            {"message": GLOBAL_EVENT_DELETED_SUCCESS},
             status=status.HTTP_200_OK,
         )
 

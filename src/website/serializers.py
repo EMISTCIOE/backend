@@ -43,6 +43,9 @@ from .messages import (
     SOCIAL_MEDIA_ALREADY_EXISTS,
     STUDENT_CLUB_EVENT_CREATED_SUCCESS,
     STUDENT_CLUB_EVENT_UPDATED_SUCCESS,
+    GLOBAL_EVENT_CREATED_SUCCESS,
+    GLOBAL_EVENT_UPDATED_SUCCESS,
+    GLOBAL_EVENT_DELETED_SUCCESS,
     YEAR_ORDER_ERROR,
 )
 from .models import (
@@ -65,6 +68,7 @@ from .models import (
     StudentClubEvent,
     StudentClubEventGallery,
     StudentClubMember,
+    GlobalEvent,
     GlobalGalleryCollection,
     GlobalGalleryImage,
 )
@@ -1664,6 +1668,7 @@ class GlobalGalleryCollectionListSerializer(serializers.ModelSerializer):
     department_event = serializers.SerializerMethodField()
     union = serializers.SerializerMethodField()
     club = serializers.SerializerMethodField()
+    global_event = serializers.SerializerMethodField()
     images = GlobalGalleryImageSerializer(many=True, read_only=True)
     department = DepartmentSummarySerializer(read_only=True)
 
@@ -1679,6 +1684,7 @@ class GlobalGalleryCollectionListSerializer(serializers.ModelSerializer):
             "department_event",
             "union",
             "club",
+            "global_event",
             "department",
             "images",
             "created_at",
@@ -1705,6 +1711,11 @@ class GlobalGalleryCollectionListSerializer(serializers.ModelSerializer):
 
     def get_club(self, obj):
         return self._serialize_entity("club", obj)
+
+    def get_global_event(self, obj):
+        if obj.global_event:
+            return {"uuid": str(obj.global_event.uuid), "name": obj.global_event.title}
+        return None
 
 
 class GlobalGalleryCollectionCreateSerializer(serializers.ModelSerializer):
@@ -1757,6 +1768,7 @@ class GlobalGalleryCollectionPatchSerializer(serializers.ModelSerializer):
             "union",
             "club",
             "department",
+            "global_event",
             "is_active",
             "images",
         ]
@@ -1781,6 +1793,192 @@ class GlobalGalleryCollectionPatchSerializer(serializers.ModelSerializer):
         instance.updated_by = current_user
         instance.save()
         return instance
+
+
+class StudentClubListForOtherSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StudentClub
+        fields = ["id", "uuid", "name"]
+
+
+class GlobalEventListSerializer(serializers.ModelSerializer):
+    unions = CampusUnionListForOtherSerializer(many=True, read_only=True)
+    clubs = StudentClubListForOtherSerializer(many=True, read_only=True)
+    departments = DepartmentSummarySerializer(many=True, read_only=True)
+
+    class Meta:
+        model = GlobalEvent
+        fields = [
+            "id",
+            "uuid",
+            "title",
+            "event_type",
+            "event_start_date",
+            "event_end_date",
+            "thumbnail",
+            "is_active",
+            "unions",
+            "clubs",
+            "departments",
+            "created_at",
+        ]
+
+
+class GlobalEventRetrieveSerializer(AbstractInfoRetrieveSerializer):
+    unions = CampusUnionListForOtherSerializer(many=True, read_only=True)
+    clubs = StudentClubListForOtherSerializer(many=True, read_only=True)
+    departments = DepartmentSummarySerializer(many=True, read_only=True)
+
+    class Meta(AbstractInfoRetrieveSerializer.Meta):
+        model = GlobalEvent
+        fields = [
+            "id",
+            "title",
+            "description",
+            "event_type",
+            "event_start_date",
+            "event_end_date",
+            "thumbnail",
+            "unions",
+            "clubs",
+            "departments",
+        ]
+        fields += AbstractInfoRetrieveSerializer.Meta.fields
+
+
+class GlobalEventCreateSerializer(serializers.ModelSerializer):
+    unions = serializers.PrimaryKeyRelatedField(
+        queryset=CampusUnion.objects.filter(is_active=True),
+        many=True,
+        required=False,
+    )
+    clubs = serializers.PrimaryKeyRelatedField(
+        queryset=StudentClub.objects.filter(is_active=True),
+        many=True,
+        required=False,
+    )
+    departments = serializers.PrimaryKeyRelatedField(
+        queryset=Department.objects.filter(is_active=True),
+        many=True,
+        required=False,
+    )
+    thumbnail = serializers.ImageField(
+        validators=[validate_photo_thumbnail],
+        allow_null=True,
+        required=False,
+    )
+
+    class Meta:
+        model = GlobalEvent
+        fields = [
+            "title",
+            "description",
+            "event_type",
+            "event_start_date",
+            "event_end_date",
+            "thumbnail",
+            "unions",
+            "clubs",
+            "departments",
+            "is_active",
+        ]
+
+    def validate(self, attrs):
+        start = attrs.get("event_start_date")
+        end = attrs.get("event_end_date")
+        if start and end and end < start:
+            raise serializers.ValidationError({"event_end_date": EVENT_DATE_ERROR})
+        return attrs
+
+    def create(self, validated_data):
+        unions = validated_data.pop("unions", [])
+        clubs = validated_data.pop("clubs", [])
+        departments = validated_data.pop("departments", [])
+        current_user = get_user_by_context(self.context)
+
+        validated_data["title"] = validated_data["title"].strip().title()
+        if "description" in validated_data and validated_data["description"]:
+            validated_data["description"] = validated_data["description"].strip()
+        validated_data["created_by"] = current_user
+
+        event = GlobalEvent.objects.create(**validated_data)
+        event.unions.set(unions)
+        event.clubs.set(clubs)
+        event.departments.set(departments)
+        return event
+
+    def to_representation(self, instance) -> dict[str, str]:
+        return {"message": GLOBAL_EVENT_CREATED_SUCCESS}
+
+
+class GlobalEventPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
+    unions = serializers.PrimaryKeyRelatedField(
+        queryset=CampusUnion.objects.filter(is_active=True),
+        many=True,
+        required=False,
+    )
+    clubs = serializers.PrimaryKeyRelatedField(
+        queryset=StudentClub.objects.filter(is_active=True),
+        many=True,
+        required=False,
+    )
+    departments = serializers.PrimaryKeyRelatedField(
+        queryset=Department.objects.filter(is_active=True),
+        many=True,
+        required=False,
+    )
+    thumbnail = serializers.ImageField(
+        validators=[validate_photo_thumbnail],
+        allow_null=True,
+        required=False,
+    )
+
+    class Meta:
+        model = GlobalEvent
+        fields = [
+            "title",
+            "description",
+            "event_type",
+            "event_start_date",
+            "event_end_date",
+            "thumbnail",
+            "is_active",
+            "unions",
+            "clubs",
+            "departments",
+        ]
+
+    def validate(self, attrs):
+        start = attrs.get("event_start_date", getattr(self.instance, "event_start_date"))
+        end = attrs.get("event_end_date", getattr(self.instance, "event_end_date"))
+        if start and end and end < start:
+            raise serializers.ValidationError({"event_end_date": EVENT_DATE_ERROR})
+        return attrs
+
+    def update(self, instance, validated_data):
+        unions = validated_data.pop("unions", None)
+        clubs = validated_data.pop("clubs", None)
+        departments = validated_data.pop("departments", None)
+        current_user = get_user_by_context(self.context)
+
+        self.handle_file_update(instance, validated_data, "thumbnail")
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        if unions is not None:
+            instance.unions.set(unions)
+        if clubs is not None:
+            instance.clubs.set(clubs)
+        if departments is not None:
+            instance.departments.set(departments)
+
+        instance.updated_by = current_user
+        instance.save()
+        return instance
+
+    def to_representation(self, instance) -> dict[str, str]:
+        return {"message": GLOBAL_EVENT_UPDATED_SUCCESS}
 
 class StudentClubMemberListSerializer(serializers.ModelSerializer):
     class Meta:
@@ -1940,16 +2138,6 @@ class StudentClubPatchSerializer(FileHandlingMixin, serializers.ModelSerializer)
         return {"message": CAMPUS_CLUB_UPDATED_SUCCESS}
 
 
-class StudentClubListForOtherSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = StudentClub
-        fields = ["id", "name"]
-
-
-# Student Club Events Serializers
-# ------------------------------------------------------------------------------------------------------
-
-
 class StudentClubEventGalleryListSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentClubEventGallery
@@ -1990,11 +2178,9 @@ class StudentClubEventRetrieveSerializer(AbstractInfoRetrieveSerializer):
 
 
 class StudentClubEventGalleryCreateSerializer(serializers.ModelSerializer):
-    image = serializers.ImageField(validators=[validate_photo_thumbnail])
-
     class Meta:
         model = StudentClubEventGallery
-        fields = ["image", "caption"]
+        fields = ["image", "caption", "is_active"]
 
 
 class StudentClubEventCreateSerializer(serializers.ModelSerializer):
@@ -2016,6 +2202,7 @@ class StudentClubEventCreateSerializer(serializers.ModelSerializer):
             "thumbnail",
             "club",
             "gallery",
+            "is_active",
         ]
 
     def create(self, validated_data):

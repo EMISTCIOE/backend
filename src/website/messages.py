@@ -40,6 +40,9 @@ CAMPUS_EVENT_DELETED_SUCCESS = _("Event delete successfully")
 
 STUDENT_CLUB_EVENT_CREATED_SUCCESS = _("Event created successfully")
 STUDENT_CLUB_EVENT_UPDATED_SUCCESS = _("Event updated successfully")
+GLOBAL_EVENT_CREATED_SUCCESS = _("Global event created successfully")
+GLOBAL_EVENT_UPDATED_SUCCESS = _("Global event updated successfully")
+GLOBAL_EVENT_DELETED_SUCCESS = _("Global event deleted successfully")
 STUDENT_CLUB_EVENT_NOT_FOUND = _("Event not found")
 STUDENT_CLUB_EVENT_DELETED_SUCCESS = _("Event delete successfully")
 

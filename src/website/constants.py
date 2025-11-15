@@ -17,6 +17,7 @@ CAMPUS_SECTION_FILE_PATH = "website/sections"
 CAMPUS_UNIT_FILE_PATH = "website/units"
 RESEARCH_FACILITY_FILE_PATH = "website/research-facilities"
 GLOBAL_GALLERY_FILE_PATH = "website/global-gallery"
+GLOBAL_EVENT_FILE_PATH = "website/global-events"
 
 
 class ReportTypes(BaseEnum):

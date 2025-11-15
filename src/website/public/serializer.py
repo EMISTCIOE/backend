@@ -18,6 +18,7 @@ from src.website.models import (
     CampusReport,
     CampusUnion,
     CampusUnionMember,
+    GlobalEvent,
     SocialMediaLink,
     StudentClub,
     StudentClubEvent,
@@ -439,3 +440,37 @@ class PublicGlobalGallerySerializer(serializers.Serializer):
     source_name = serializers.CharField()
     source_context = serializers.CharField(required=False, allow_blank=True)
     created_at = serializers.DateTimeField()
+
+
+class PublicGlobalEventSerializer(serializers.ModelSerializer):
+    unions = PublicCampusUnionCompactSerializer(many=True, read_only=True)
+    clubs = serializers.SerializerMethodField()
+    departments = serializers.SerializerMethodField()
+
+    class Meta:
+        model = GlobalEvent
+        fields = [
+            "uuid",
+            "title",
+            "description",
+            "event_type",
+            "event_start_date",
+            "event_end_date",
+            "thumbnail",
+            "unions",
+            "clubs",
+            "departments",
+            "created_at",
+        ]
+
+    def _serialize_relationship(self, queryset):
+        return [
+            {"uuid": str(item.uuid), "name": item.name}
+            for item in queryset.all()
+        ]
+
+    def get_clubs(self, obj):
+        return self._serialize_relationship(obj.clubs)
+
+    def get_departments(self, obj):
+        return self._serialize_relationship(obj.departments)

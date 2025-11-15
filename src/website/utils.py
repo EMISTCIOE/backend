@@ -121,6 +121,7 @@ def build_global_gallery_items():
             "collection__union",
             "collection__club",
             "collection__department",
+            "collection__global_event",
         )
         .only(
             "uuid",
@@ -140,6 +141,8 @@ def build_global_gallery_items():
             "collection__union__name",
             "collection__club__name",
             "collection__department__name",
+            "collection__global_event__uuid",
+            "collection__global_event__title",
         )
     )
 
@@ -164,6 +167,13 @@ def build_global_gallery_items():
                 str(collection.department_event.uuid),
                 collection.department_event.title,
                 collection.department_event.department.name if collection.department_event.department else "Department Event",
+            )
+        if collection.global_event:
+            return (
+                "global_event",
+                str(collection.global_event.uuid),
+                collection.global_event.title,
+                collection.global_event.description or "Global Event",
             )
         if collection.union:
             return ("union_gallery", str(collection.union.uuid), collection.union.name, collection.title or "Union Gallery")

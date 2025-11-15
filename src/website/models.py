@@ -24,6 +24,7 @@ from src.website.constants import (
     CAMPUS_UNION_MEMBER_FILE_PATH,
     CAMPUS_SECTION_FILE_PATH,
     CAMPUS_UNIT_FILE_PATH,
+    GLOBAL_EVENT_FILE_PATH,
     RESEARCH_FACILITY_FILE_PATH,
     STUDENT_CLUB_EVENT_FILE_PATH,
     STUDENT_CLUB_FILE_PATH,
@@ -925,6 +926,77 @@ class StudentClubEventGallery(AuditInfoModel):
         return self.caption or f"{self.event.title} Image"
 
 
+class GlobalEvent(AuditInfoModel):
+    """
+    Centralized event that can be linked to unions, clubs, or departments.
+    """
+
+    title = models.CharField(
+        _("Event Title"),
+        max_length=255,
+        help_text=_("Name of the event."),
+    )
+    description = RichTextField(
+        _("Description"),
+        blank=True,
+        help_text=_("Detail the event activities and insights."),
+    )
+    event_type = models.CharField(
+        _("Event Type"),
+        max_length=20,
+        choices=CampusEventTypes.choices(),
+        default=CampusEventTypes.OTHER,
+        help_text=_("Type of the event."),
+    )
+    event_start_date = models.DateField(
+        _("Event Start Date"),
+        null=True,
+        blank=True,
+        help_text=_("Date when the event starts."),
+    )
+    event_end_date = models.DateField(
+        _("Event End Date"),
+        null=True,
+        blank=True,
+        help_text=_("Date when the event ends."),
+    )
+    thumbnail = models.ImageField(
+        _("Thumbnail"),
+        upload_to=GLOBAL_EVENT_FILE_PATH,
+        null=True,
+        blank=True,
+        help_text=_("Representative banner for the event."),
+    )
+    unions = models.ManyToManyField(
+        "CampusUnion",
+        blank=True,
+        related_name="global_events",
+        verbose_name=_("Linked Unions"),
+        help_text=_("Associate unions with this event."),
+    )
+    clubs = models.ManyToManyField(
+        "StudentClub",
+        blank=True,
+        related_name="global_events",
+        verbose_name=_("Linked Clubs"),
+        help_text=_("Associate student clubs with this event."),
+    )
+    departments = models.ManyToManyField(
+        Department,
+        blank=True,
+        related_name="global_events",
+        verbose_name=_("Linked Departments"),
+        help_text=_("Associate departments with this event."),
+    )
+
+    class Meta:
+        verbose_name = _("Global Event")
+        verbose_name_plural = _("Global Events")
+
+    def __str__(self):
+        return self.title
+
+
 class GlobalGalleryCollection(AuditInfoModel):
     """A collection of gallery images that can be linked to various campus entities."""
 
@@ -993,6 +1065,15 @@ class GlobalGalleryCollection(AuditInfoModel):
         verbose_name=_("Department"),
         help_text=_("Optional department linked to the gallery."),
     )
+    global_event = models.ForeignKey(
+        GlobalEvent,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="gallery_collections",
+        verbose_name=_("Global Event"),
+        help_text=_("Associate this collection with a global event."),
+    )
     is_active = models.BooleanField(
         _("Is Active"),
         default=True,
@@ -1007,6 +1088,8 @@ class GlobalGalleryCollection(AuditInfoModel):
         ctx = self.title or "Gallery"
         if self.campus_event:
             ctx = f"{ctx} ({self.campus_event.title})"
+        if self.global_event:
+            ctx = f"{ctx} ({self.global_event.title})"
         return ctx
 
 

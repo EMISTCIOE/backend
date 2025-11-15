@@ -17,6 +17,7 @@ from src.website.public.views import (
     PublicStudentClubEventViewSet,
     PublicStudentClubReadOnlyViewSet,
     PublicGlobalGalleryListAPIView,
+    PublicGlobalEventListAPIView,
 )
 
 router = DefaultRouter(trailing_slash=False)
@@ -89,6 +90,11 @@ urlpatterns = [
         "global-gallery",
         PublicGlobalGalleryListAPIView.as_view(),
         name="public-global-gallery",
+    ),
+    path(
+        "global-events",
+        PublicGlobalEventListAPIView.as_view(),
+        name="public-global-events",
     ),
     path("", include(router.urls)),
 ]

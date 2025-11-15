@@ -22,6 +22,7 @@ from src.website.models import (
     ResearchFacility,
     CampusReport,
     CampusUnion,
+    GlobalEvent,
     StudentClub,
     StudentClubEvent,
 )
@@ -50,6 +51,7 @@ from .serializer import (
     PublicResearchFacilityListSerializer,
     PublicResearchFacilityRetrieveSerializer,
     PublicGlobalGallerySerializer,
+    PublicGlobalEventSerializer,
 )
 
 
@@ -330,3 +332,33 @@ class PublicGlobalGalleryListAPIView(GenericAPIView):
         page = self.paginate_queryset(items, request, view=self)
         serializer = self.get_serializer(page, many=True)
         return self.get_paginated_response(serializer.data)
+
+
+class PublicGlobalEventPagination(LimitOffsetPagination):
+    default_limit = 12
+    max_limit = 60
+
+
+class PublicGlobalEventListAPIView(ListAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = PublicGlobalEventSerializer
+    pagination_class = PublicGlobalEventPagination
+
+    def get_queryset(self):
+        queryset = GlobalEvent.objects.filter(is_active=True, is_archived=False)
+        union_uuid = self.request.query_params.get("union")
+        club_uuid = self.request.query_params.get("club")
+        department_uuid = self.request.query_params.get("department")
+
+        if union_uuid:
+            queryset = queryset.filter(unions__uuid=union_uuid)
+        if club_uuid:
+            queryset = queryset.filter(clubs__uuid=club_uuid)
+        if department_uuid:
+            queryset = queryset.filter(departments__uuid=department_uuid)
+
+        return (
+            queryset.prefetch_related("unions", "clubs", "departments")
+            .distinct()
+            .order_by("-event_start_date", "-created_at")
+        )

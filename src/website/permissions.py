@@ -178,3 +178,15 @@ class GlobalGalleryCollectionPermission(BasePermission):
         }
 
         return validate_permissions(request, user_permissions_dict)
+
+
+class GlobalEventPermission(BasePermission):
+    def has_permission(self, request, view):
+        user_permissions_dict = {
+            "SAFE_METHODS": "view_globalevent",
+            "POST": "add_globalevent",
+            "PATCH": "change_globalevent",
+            "DELETE": "delete_globalevent",
+        }
+
+        return validate_permissions(request, user_permissions_dict)

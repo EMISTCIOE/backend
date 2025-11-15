@@ -1,12 +1,15 @@
+from django.urls import path
 from rest_framework import routers
 
-from .views import EmailConfigViewSet
+from .views import EmailConfigViewSet, DashboardStatsView
 
 router = routers.DefaultRouter(trailing_slash=False)
 
 router.register("email-configs", EmailConfigViewSet)
 
 
-list_urls = []
+list_urls = [
+    path('dashboard-stats', DashboardStatsView.as_view(), name='dashboard-stats'),
+]
 
 urlpatterns = [*list_urls, *router.urls]
