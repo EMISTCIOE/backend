@@ -28,7 +28,7 @@ class PhoneNumberFilterSet(FilterSet):
     
     class Meta:
         model = PhoneNumber
-        fields = ["is_active", "department_name"]
+        fields = ["is_active", "contact_type", "department"]
 
 
 class PhoneNumberViewSet(ModelViewSet):
@@ -36,13 +36,13 @@ class PhoneNumberViewSet(ModelViewSet):
     ViewSet for managing CRUD operations for Phone Numbers.
     """
     
-    queryset = PhoneNumber.objects.filter(is_active=True).order_by('display_order', 'department_name')
+    queryset = PhoneNumber.objects.filter(is_active=True).order_by('display_order', 'name')
     permission_classes = [IsAuthenticated]
     filterset_class = PhoneNumberFilterSet
     filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
-    search_fields = ["department_name", "phone_number", "description"]
-    ordering_fields = ["display_order", "department_name", "created_at"]
-    ordering = ["display_order", "department_name"]
+    search_fields = ["name", "phone_number", "description", "department__name"]
+    ordering_fields = ["display_order", "name", "contact_type", "created_at"]
+    ordering = ["display_order", "name"]
     
     def get_serializer_class(self):
         if self.action == "list":
@@ -100,11 +100,18 @@ class PhoneNumberPublicListView(ListAPIView):
     """
     Public API for phone numbers - accessible without authentication
     Used by frontend to display contact information
+    Only shows active records that have phone numbers (no empty entries)
     """
     
-    queryset = PhoneNumber.objects.filter(is_active=True).order_by('display_order', 'department_name')
+    queryset = PhoneNumber.objects.filter(
+        is_active=True
+    ).exclude(
+        phone_number__isnull=True
+    ).exclude(
+        phone_number__exact=''
+    ).order_by('display_order', 'name')
     serializer_class = PhoneNumberPublicSerializer
     permission_classes = [AllowAny]
     filter_backends = (OrderingFilter,)
-    ordering_fields = ["display_order", "department_name"]
-    ordering = ["display_order", "department_name"]
+    ordering_fields = ["display_order", "name", "contact_type"]
+    ordering = ["display_order", "name"]
