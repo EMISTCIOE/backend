@@ -3,6 +3,7 @@ from rest_framework import serializers
 
 # Project Imports
 from src.core.models import FiscalSessionBS
+from src.department.models import Department
 from src.website.models import (
     AcademicCalendar,
     CampusDownload,
@@ -27,6 +28,12 @@ from src.website.public.messages import (
     FEEDBACK_FULL_NAME_REQUIRED,
     FEEDBACK_MESSAGE_TOO_SHORT,
 )
+
+
+class PublicDepartmentSummarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Department
+        fields = ["id", "uuid", "name"]
 
 
 class PublicSocialMediaLinkForCampusInfoSerializer(serializers.ModelSerializer):
@@ -63,7 +70,17 @@ class PublicCampusDownloadSerializer(serializers.ModelSerializer):
         fields = ["uuid", "title", "description", "file", "created_at"]
 
 
+class PublicCampusUnionCompactSerializer(serializers.ModelSerializer):
+    department = PublicDepartmentSummarySerializer(read_only=True)
+
+    class Meta:
+        model = CampusUnion
+        fields = ["uuid", "name", "thumbnail", "department"]
+
+
 class PublicCampusEventListSerializer(serializers.ModelSerializer):
+    union = PublicCampusUnionCompactSerializer(read_only=True)
+
     class Meta:
         model = CampusEvent
         fields = [
@@ -74,6 +91,7 @@ class PublicCampusEventListSerializer(serializers.ModelSerializer):
             "event_start_date",
             "event_end_date",
             "thumbnail",
+            "union",
         ]
 
 
@@ -85,6 +103,7 @@ class PublicEventGalleryListSerializer(serializers.ModelSerializer):
 
 class PublicCampusEventRetrieveSerializer(serializers.ModelSerializer):
     gallery = PublicEventGalleryListSerializer(many=True)
+    union = PublicCampusUnionCompactSerializer(read_only=True)
 
     class Meta:
         model = CampusEvent
@@ -98,6 +117,7 @@ class PublicCampusEventRetrieveSerializer(serializers.ModelSerializer):
             "event_end_date",
             "thumbnail",
             "gallery",
+            "union",
         ]
 
 
@@ -191,13 +211,16 @@ class PublicCampusUnionMemberSerializer(serializers.ModelSerializer):
 
 
 class PublicCampusUnionListSerializer(serializers.ModelSerializer):
+    department = PublicDepartmentSummarySerializer(read_only=True)
+
     class Meta:
         model = CampusUnion
-        fields = ["uuid", "name", "thumbnail", "short_description"]
+        fields = ["uuid", "name", "thumbnail", "short_description", "department"]
 
 
 class PublicCampusUnionRetrieveSerializer(serializers.ModelSerializer):
     members = PublicCampusUnionMemberSerializer(many=True, read_only=True)
+    department = PublicDepartmentSummarySerializer(read_only=True)
 
     class Meta:
         model = CampusUnion
@@ -209,6 +232,7 @@ class PublicCampusUnionRetrieveSerializer(serializers.ModelSerializer):
             "website_url",
             "detailed_description",
             "members",
+            "department",
         ]
 
 
@@ -219,13 +243,16 @@ class PublicStudentClubMemberSerializer(serializers.ModelSerializer):
 
 
 class PublicStudentClubListSerializer(serializers.ModelSerializer):
+    department = PublicDepartmentSummarySerializer(read_only=True)
+
     class Meta:
         model = StudentClub
-        fields = ["uuid", "name", "short_description", "thumbnail"]
+        fields = ["uuid", "name", "short_description", "thumbnail", "department"]
 
 
 class PublicStudentClubRetrieveSerializer(serializers.ModelSerializer):
     members = PublicStudentClubMemberSerializer(many=True, read_only=True)
+    department = PublicDepartmentSummarySerializer(read_only=True)
 
     class Meta:
         model = StudentClub
@@ -237,6 +264,7 @@ class PublicStudentClubRetrieveSerializer(serializers.ModelSerializer):
             "website_url",
             "thumbnail",
             "members",
+            "department",
         ]
 
 

@@ -12,6 +12,7 @@ from src.core.constants import (
     StaffMemberTitle,
 )
 from src.core.models import FiscalSessionBS
+from src.department.models import Department
 from src.website.constants import (
     ACADEMIC_CALENDER_FILE_PATH,
     CAMPUS_DOWNLOADS_FILE_PATH,
@@ -365,6 +366,15 @@ class CampusEvent(AuditInfoModel):
         null=True,
         help_text=_("Date the event end."),
     )
+    union = models.ForeignKey(
+        "CampusUnion",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="events",
+        verbose_name=_("Union"),
+        help_text=_("Union associated with this campus event (optional)."),
+    )
     thumbnail = models.ImageField(
         _("Thumbnail"),
         upload_to=CAMPUS_EVENT_FILE_PATH,
@@ -444,6 +454,15 @@ class CampusUnion(AuditInfoModel):
         upload_to=CAMPUS_UNION_FILE_PATH,
         null=True,
         help_text=_("Optional representative image or logo of the union."),
+    )
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="campus_unions",
+        verbose_name=_("Linked Department"),
+        help_text=_("Optional department associated with this union."),
     )
 
     class Meta:
@@ -776,6 +795,15 @@ class StudentClub(AuditInfoModel):
         upload_to=STUDENT_CLUB_FILE_PATH,
         null=True,
         help_text=_("Optional representative image or logo of the club."),
+    )
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="student_clubs",
+        verbose_name=_("Linked Department"),
+        help_text=_("Optional department associated with this student club."),
     )
 
     class Meta:

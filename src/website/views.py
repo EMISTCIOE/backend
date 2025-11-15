@@ -465,11 +465,19 @@ class AcademicCalendarViewSet(viewsets.ModelViewSet):
         )
 
 
+class FilterForCampusEventViewSet(FilterSet):
+    union = django_filters.UUIDFilter(field_name="union__uuid", label="Union")
+
+    class Meta:
+        model = CampusEvent
+        fields = ["event_type", "is_active", "union"]
+
+
 class CampusEventViewSet(viewsets.ModelViewSet):
     permission_classes = [CampusEventPermission]
     queryset = CampusEvent.objects.filter(is_archived=False)
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ["event_type", "is_active"]
+    filterset_class = FilterForCampusEventViewSet
     search_fields = ["title", "description_short", "description_detailed"]
     ordering_fields = ["event_start_date", "created_at"]
     ordering = ["-created_at"]

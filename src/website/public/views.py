@@ -82,15 +82,26 @@ class PublicCampusDownloadListAPIView(ListAPIView):
     filterset_fields = ["uuid"]
 
 
+class PublicCampusEventFilter(FilterSet):
+    union = django_filters.UUIDFilter(field_name="union__uuid", label="Union")
+
+    class Meta:
+        model = CampusEvent
+        fields = ["event_type", "event_start_date", "event_end_date", "union"]
+
+
 class PublicCampusEventViewSet(ReadOnlyModelViewSet):
     """
     Public API for listing and retrieving campus events with galleries.
     """
 
     permission_classes = [AllowAny]
-    queryset = CampusEvent.objects.filter(is_active=True)
+    queryset = (
+        CampusEvent.objects.filter(is_active=True)
+        .select_related("union", "union__department")
+    )
     filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
-    filterset_fields = ["event_type", "event_start_date", "event_end_date"]
+    filterset_class = PublicCampusEventFilter
     search_fields = ["title"]
     ordering = ["-created_at"]
     ordering_fields = ["event_start_date", "created_at"]

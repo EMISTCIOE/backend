@@ -27,15 +27,16 @@ def build_global_gallery_items():
         .only("uuid", "image", "caption", "created_at", "event__uuid", "event__title")
     )
     for gallery in campus_gallery_qs:
+        union_name = gallery.event.union.name if getattr(gallery.event, "union", None) else None
         items.append(
             {
                 "uuid": str(gallery.uuid),
                 "image": _resolve_image_url(gallery.image),
                 "caption": gallery.caption or "",
-                "source_type": "campus_event",
+                "source_type": "union_event" if union_name else "campus_event",
                 "source_identifier": str(gallery.event.uuid),
                 "source_name": gallery.event.title,
-                "source_context": "Campus Event",
+                "source_context": union_name or "Campus Event",
                 "created_at": gallery.created_at,
             }
         )

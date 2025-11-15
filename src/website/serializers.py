@@ -7,6 +7,7 @@ from src.base.serializers import AbstractInfoRetrieveSerializer
 
 # Project Imports
 from src.core.models import FiscalSessionBS
+from src.department.models import Department
 from src.libs.get_context import get_user_by_context
 from src.libs.mixins import FileHandlingMixin
 from src.website.validators import (
@@ -65,6 +66,12 @@ from .models import (
     StudentClubEventGallery,
     StudentClubMember,
 )
+
+
+class DepartmentSummarySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Department
+        fields = ["id", "uuid", "name"]
 
 
 def _validate_designation_codes(codes):
@@ -618,6 +625,12 @@ class AcademicCalendarPatchSerializer(FileHandlingMixin, serializers.ModelSerial
 # ------------------------------------------------------------------------------------------------------
 
 
+class CampusUnionListForOtherSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampusUnion
+        fields = ["id", "uuid", "name", "thumbnail"]
+
+
 class CampusEventGalleryListSerializer(serializers.ModelSerializer):
     class Meta:
         model = CampusEventGallery
@@ -625,6 +638,8 @@ class CampusEventGalleryListSerializer(serializers.ModelSerializer):
 
 
 class CampusEventListSerializer(serializers.ModelSerializer):
+    union = CampusUnionListForOtherSerializer(read_only=True)
+
     class Meta:
         model = CampusEvent
         fields = [
@@ -635,11 +650,13 @@ class CampusEventListSerializer(serializers.ModelSerializer):
             "event_end_date",
             "thumbnail",
             "is_active",
+            "union",
         ]
 
 
 class CampusEventRetrieveSerializer(AbstractInfoRetrieveSerializer):
     gallery = CampusEventGalleryListSerializer(many=True, read_only=True)
+    union = CampusUnionListForOtherSerializer(read_only=True)
 
     class Meta(AbstractInfoRetrieveSerializer.Meta):
         model = CampusEvent
@@ -653,6 +670,7 @@ class CampusEventRetrieveSerializer(AbstractInfoRetrieveSerializer):
             "event_end_date",
             "thumbnail",
             "gallery",
+            "union",
         ]
         fields += AbstractInfoRetrieveSerializer.Meta.fields
 
@@ -664,6 +682,11 @@ class CampusEventGalleryCreateSerializer(serializers.ModelSerializer):
 
 
 class CampusEventCreateSerializer(serializers.ModelSerializer):
+    union = serializers.PrimaryKeyRelatedField(
+        queryset=CampusUnion.objects.filter(is_active=True),
+        allow_null=True,
+        required=False,
+    )
     gallery = CampusEventGalleryCreateSerializer(many=True, required=False)
     thumbnail = serializers.ImageField(
         validators=[validate_photo_thumbnail],
@@ -681,6 +704,7 @@ class CampusEventCreateSerializer(serializers.ModelSerializer):
             "event_end_date",
             "thumbnail",
             "gallery",
+            "union",
         ]
 
     def validate(self, attrs):
@@ -726,6 +750,11 @@ class CampusEventGalleryPatchSerializer(serializers.ModelSerializer):
 
 class CampusEventPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
     gallery = CampusEventGalleryPatchSerializer(many=True, required=False)
+    union = serializers.PrimaryKeyRelatedField(
+        queryset=CampusUnion.objects.filter(is_active=True),
+        allow_null=True,
+        required=False,
+    )
     thumbnail = serializers.ImageField(
         validators=[validate_photo_thumbnail],
         allow_null=True,
@@ -744,6 +773,7 @@ class CampusEventPatchSerializer(FileHandlingMixin, serializers.ModelSerializer)
             "thumbnail",
             "gallery",
             "is_active",
+            "union",
         ]
 
     def validate(self, attrs):
@@ -800,13 +830,16 @@ class CampusUnionMemberListSerializer(serializers.ModelSerializer):
 
 
 class CampusUnionListSerializer(serializers.ModelSerializer):
+    department = DepartmentSummarySerializer(read_only=True)
+
     class Meta:
         model = CampusUnion
-        fields = ["id", "name", "short_description", "thumbnail", "is_active"]
+        fields = ["id", "name", "short_description", "thumbnail", "is_active", "department"]
 
 
 class CampusUnionRetrieveSerializer(AbstractInfoRetrieveSerializer):
     members = CampusUnionMemberListSerializer(many=True)
+    department = DepartmentSummarySerializer(read_only=True)
 
     class Meta(AbstractInfoRetrieveSerializer.Meta):
         model = CampusUnion
@@ -817,6 +850,7 @@ class CampusUnionRetrieveSerializer(AbstractInfoRetrieveSerializer):
             "thumbnail",
             "website_url",
             "detailed_description",
+            "department",
             "members",
         ]
 
@@ -831,6 +865,11 @@ class CampusUnionMemberCreateSerializer(serializers.ModelSerializer):
 
 class CampusUnionCreateSerializer(serializers.ModelSerializer):
     members = CampusUnionMemberCreateSerializer(many=True, allow_null=True)
+    department = serializers.PrimaryKeyRelatedField(
+        queryset=Department.objects.filter(is_active=True),
+        allow_null=True,
+        required=False,
+    )
     thumbnail = serializers.ImageField(
         validators=[validate_photo_thumbnail],
         allow_null=True,
@@ -846,6 +885,7 @@ class CampusUnionCreateSerializer(serializers.ModelSerializer):
             "detailed_description",
             "website_url",
             "members",
+            "department",
         ]
     
     def create(self, validated_data):
@@ -882,6 +922,11 @@ class CampusUnionMemberPatchSerializer(serializers.ModelSerializer):
 
 class CampusUnionPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
     members = CampusUnionMemberPatchSerializer(many=True, required=False)
+    department = serializers.PrimaryKeyRelatedField(
+        queryset=Department.objects.filter(is_active=True),
+        allow_null=True,
+        required=False,
+    )
 
     class Meta:
         model = CampusUnion
@@ -892,6 +937,7 @@ class CampusUnionPatchSerializer(FileHandlingMixin, serializers.ModelSerializer)
             "detailed_description",
             "website_url",
             "members",
+            "department",
             "is_active",
         ]
     
@@ -1609,13 +1655,16 @@ class StudentClubMemberListSerializer(serializers.ModelSerializer):
 
 
 class StudentClubListSerializer(serializers.ModelSerializer):
+    department = DepartmentSummarySerializer(read_only=True)
+
     class Meta:
         model = StudentClub
-        fields = ["id", "name", "short_description", "thumbnail", "is_active"]
+        fields = ["id", "name", "short_description", "thumbnail", "is_active", "department"]
 
 
 class StudentClubRetrieveSerializer(AbstractInfoRetrieveSerializer):
     members = StudentClubMemberListSerializer(many=True)
+    department = DepartmentSummarySerializer(read_only=True)
 
     class Meta(AbstractInfoRetrieveSerializer.Meta):
         model = StudentClub
@@ -1627,6 +1676,7 @@ class StudentClubRetrieveSerializer(AbstractInfoRetrieveSerializer):
             "website_url",
             "detailed_description",
             "members",
+            "department",
         ]
 
         fields += AbstractInfoRetrieveSerializer.Meta.fields
@@ -1640,6 +1690,11 @@ class StudentClubMemberCreateSerializer(serializers.ModelSerializer):
 
 class StudentClubCreateSerializer(serializers.ModelSerializer):
     members = StudentClubMemberCreateSerializer(many=True, allow_null=True)
+    department = serializers.PrimaryKeyRelatedField(
+        queryset=Department.objects.filter(is_active=True),
+        allow_null=True,
+        required=False,
+    )
     thumbnail = serializers.ImageField(
         validators=[validate_photo_thumbnail],
         allow_null=True,
@@ -1655,6 +1710,7 @@ class StudentClubCreateSerializer(serializers.ModelSerializer):
             "detailed_description",
             "website_url",
             "members",
+            "department",
         ]
 
     def create(self, validated_data):
@@ -1691,6 +1747,11 @@ class StudentClubMemberPatchSerializer(serializers.ModelSerializer):
 
 class StudentClubPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
     members = StudentClubMemberPatchSerializer(many=True, required=False)
+    department = serializers.PrimaryKeyRelatedField(
+        queryset=Department.objects.filter(is_active=True),
+        allow_null=True,
+        required=False,
+    )
     thumbnail = serializers.ImageField(
         validators=[validate_photo_thumbnail],
         allow_null=True,
@@ -1706,6 +1767,7 @@ class StudentClubPatchSerializer(FileHandlingMixin, serializers.ModelSerializer)
             "detailed_description",
             "website_url",
             "members",
+            "department",
             "is_active",
         ]
 
