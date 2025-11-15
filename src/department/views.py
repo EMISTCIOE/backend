@@ -19,12 +19,8 @@ from .messages import (
     ACADEMIC_PROGRAM_NOT_FOUND,
     DEPARTMENT_DOWNLOAD_DELETED_SUCCESS,
     DEPARTMENT_DOWNLOAD_NOT_FOUND,
-    DEPARTMENT_EVENT_DELETED_SUCCESS,
-    DEPARTMENT_EVENT_NOT_FOUND,
     DEPARTMENT_PLANS_DELETED_SUCCESS,
     DEPARTMENT_PLANS_NOT_FOUND,
-    EVENT_GALLERY_DELETED_SUCCESS,
-    EVENT_GALLERY_NOT_FOUND,
     SOCIAL_LINK_DELETED_SUCCESS,
     SOCIAL_LINK_NOT_FOUND,
     STAFF_MEMBER_DELETED_SUCCESS,
@@ -34,8 +30,6 @@ from .models import (
     AcademicProgram,
     Department,
     DepartmentDownload,
-    DepartmentEvent,
-    DepartmentEventGallery,
     DepartmentPlanAndPolicy,
     DepartmentSocialMedia,
     StaffMember,
@@ -43,7 +37,6 @@ from .models import (
 from .permissions import (
     AcademicProgramPermission,
     DepartmentDownloadPermission,
-    DepartmentEventPermission,
     DepartmentPermission,
     DepartmentPlanAndPolicyPermission,
     StaffMemberPermission,
@@ -58,10 +51,6 @@ from .serializers import (
     DepartmentDownloadListSerializer,
     DepartmentDownloadPatchSerializer,
     DepartmentDownloadRetrieveSerializer,
-    DepartmentEventCreateSerializer,
-    DepartmentEventListSerializer,
-    DepartmentEventPatchSerializer,
-    DepartmentEventRetrieveSerializer,
     DepartmentListSerializer,
     DepartmentPatchSerializer,
     DepartmentPlanAndPolicyCreateSerializer,
@@ -266,85 +255,9 @@ class DepartmentDownloadViewSet(ModelViewSet):
         )
 
 
-class FilterForDepartmentEventViewSet(FilterSet):
-    date = django_filters.DateFromToRangeFilter(field_name="created_at")
-
-    class Meta:
-        model = DepartmentEvent
-        fields = ["department", "event_type", "date", "is_active"]
 
 
-class DepartmentEventViewSet(ModelViewSet):
-    permission_classes = [DepartmentEventPermission]
-    filterset_class = FilterForDepartmentEventViewSet
-    filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
-    search_fields = ["title", "description_short"]
-    queryset = DepartmentEvent.objects.filter(is_archived=False)
-    ordering_fields = ["-created_at", "event_start_date", "title"]
-    http_method_names = ["options", "head", "get", "patch", "post", "delete"]
 
-    def get_serializer_class(self):
-        if self.request.method == "GET":
-            return (
-                DepartmentEventListSerializer
-                if self.action == "list"
-                else DepartmentEventRetrieveSerializer
-            )
-        if self.request.method == "POST":
-            return DepartmentEventCreateSerializer
-        if self.request.method == "PATCH":
-            return DepartmentEventPatchSerializer
-        return DepartmentEventRetrieveSerializer
-
-    @transaction.atomic
-    def create(self, request, *args, **kwargs):
-        set_binary_files_null_if_empty(["thumbnail"], request.data)
-        return super().create(request, *args, **kwargs)
-
-    @transaction.atomic
-    def update(self, request, *args, **kwargs):
-        set_binary_files_null_if_empty(["thumbnail"], request.data)
-        return super().update(request, *args, **kwargs)
-
-    def destroy(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            instance.thumbnail.delete(save=False)
-        except Exception:
-            return Response(
-                {"detail": DEPARTMENT_EVENT_NOT_FOUND},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        instance.delete()
-        return Response(
-            {"message": DEPARTMENT_EVENT_DELETED_SUCCESS},
-            status=status.HTTP_200_OK,
-        )
-
-
-class DepartmentEventGalleryDestroyAPIView(generics.DestroyAPIView):
-    permission_classes = [DepartmentEventPermission]
-    lookup_url_kwarg = "gallery_id"
-    queryset = DepartmentEventGallery.objects.all()
-
-    def get_object(self):
-        obj = self.queryset.filter(
-            event_id=self.kwargs["event_id"],
-            pk=self.kwargs[self.lookup_url_kwarg],
-        ).first()
-        if not obj:
-            raise NotFound({"detail": EVENT_GALLERY_NOT_FOUND})
-        return obj
-
-    def delete(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.image.delete(save=False)
-        instance.delete()
-        return Response(
-            {"message": EVENT_GALLERY_DELETED_SUCCESS},
-            status=status.HTTP_200_OK,
-        )
 
 
 class FilterForDepartmentPlanAndPolicyViewSet(FilterSet):

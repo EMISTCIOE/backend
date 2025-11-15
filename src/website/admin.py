@@ -4,8 +4,6 @@ from django.contrib import admin
 from src.website.utils import build_global_gallery_items
 
 from .models import (
-    CampusEvent,
-    CampusEventGallery,
     CampusFeedback,
     CampusInfo,
     CampusKeyOfficial,
@@ -25,9 +23,6 @@ from .models import (
 
 SOURCE_TYPES = [
     {"value": "union_event", "label": "Union Event"},
-    {"value": "campus_event", "label": "Campus Event"},
-    {"value": "club_event", "label": "Student Club Event"},
-    {"value": "department_event", "label": "Department Event"},
     {"value": "union_gallery", "label": "Union Gallery"},
     {"value": "club_gallery", "label": "Club Gallery"},
     {"value": "department_gallery", "label": "Department Gallery"},
@@ -93,12 +88,31 @@ class GlobalEventAdmin(admin.ModelAdmin):
     list_display = (
         "title",
         "event_type",
+        "location",
         "event_start_date",
         "event_end_date",
         "is_active",
     )
-    search_fields = ("title",)
+    search_fields = ("title", "location")
     list_filter = ("event_type", "is_active")
+    fieldsets = (
+        ("Event Information", {
+            "fields": ("title", "description", "event_type")
+        }),
+        ("Date & Location", {
+            "fields": ("event_start_date", "event_end_date", "location")
+        }),
+        ("Registration", {
+            "fields": ("registration_link",)
+        }),
+        ("Media", {
+            "fields": ("thumbnail",)
+        }),
+        ("Associations", {
+            "fields": ("unions", "clubs", "departments"),
+            "classes": ("collapse",)
+        }),
+    )
 
 
 admin.site.register(CampusUnion)

@@ -4,8 +4,6 @@ from rest_framework import routers
 from .views import (
     AcademicProgramViewSet,
     DepartmentDownloadViewSet,
-    DepartmentEventGalleryDestroyAPIView,
-    DepartmentEventViewSet,
     DepartmentPlanAndPolicyViewSet,
     DepartmentSocialMediaDestroyAPIView,
     DepartmentViewSet,
@@ -27,11 +25,6 @@ router.register(
     basename="department-download",
 )
 router.register(
-    "department-events",
-    DepartmentEventViewSet,
-    basename="department-event",
-)
-router.register(
     "department-plans-policies",
     DepartmentPlanAndPolicyViewSet,
     basename="department-plan-and-policy",
@@ -43,11 +36,6 @@ urlpatterns = [
         "departments/<int:department_id>/social-link/<int:social_link_id>",
         DepartmentSocialMediaDestroyAPIView.as_view(),
         name="department-social-link-destroy",
-    ),
-    path(
-        "departments-events/<int:event_id>/gallery/<int:gallery_id>",
-        DepartmentEventGalleryDestroyAPIView.as_view(),
-        name="department-events-gallery-destroy",
     ),
     path("", include(router.urls)),
 ]

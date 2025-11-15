@@ -37,15 +37,7 @@ class DepartmentDownloadPermission(BasePermission):
         return validate_permissions(request, user_permissions_dict)
 
 
-class DepartmentEventPermission(BasePermission):
-    def has_permission(self, request, view):
-        user_permissions_dict = {
-            "SAFE_METHODS": "view_department_event",
-            "POST": "add_department_event",
-            "PATCH": "edit_department_event",
-            "DELETE": "delete_department_event",
-        }
-        return validate_permissions(request, user_permissions_dict)
+
 
 
 class DepartmentPlanAndPolicyPermission(BasePermission):

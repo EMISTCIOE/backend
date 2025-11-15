@@ -7,8 +7,6 @@ from src.department.models import Department
 from src.website.models import (
     AcademicCalendar,
     CampusDownload,
-    CampusEvent,
-    CampusEventGallery,
     CampusFeedback,
     CampusInfo,
     CampusKeyOfficial,
@@ -21,8 +19,6 @@ from src.website.models import (
     GlobalEvent,
     SocialMediaLink,
     StudentClub,
-    StudentClubEvent,
-    StudentClubEventGallery,
     StudentClubMember,
 )
 from src.website.public.messages import (
@@ -79,47 +75,6 @@ class PublicCampusUnionCompactSerializer(serializers.ModelSerializer):
         fields = ["uuid", "name", "thumbnail", "department"]
 
 
-class PublicCampusEventListSerializer(serializers.ModelSerializer):
-    union = PublicCampusUnionCompactSerializer(read_only=True)
-
-    class Meta:
-        model = CampusEvent
-        fields = [
-            "uuid",
-            "title",
-            "description_short",
-            "event_type",
-            "event_start_date",
-            "event_end_date",
-            "thumbnail",
-            "union",
-        ]
-
-
-class PublicEventGalleryListSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CampusEventGallery
-        fields = ["uuid", "image", "caption"]
-
-
-class PublicCampusEventRetrieveSerializer(serializers.ModelSerializer):
-    gallery = PublicEventGalleryListSerializer(many=True)
-    union = PublicCampusUnionCompactSerializer(read_only=True)
-
-    class Meta:
-        model = CampusEvent
-        fields = [
-            "uuid",
-            "title",
-            "description_short",
-            "description_detailed",
-            "event_type",
-            "event_start_date",
-            "event_end_date",
-            "thumbnail",
-            "gallery",
-            "union",
-        ]
 
 
 class PublicCampusKeyOfficialSerializer(serializers.ModelSerializer):
@@ -269,35 +224,7 @@ class PublicStudentClubRetrieveSerializer(serializers.ModelSerializer):
         ]
 
 
-class PublicStudentClubEventGallerySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = StudentClubEventGallery
-        fields = ["uuid", "image", "caption", "created_at"]
 
-
-class PublicStudentClubEventListSerializer(serializers.ModelSerializer):
-    club_name = serializers.CharField(source="club.name", read_only=True)
-
-    class Meta:
-        model = StudentClubEvent
-        fields = ["uuid", "title", "club_name", "date", "thumbnail"]
-
-
-class PublicStudentClubEventRetrieveSerializer(serializers.ModelSerializer):
-    club_name = serializers.CharField(source="club.name", read_only=True)
-    gallery = PublicStudentClubEventGallerySerializer(many=True, read_only=True)
-
-    class Meta:
-        model = StudentClubEvent
-        fields = [
-            "uuid",
-            "title",
-            "description",
-            "date",
-            "thumbnail",
-            "club_name",
-            "gallery",
-        ]
 
 
 class PublicCampusSectionListSerializer(serializers.ModelSerializer):
@@ -457,6 +384,8 @@ class PublicGlobalEventSerializer(serializers.ModelSerializer):
             "event_start_date",
             "event_end_date",
             "thumbnail",
+            "registration_link",
+            "location",
             "unions",
             "clubs",
             "departments",

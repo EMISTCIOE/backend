@@ -339,6 +339,18 @@ class DepartmentEvent(AuditInfoModel):
         null=True,
         help_text=_("Main image for the event."),
     )
+    registration_link = models.URLField(
+        _("Registration Link"),
+        blank=True,
+        null=True,
+        help_text=_("Optional link for event registration or more information."),
+    )
+    location = models.CharField(
+        _("Location"),
+        max_length=200,
+        blank=True,
+        help_text=_("Event venue or location."),
+    )
 
     class Meta:
         verbose_name = _("Department Event")

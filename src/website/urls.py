@@ -4,8 +4,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     AcademicCalendarViewSet,
     CampusDownloadViewSet,
-    CampusEventGalleryDestroyAPIView,
-    CampusEventViewSet,
+   
     CampusFeedbackViewSet,
     CampusInfoAPIView,
     CampusKeyOfficialViewSet,
@@ -18,8 +17,7 @@ from .views import (
     GlobalGalleryListAPIView,
     GlobalEventViewSet,
     SocialMediaLinkDeleteAPIView,
-    StudentClubEventGalleryDestroyAPIView,
-    StudentClubEventViewSet,
+    
     StudentClubViewSet,
 )
 from .listing_apis.views import FiscalSessionBSForCampusReportListAPIView
@@ -44,16 +42,10 @@ router.register(
     AcademicCalendarViewSet,
     basename="academic-calendar",
 )
-router.register("campus-events", CampusEventViewSet, basename="campus-event")
 router.register("student-clubs", StudentClubViewSet, basename="student-club")
 router.register("campus-unions", CampusUnionViewSet, basename="campus-unions")
 router.register("campus-sections", CampusSectionViewSet, basename="campus-section")
 router.register("campus-units", CampusUnitViewSet, basename="campus-unit")
-router.register(
-    "student-club-events",
-    StudentClubEventViewSet,
-    basename="student-club-event",
-)
 router.register(
     "gallery-images",
     GlobalGalleryImageViewSet,
@@ -71,16 +63,7 @@ urlpatterns = [
         "campus-info/social-media-links/<int:pk>/delete",
         SocialMediaLinkDeleteAPIView.as_view(),
     ),
-    path(
-        "campus-events/<int:event_id>/gallery/<int:gallery_id>",
-        CampusEventGalleryDestroyAPIView.as_view(),
-        name="campus-events-gallery-destroy",
-    ),
-    path(
-        "student-club-events/<int:event_id>/gallery/<int:gallery_id>",
-        StudentClubEventGalleryDestroyAPIView.as_view(),
-        name="student-club-events-gallery-destroy",
-    ),
+
     # Listing APIs
     path(
         "campus-reports/fiscal-sessions",

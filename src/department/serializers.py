@@ -462,6 +462,8 @@ class DepartmentEventRetrieveSerializer(AbstractInfoRetrieveSerializer):
             "event_start_date",
             "event_end_date",
             "thumbnail",
+            "registration_link",
+            "location",
             "department",
             "gallery",
         ]
@@ -496,6 +498,8 @@ class DepartmentEventCreateSerializer(serializers.ModelSerializer):
             "event_start_date",
             "event_end_date",
             "thumbnail",
+            "registration_link",
+            "location",
             "department",
             "gallery",
         ]

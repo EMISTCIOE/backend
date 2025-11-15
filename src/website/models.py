@@ -16,7 +16,7 @@ from src.department.models import Department, DepartmentEvent
 from src.website.constants import (
     ACADEMIC_CALENDER_FILE_PATH,
     CAMPUS_DOWNLOADS_FILE_PATH,
-    CAMPUS_EVENT_FILE_PATH,
+
     CAMPUS_FILE_PATH,
     CAMPUS_KEY_OFFICIAL_FILE_PATH,
     CAMPUS_REPORT_FILE_PATH,
@@ -26,7 +26,7 @@ from src.website.constants import (
     CAMPUS_UNIT_FILE_PATH,
     GLOBAL_EVENT_FILE_PATH,
     RESEARCH_FACILITY_FILE_PATH,
-    STUDENT_CLUB_EVENT_FILE_PATH,
+
     STUDENT_CLUB_FILE_PATH,
     STUDENT_CLUB_MEMBER_FILE_PATH,
     CampusEventTypes,
@@ -330,96 +330,6 @@ class CampusDownload(AuditInfoModel):
         return self.title
 
 
-class CampusEvent(AuditInfoModel):
-    """
-    Represents a major campus-level event or festival
-    (e.g. Saraswati Puja, Yathartha, Utsarga, Music Fest).
-    """
-
-    title = models.CharField(
-        _("Title"),
-        max_length=200,
-        help_text=_("Name of the event or festival."),
-    )
-    description_short = models.TextField(
-        _("Short Description"),
-        max_length=500,
-        help_text=_("Brief summary of the event."),
-    )
-    description_detailed = RichTextField(
-        _("Detailed Description"),
-        blank=True,
-        help_text=_("Detailed information, agenda, and activities."),
-    )
-    event_type = models.CharField(
-        _("Event Type"),
-        max_length=20,
-        choices=CampusEventTypes.choices(),
-        default=CampusEventTypes.OTHER,
-        help_text=_("Type of the event."),
-    )
-    event_start_date = models.DateField(
-        _("Date"),
-        null=True,
-        help_text=_("Date the event start."),
-    )
-    event_end_date = models.DateField(
-        _("Date"),
-        null=True,
-        help_text=_("Date the event end."),
-    )
-    union = models.ForeignKey(
-        "CampusUnion",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="events",
-        verbose_name=_("Union"),
-        help_text=_("Union associated with this campus event (optional)."),
-    )
-    thumbnail = models.ImageField(
-        _("Thumbnail"),
-        upload_to=CAMPUS_EVENT_FILE_PATH,
-        null=True,
-        help_text=_("Main image for the event."),
-    )
-
-    class Meta:
-        verbose_name = _("Campus Event")
-        verbose_name_plural = _("Campus Events")
-
-    def __str__(self):
-        return self.title
-
-
-class CampusEventGallery(AuditInfoModel):
-    """
-    Images related to a campus-wide event.
-    """
-
-    event = models.ForeignKey(
-        CampusEvent,
-        on_delete=models.CASCADE,
-        related_name="gallery",
-        verbose_name=_("Campus Event"),
-    )
-    image = models.ImageField(
-        _("Image"),
-        upload_to=CAMPUS_EVENT_FILE_PATH,
-    )
-    caption = models.CharField(
-        _("Caption"),
-        max_length=255,
-        blank=True,
-        help_text=_("Optional caption for the image."),
-    )
-
-    class Meta:
-        verbose_name = _("Campus Event Image")
-        verbose_name_plural = _("Campus Event Gallery")
-
-    def __str__(self):
-        return self.caption or f"{self.event.title} Image"
 
 
 class CampusUnion(AuditInfoModel):
@@ -852,79 +762,6 @@ class StudentClubMember(AuditInfoModel):
         return f"{self.full_name} ({self.designation})"
 
 
-class StudentClubEvent(AuditInfoModel):
-    """
-    Represents an event organized or participated in by a student club.
-    """
-
-    club = models.ForeignKey(
-        StudentClub,
-        on_delete=models.CASCADE,
-        related_name="events",
-        verbose_name=_("Club"),
-    )
-    title = models.CharField(
-        _("Event Title"),
-        max_length=200,
-        help_text=_("Title of the event."),
-    )
-    description = RichTextField(
-        _("Event Description"),
-        blank=True,
-        help_text=_("Details about the event, purpose, and activities."),
-    )
-    date = models.DateField(
-        _("Event Date"),
-        null=True,
-        blank=True,
-        help_text=_("Date when the event took place."),
-    )
-    thumbnail = models.ImageField(
-        _("Event Thumbnail"),
-        upload_to=STUDENT_CLUB_EVENT_FILE_PATH,
-        null=True,
-        blank=True,
-        help_text=_("Representative image for the event."),
-    )
-
-    class Meta:
-        verbose_name = _("Club Event")
-        verbose_name_plural = _("Club Events")
-
-    def __str__(self):
-        return f"{self.title} ({self.club.name})"
-
-
-class StudentClubEventGallery(AuditInfoModel):
-    """
-    Image gallery for student clubs to showcase events, projects, or achievements.
-    """
-
-    event = models.ForeignKey(
-        StudentClubEvent,
-        on_delete=models.CASCADE,
-        related_name="gallery",
-        verbose_name=_("Event"),
-    )
-    image = models.ImageField(
-        _("Image"),
-        upload_to=STUDENT_CLUB_EVENT_FILE_PATH,
-        help_text=_("Upload an image to showcase."),
-    )
-    caption = models.CharField(
-        _("Caption"),
-        max_length=255,
-        blank=True,
-        help_text=_("Optional caption describing the image."),
-    )
-
-    class Meta:
-        verbose_name = _("Club Event Gallery Image")
-        verbose_name_plural = _("Club Event Gallery Images")
-
-    def __str__(self):
-        return self.caption or f"{self.event.title} Image"
-
 
 class GlobalEvent(AuditInfoModel):
     """
@@ -988,6 +825,18 @@ class GlobalEvent(AuditInfoModel):
         verbose_name=_("Linked Departments"),
         help_text=_("Associate departments with this event."),
     )
+    registration_link = models.URLField(
+        _("Registration Link"),
+        blank=True,
+        null=True,
+        help_text=_("Optional link for event registration or more information."),
+    )
+    location = models.CharField(
+        _("Location"),
+        max_length=200,
+        blank=True,
+        help_text=_("Event venue or location."),
+    )
 
     class Meta:
         verbose_name = _("Global Event")
@@ -1004,7 +853,6 @@ class GlobalGalleryImage(AuditInfoModel):
         CAMPUS_EVENT = "campus_event", _("Campus Event")
         UNION_EVENT = "union_event", _("Union Event")
         CLUB_EVENT = "club_event", _("Student Club Event")
-        DEPARTMENT_EVENT = "department_event", _("Department Event")
         GLOBAL_EVENT = "global_event", _("Global Event")
         UNION_GALLERY = "union_gallery", _("Union Gallery")
         CLUB_GALLERY = "club_gallery", _("Club Gallery")
@@ -1031,30 +879,9 @@ class GlobalGalleryImage(AuditInfoModel):
         blank=True,
         help_text=_("Optional context shown alongside this image."),
     )
-    campus_event = models.ForeignKey(
-        CampusEvent,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="global_gallery_images",
-        verbose_name=_("Campus Event"),
-    )
-    student_club_event = models.ForeignKey(
-        StudentClubEvent,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="global_gallery_images",
-        verbose_name=_("Student Club Event"),
-    )
-    department_event = models.ForeignKey(
-        DepartmentEvent,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="global_gallery_images",
-        verbose_name=_("Department Event"),
-    )
+
+
+ 
     union = models.ForeignKey(
         CampusUnion,
         null=True,

@@ -55,8 +55,6 @@ from src.website.messages import (
 from .models import (
     AcademicCalendar,
     CampusDownload,
-    CampusEvent,
-    CampusEventGallery,
     CampusFeedback,
     CampusInfo,
     CampusKeyOfficial,
@@ -69,8 +67,6 @@ from .models import (
     CampusUnionMember,
     SocialMediaLink,
     StudentClub,
-    StudentClubEvent,
-    StudentClubEventGallery,
     StudentClubMember,
     GlobalGalleryImage,
     GlobalEvent,
@@ -78,7 +74,6 @@ from .models import (
 from .permissions import (
     AcademicCalendarPermission,
     CampusDownloadPermission,
-    CampusEventPermission,
     CampusFeedbackPermission,
     CampusInfoPermission,
     CampusKeyOfficialPermission,
@@ -87,7 +82,6 @@ from .permissions import (
     CampusUnitPermission,
     ResearchFacilityPermission,
     CampusUnionPermission,
-    StudentClubEventPermission,
     StudentClubPermission,
     GlobalGalleryPermission,
     GlobalGalleryImagePermission,
@@ -102,10 +96,7 @@ from .serializers import (
     CampusDownloadListSerializer,
     CampusDownloadPatchSerializer,
     CampusDownloadRetrieveSerializer,
-    CampusEventCreateSerializer,
-    CampusEventListSerializer,
-    CampusEventPatchSerializer,
-    CampusEventRetrieveSerializer,
+
     CampusFeedbackListSerializer,
     CampusFeedbackResolveSerializer,
     CampusInfoPatchSerializer,
@@ -144,10 +135,6 @@ from .serializers import (
     GlobalEventPatchSerializer,
     GlobalEventRetrieveSerializer,
     StudentClubCreateSerializer,
-    StudentClubEventCreateSerializer,
-    StudentClubEventListSerializer,
-    StudentClubEventPatchSerializer,
-    StudentClubEventRetrieveSerializer,
     StudentClubListSerializer,
     StudentClubPatchSerializer,
     StudentClubRetrieveSerializer,
@@ -482,87 +469,7 @@ class AcademicCalendarViewSet(viewsets.ModelViewSet):
         )
 
 
-class FilterForCampusEventViewSet(FilterSet):
-    union = django_filters.UUIDFilter(field_name="union__uuid", label="Union")
 
-    class Meta:
-        model = CampusEvent
-        fields = ["event_type", "is_active", "union"]
-
-
-class CampusEventViewSet(viewsets.ModelViewSet):
-    permission_classes = [CampusEventPermission]
-    queryset = CampusEvent.objects.filter(is_archived=False)
-    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_class = FilterForCampusEventViewSet
-    search_fields = ["title", "description_short", "description_detailed"]
-    ordering_fields = ["event_start_date", "created_at"]
-    ordering = ["-created_at"]
-    http_method_names = ["get", "post", "patch", "delete", "head", "options"]
-
-    def get_serializer_class(self):
-        if self.request.method == "GET":
-            return (
-                CampusEventListSerializer
-                if self.action == "list"
-                else CampusEventRetrieveSerializer
-            )
-        if self.request.method == "POST":
-            return CampusEventCreateSerializer
-        if self.request.method == "PATCH":
-            return CampusEventPatchSerializer
-        return CampusEventRetrieveSerializer
-
-    @transaction.atomic
-    def create(self, request, *args, **kwargs):
-        set_binary_files_null_if_empty(["thumbnail"], request.data)
-        return super().create(request, *args, **kwargs)
-
-    @transaction.atomic
-    def update(self, request, *args, **kwargs):
-        set_binary_files_null_if_empty(["thumbnail"], request.data)
-        return super().update(request, *args, **kwargs)
-
-    def destroy(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            if instance:
-                instance.thumbnail.delete(save=False)
-        except Exception as e:
-            return Response(
-                {"detail": CAMPUS_EVENT_NOT_FOUND},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        instance.delete()
-        return Response(
-            {"message": CAMPUS_EVENT_DELETED_SUCCESS},
-            status=status.HTTP_200_OK,
-        )
-
-
-class CampusEventGalleryDestroyAPIView(generics.DestroyAPIView):
-    permission_classes = [CampusEventPermission]
-    lookup_url_kwarg = "gallery_id"
-    queryset = CampusEventGallery.objects.all()
-
-    def get_object(self):
-        obj = self.queryset.filter(
-            event_id=self.kwargs["event_id"],
-            pk=self.kwargs[self.lookup_url_kwarg],
-        ).first()
-        if not obj:
-            raise NotFound({"detail": EVENT_GALLERY_NOT_FOUND})
-        return obj
-
-    def delete(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.image.delete(save=False)
-        instance.delete()
-        return Response(
-            {"message": EVENT_GALLERY_DELETED_SUCCESS},
-            status=status.HTTP_200_OK,
-        )
 
 
 class CampusUnionViewSet(viewsets.ModelViewSet):
@@ -925,91 +832,7 @@ class StudentClubViewSet(viewsets.ModelViewSet):
         )
 
 
-class FilterForStudentClubEventViewSet(FilterSet):
-    class Meta:
-        model = StudentClubEvent
-        fields = ["club", "date", "is_active"]
 
-
-class StudentClubEventViewSet(viewsets.ModelViewSet):
-    permission_classes = [StudentClubEventPermission]
-    filterset_class = FilterForStudentClubEventViewSet
-    filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
-    search_fields = ["title"]
-    queryset = StudentClubEvent.objects.filter(is_archived=False)
-    ordering_fields = ["-date", "title"]
-    http_method_names = ["options", "head", "get", "patch", "post", "delete"]
-
-    def get_serializer_class(self):
-        if self.request.method == "GET":
-            return (
-                StudentClubEventListSerializer
-                if self.action == "list"
-                else StudentClubEventRetrieveSerializer
-            )
-        if self.request.method == "POST":
-            return StudentClubEventCreateSerializer
-        if self.request.method == "PATCH":
-            return StudentClubEventPatchSerializer
-        return StudentClubEventRetrieveSerializer
-
-    @transaction.atomic
-    def create(self, request, *args, **kwargs):
-        set_binary_files_null_if_empty(["thumbnail"], request.data)
-        return super().create(request, *args, **kwargs)
-
-    @transaction.atomic
-    def update(self, request, *args, **kwargs):
-        set_binary_files_null_if_empty(["thumbnail"], request.data)
-        return super().update(request, *args, **kwargs)
-
-    def destroy(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            if instance.thumbnail:
-                instance.thumbnail.delete(save=False)
-        except Exception:
-            return Response(
-                {"detail": STUDENT_CLUB_EVENT_NOT_FOUND},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        # Delete related gallery images and their files
-        gallery_images = instance.gallery.all()
-        for gallery_image in gallery_images:
-            if gallery_image.image:
-                gallery_image.image.delete(save=False)
-            gallery_image.delete()
-
-        instance.delete()
-        return Response(
-            {"message": STUDENT_CLUB_EVENT_DELETED_SUCCESS},
-            status=status.HTTP_200_OK,
-        )
-
-
-class StudentClubEventGalleryDestroyAPIView(generics.DestroyAPIView):
-    permission_classes = [StudentClubEventPermission]
-    lookup_url_kwarg = "gallery_id"
-    queryset = StudentClubEventGallery.objects.all()
-
-    def get_object(self):
-        obj = self.queryset.filter(
-            event_id=self.kwargs["event_id"],
-            pk=self.kwargs[self.lookup_url_kwarg],
-        ).first()
-        if not obj:
-            raise NotFound({"detail": EVENT_GALLERY_NOT_FOUND})
-        return obj
-
-    def delete(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.image.delete(save=False)
-        instance.delete()
-        return Response(
-            {"message": EVENT_GALLERY_DELETED_SUCCESS},
-            status=status.HTTP_200_OK,
-        )
 
 
 class GlobalGalleryImageViewSet(viewsets.ModelViewSet):
@@ -1020,8 +843,7 @@ class GlobalGalleryImageViewSet(viewsets.ModelViewSet):
             "campus_event__union",
             "student_club_event",
             "student_club_event__club",
-            "department_event",
-            "department_event__department",
+            
             "union",
             "club",
             "department",

@@ -14,7 +14,6 @@ from rest_framework.viewsets import ReadOnlyModelViewSet
 from src.website.models import (
     AcademicCalendar,
     CampusDownload,
-    CampusEvent,
     CampusInfo,
     CampusKeyOfficial,
     CampusSection,
@@ -24,7 +23,6 @@ from src.website.models import (
     CampusUnion,
     GlobalEvent,
     StudentClub,
-    StudentClubEvent,
 )
 from src.website.public.messages import CAMPUS_INFO_NOT_FOUND
 from src.website.utils import build_global_gallery_items
@@ -32,8 +30,6 @@ from src.website.utils import build_global_gallery_items
 from .serializer import (
     PublicAcademicCalendarListSerializer,
     PublicCampusDownloadSerializer,
-    PublicCampusEventListSerializer,
-    PublicCampusEventRetrieveSerializer,
     PublicCampusFeedbackSerializer,
     PublicCampusInfoSerializer,
     PublicCampusKeyOfficialSerializer,
@@ -44,8 +40,6 @@ from .serializer import (
     PublicCampusUnitRetrieveSerializer,
     PublicCampusUnionListSerializer,
     PublicCampusUnionRetrieveSerializer,
-    PublicStudentClubEventListSerializer,
-    PublicStudentClubEventRetrieveSerializer,
     PublicStudentClubListSerializer,
     PublicStudentClubRetrieveSerializer,
     PublicResearchFacilityListSerializer,
@@ -84,38 +78,6 @@ class PublicCampusDownloadListAPIView(ListAPIView):
     filterset_fields = ["uuid"]
 
 
-class PublicCampusEventFilter(FilterSet):
-    union = django_filters.UUIDFilter(field_name="union__uuid", label="Union")
-
-    class Meta:
-        model = CampusEvent
-        fields = ["event_type", "event_start_date", "event_end_date", "union"]
-
-
-class PublicCampusEventViewSet(ReadOnlyModelViewSet):
-    """
-    Public API for listing and retrieving campus events with galleries.
-    """
-
-    permission_classes = [AllowAny]
-    queryset = (
-        CampusEvent.objects.filter(is_active=True)
-        .select_related("union", "union__department")
-    )
-    filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
-    filterset_class = PublicCampusEventFilter
-    search_fields = ["title"]
-    ordering = ["-created_at"]
-    ordering_fields = ["event_start_date", "created_at"]
-    http_method_names = ["get", "head", "options"]
-
-    def get_serializer_class(self):
-        if self.request.method == "GET":
-            return (
-                PublicCampusEventListSerializer
-                if self.action == "list"
-                else PublicCampusEventRetrieveSerializer
-            )
 
 
 class PublicCampusKeyOfficialFilterSet(FilterSet):
@@ -271,34 +233,7 @@ class PublicStudentClubReadOnlyViewSet(ReadOnlyModelViewSet):
             )
 
 
-class PublicStudentClubEventFilter(FilterSet):
-    club = django_filters.UUIDFilter(field_name="club.uuid", label="Club")
 
-    class Meta:
-        model = StudentClubEvent
-        fields = ["club", "date"]
-
-
-class PublicStudentClubEventViewSet(ReadOnlyModelViewSet):
-    """
-    Public API for listing and retrieving student club events with galleries.
-    """
-
-    permission_classes = [AllowAny]
-    queryset = StudentClubEvent.objects.filter(is_active=True)
-    filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
-    filterset_class = PublicStudentClubEventFilter
-    search_fields = ["title", "description"]
-    ordering_fields = ["-created_at", "title", "date"]
-    http_method_names = ["get", "head", "options"]
-
-    def get_serializer_class(self):
-        if self.request.method == "GET":
-            return (
-                PublicStudentClubEventListSerializer
-                if self.action == "list"
-                else PublicStudentClubEventRetrieveSerializer
-            )
 
 
 class PublicGlobalGalleryPagination(LimitOffsetPagination):
@@ -314,8 +249,15 @@ class PublicGlobalGalleryListAPIView(GenericAPIView):
     def get(self, request, *args, **kwargs):
         items = build_global_gallery_items()
         source_type = request.query_params.get("source_type")
+        source_identifier = request.query_params.get("source_identifier")
         if source_type:
             items = [item for item in items if item["source_type"] == source_type]
+        if source_identifier:
+            items = [
+                item
+                for item in items
+                if item.get("source_identifier") == source_identifier
+            ]
 
         search = request.query_params.get("search", "")
         if search:
@@ -362,3 +304,17 @@ class PublicGlobalEventListAPIView(ListAPIView):
             .distinct()
             .order_by("-event_start_date", "-created_at")
         )
+
+
+class PublicGlobalEventRetrieveAPIView(RetrieveAPIView):
+    """
+    Retrieve a specific global event by UUID.
+    """
+    permission_classes = [AllowAny]
+    serializer_class = PublicGlobalEventSerializer
+    lookup_field = "uuid"
+
+    def get_queryset(self):
+        return GlobalEvent.objects.filter(
+            is_active=True, is_archived=False
+        ).prefetch_related("unions", "clubs", "departments")
