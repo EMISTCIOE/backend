@@ -166,3 +166,15 @@ class GlobalGalleryPermission(BasePermission):
         user_permissions = get_user_permissions(request)
         user_codenames = {perm.codename for perm in user_permissions}
         return any(code in user_codenames for code in self.SAFE_PERMISSIONS)
+
+
+class GlobalGalleryCollectionPermission(BasePermission):
+    def has_permission(self, request, view):
+        user_permissions_dict = {
+            "SAFE_METHODS": "view_gallerycollection",
+            "POST": "add_gallerycollection",
+            "PATCH": "change_gallerycollection",
+            "DELETE": "delete_gallerycollection",
+        }
+
+        return validate_permissions(request, user_permissions_dict)

@@ -19,6 +19,7 @@ from .views import (
     StudentClubEventViewSet,
     StudentClubViewSet,
     GlobalGalleryListAPIView,
+    GlobalGalleryCollectionViewSet,
 )
 from .listing_apis.views import FiscalSessionBSForCampusReportListAPIView
 
@@ -51,6 +52,11 @@ router.register(
     "student-club-events",
     StudentClubEventViewSet,
     basename="student-club-event",
+)
+router.register(
+    "gallery-collections",
+    GlobalGalleryCollectionViewSet,
+    basename="gallery-collection",
 )
 
 urlpatterns = [

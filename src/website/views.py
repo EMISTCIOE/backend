@@ -44,6 +44,9 @@ from src.website.messages import (
     SOCIAL_MEDIA_NOT_FOUND,
     STUDENT_CLUB_EVENT_DELETED_SUCCESS,
     STUDENT_CLUB_EVENT_NOT_FOUND,
+    GLOBAL_GALLERY_COLLECTION_CREATED_SUCCESS,
+    GLOBAL_GALLERY_COLLECTION_UPDATED_SUCCESS,
+    GLOBAL_GALLERY_COLLECTION_DELETED_SUCCESS,
 )
 
 from .models import (
@@ -66,6 +69,8 @@ from .models import (
     StudentClubEvent,
     StudentClubEventGallery,
     StudentClubMember,
+    GlobalGalleryCollection,
+    GlobalGalleryImage,
 )
 from .permissions import (
     AcademicCalendarPermission,
@@ -82,6 +87,7 @@ from .permissions import (
     StudentClubEventPermission,
     StudentClubPermission,
     GlobalGalleryPermission,
+    GlobalGalleryCollectionPermission,
 )
 from .serializers import (
     AcademicCalendarCreateSerializer,
@@ -126,6 +132,9 @@ from .serializers import (
     ResearchFacilityPatchSerializer,
     ResearchFacilityRetrieveSerializer,
     GlobalGallerySerializer,
+    GlobalGalleryCollectionListSerializer,
+    GlobalGalleryCollectionCreateSerializer,
+    GlobalGalleryCollectionPatchSerializer,
     StudentClubCreateSerializer,
     StudentClubEventCreateSerializer,
     StudentClubEventListSerializer,
@@ -995,6 +1004,80 @@ class StudentClubEventGalleryDestroyAPIView(generics.DestroyAPIView):
         )
 
 
+class GlobalGalleryCollectionViewSet(viewsets.ModelViewSet):
+    permission_classes = [GlobalGalleryCollectionPermission]
+    queryset = (
+        GlobalGalleryCollection.objects.select_related(
+            "campus_event",
+            "student_club_event",
+            "department_event",
+            "union",
+            "club",
+            "department",
+        )
+        .prefetch_related("images")
+        .all()
+    )
+    filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
+    filterset_fields = [
+        "is_active",
+        "campus_event",
+        "student_club_event",
+        "department_event",
+        "union",
+        "club",
+        "department",
+    ]
+    ordering_fields = ["created_at", "title"]
+    http_method_names = ["get", "post", "put", "patch", "delete"]
+
+    def get_serializer_class(self):
+        if self.action in ["list", "retrieve"]:
+            return GlobalGalleryCollectionListSerializer
+        if self.action == "create":
+            return GlobalGalleryCollectionCreateSerializer
+        return GlobalGalleryCollectionPatchSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {"message": GLOBAL_GALLERY_COLLECTION_CREATED_SUCCESS},
+            status=status.HTTP_201_CREATED,
+        )
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(
+            instance,
+            data=request.data,
+            partial=kwargs.get("partial", False),
+            context={"request": request},
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            {"message": GLOBAL_GALLERY_COLLECTION_UPDATED_SUCCESS},
+            status=status.HTTP_200_OK,
+        )
+
+    def partial_update(self, request, *args, **kwargs):
+        kwargs["partial"] = True
+        return self.update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        for image in instance.images.all():
+            if image.image:
+                image.image.delete(save=False)
+        instance.delete()
+        return Response(
+            {"message": GLOBAL_GALLERY_COLLECTION_DELETED_SUCCESS},
+            status=status.HTTP_200_OK,
+        )
+
+
 class GlobalGalleryPagination(LimitOffsetPagination):
     default_limit = 24
     max_limit = 120
@@ -1010,6 +1093,11 @@ class GlobalGalleryListAPIView(generics.GenericAPIView):
         source_type = request.query_params.get("source_type")
         if source_type:
             items = [item for item in items if item["source_type"] == source_type]
+        source_identifier = request.query_params.get("source_identifier")
+        if source_identifier:
+            items = [
+                item for item in items if item["source_identifier"] == source_identifier
+            ]
 
         search = request.query_params.get("search", "")
         if search:

@@ -12,7 +12,7 @@ from src.core.constants import (
     StaffMemberTitle,
 )
 from src.core.models import FiscalSessionBS
-from src.department.models import Department
+from src.department.models import Department, DepartmentEvent
 from src.website.constants import (
     ACADEMIC_CALENDER_FILE_PATH,
     CAMPUS_DOWNLOADS_FILE_PATH,
@@ -30,6 +30,7 @@ from src.website.constants import (
     STUDENT_CLUB_MEMBER_FILE_PATH,
     CampusEventTypes,
     ReportTypes,
+    GLOBAL_GALLERY_FILE_PATH,
 )
 from src.website.messages import ONLY_ONE_CAMPUS_INFO_ALLOWED
 from src.website.utils import nepali_year_choices
@@ -922,6 +923,126 @@ class StudentClubEventGallery(AuditInfoModel):
 
     def __str__(self):
         return self.caption or f"{self.event.title} Image"
+
+
+class GlobalGalleryCollection(AuditInfoModel):
+    """A collection of gallery images that can be linked to various campus entities."""
+
+    title = models.CharField(
+        _("Title"),
+        max_length=255,
+        blank=True,
+        help_text=_("Optional name for the gallery collection."),
+    )
+    description = models.TextField(
+        _("Description"),
+        blank=True,
+        help_text=_("Additional notes to describe the collection."),
+    )
+    campus_event = models.ForeignKey(
+        CampusEvent,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="gallery_collections",
+        verbose_name=_("Campus Event"),
+        help_text=_("Associate this collection with a campus-wide event."),
+    )
+    student_club_event = models.ForeignKey(
+        StudentClubEvent,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="gallery_collections",
+        verbose_name=_("Student Club Event"),
+        help_text=_("Associate this collection with a club event."),
+    )
+    department_event = models.ForeignKey(
+        DepartmentEvent,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="gallery_collections",
+        verbose_name=_("Department Event"),
+        help_text=_("Associate this collection with a department event."),
+    )
+    union = models.ForeignKey(
+        CampusUnion,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="gallery_collections",
+        verbose_name=_("Union"),
+        help_text=_("Optional student union linked to the gallery."),
+    )
+    club = models.ForeignKey(
+        StudentClub,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="gallery_collections",
+        verbose_name=_("Student Club"),
+        help_text=_("Optional student club linked to the gallery."),
+    )
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="gallery_collections",
+        verbose_name=_("Department"),
+        help_text=_("Optional department linked to the gallery."),
+    )
+    is_active = models.BooleanField(
+        _("Is Active"),
+        default=True,
+        help_text=_("Inactive galleries will be hidden from public listings."),
+    )
+
+    class Meta:
+        verbose_name = _("Gallery Collection")
+        verbose_name_plural = _("Gallery Collections")
+
+    def __str__(self):
+        ctx = self.title or "Gallery"
+        if self.campus_event:
+            ctx = f"{ctx} ({self.campus_event.title})"
+        return ctx
+
+
+class GlobalGalleryImage(AuditInfoModel):
+    """Images belonging to a gallery collection."""
+
+    collection = models.ForeignKey(
+        GlobalGalleryCollection,
+        on_delete=models.CASCADE,
+        related_name="images",
+        verbose_name=_("Gallery Collection"),
+    )
+    image = models.ImageField(
+        _("Image"),
+        upload_to=GLOBAL_GALLERY_FILE_PATH,
+        help_text=_("Upload an image for this gallery item."),
+    )
+    caption = models.CharField(
+        _("Caption"),
+        max_length=255,
+        blank=True,
+        help_text=_("Optional caption for the image."),
+    )
+    display_order = models.PositiveSmallIntegerField(
+        _("Display Order"),
+        default=1,
+        help_text=_("Controls the ordering of images within the collection."),
+    )
+
+    class Meta:
+        verbose_name = _("Gallery Image")
+        verbose_name_plural = _("Gallery Images")
+        ordering = ["display_order", "-created_at"]
+
+    def __str__(self):
+        return self.caption or f"{self.collection.title or 'Gallery'} Image"
 
 
 class CampusFeedback(PublicAuditInfoModel):

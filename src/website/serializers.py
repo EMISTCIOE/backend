@@ -65,6 +65,8 @@ from .models import (
     StudentClubEvent,
     StudentClubEventGallery,
     StudentClubMember,
+    GlobalGalleryCollection,
+    GlobalGalleryImage,
 )
 
 
@@ -1647,6 +1649,138 @@ class GlobalGallerySerializer(serializers.Serializer):
     source_context = serializers.CharField(required=False, allow_blank=True)
     created_at = serializers.DateTimeField()
 
+
+class GlobalGalleryImageSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(required=False)
+
+    class Meta:
+        model = GlobalGalleryImage
+        fields = ["id", "image", "caption", "display_order"]
+
+
+class GlobalGalleryCollectionListSerializer(serializers.ModelSerializer):
+    campus_event = serializers.SerializerMethodField()
+    student_club_event = serializers.SerializerMethodField()
+    department_event = serializers.SerializerMethodField()
+    union = serializers.SerializerMethodField()
+    club = serializers.SerializerMethodField()
+    images = GlobalGalleryImageSerializer(many=True, read_only=True)
+    department = DepartmentSummarySerializer(read_only=True)
+
+    class Meta:
+        model = GlobalGalleryCollection
+        fields = [
+            "uuid",
+            "title",
+            "description",
+            "is_active",
+            "campus_event",
+            "student_club_event",
+            "department_event",
+            "union",
+            "club",
+            "department",
+            "images",
+            "created_at",
+        ]
+
+    def _serialize_entity(self, attr_name, obj):
+        entity = getattr(obj, attr_name)
+        if entity:
+            name = getattr(entity, "name", getattr(entity, "title", ""))
+            return {"uuid": str(entity.uuid), "name": name}
+        return None
+
+    def get_campus_event(self, obj):
+        return self._serialize_entity("campus_event", obj)
+
+    def get_student_club_event(self, obj):
+        return self._serialize_entity("student_club_event", obj)
+
+    def get_department_event(self, obj):
+        return self._serialize_entity("department_event", obj)
+
+    def get_union(self, obj):
+        return self._serialize_entity("union", obj)
+
+    def get_club(self, obj):
+        return self._serialize_entity("club", obj)
+
+
+class GlobalGalleryCollectionCreateSerializer(serializers.ModelSerializer):
+    images = GlobalGalleryImageSerializer(many=True)
+
+    class Meta:
+        model = GlobalGalleryCollection
+        fields = [
+            "title",
+            "description",
+            "campus_event",
+            "student_club_event",
+            "department_event",
+            "union",
+            "club",
+            "department",
+            "is_active",
+            "images",
+        ]
+
+    def create(self, validated_data):
+        current_user = get_user_by_context(self.context)
+        images_data = validated_data.pop("images", [])
+        validated_data["created_by"] = current_user
+        collection = GlobalGalleryCollection.objects.create(**validated_data)
+        self._create_images(collection, images_data, current_user)
+        return collection
+
+    def _create_images(self, collection, images_data, user):
+        for idx, image_data in enumerate(images_data, start=1):
+            image_data.setdefault("display_order", idx)
+            GlobalGalleryImage.objects.create(
+                collection=collection,
+                created_by=user,
+                **image_data,
+            )
+
+
+class GlobalGalleryCollectionPatchSerializer(serializers.ModelSerializer):
+    images = GlobalGalleryImageSerializer(many=True, required=False)
+
+    class Meta:
+        model = GlobalGalleryCollection
+        fields = [
+            "title",
+            "description",
+            "campus_event",
+            "student_club_event",
+            "department_event",
+            "union",
+            "club",
+            "department",
+            "is_active",
+            "images",
+        ]
+
+    def update(self, instance, validated_data):
+        current_user = get_user_by_context(self.context)
+        images_data = validated_data.pop("images", None)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+
+        if images_data is not None:
+            instance.images.all().delete()
+            for idx, image_data in enumerate(images_data, start=1):
+                image_data.setdefault("display_order", idx)
+                GlobalGalleryImage.objects.create(
+                    collection=instance,
+                    created_by=current_user,
+                    **image_data,
+                )
+
+        instance.updated_by = current_user
+        instance.save()
+        return instance
 
 class StudentClubMemberListSerializer(serializers.ModelSerializer):
     class Meta:
