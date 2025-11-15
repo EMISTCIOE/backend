@@ -18,12 +18,24 @@ from .models import (
     StudentClubMember,
 )
 
+@admin.register(CampusUnionMember)
+class CampusUnionMemberAdmin(admin.ModelAdmin):
+    list_display = ("full_name", "designation", "union", "is_active")
+    search_fields = ("full_name", "designation", "union__name")
+    list_filter = ("union", "is_active")
+
+
+@admin.register(StudentClubMember)
+class StudentClubMemberAdmin(admin.ModelAdmin):
+    list_display = ("full_name", "designation", "club", "is_active")
+    search_fields = ("full_name", "designation", "club__name")
+    list_filter = ("club", "is_active")
+
+
 admin.site.register(CampusEvent)
 admin.site.register(CampusEventGallery)
 admin.site.register(CampusUnion)
-admin.site.register(CampusUnionMember)
 admin.site.register(StudentClub)
-admin.site.register(StudentClubMember)
 admin.site.register(CampusSection)
 admin.site.register(CampusUnit)
 admin.site.register(ResearchFacility)
