@@ -1,5 +1,6 @@
+from django.core.exceptions import FieldDoesNotExist
 from django.utils.translation import gettext as _
-from django.db.models import Count, Q
+from django.db.models import Count
 from django.utils import timezone
 from datetime import timedelta
 from django_filters.rest_framework import DjangoFilterBackend
@@ -100,7 +101,7 @@ class DashboardStatsView(APIView):
         """Calculate all dashboard statistics"""
         from src.user.models import User
         from src.department.models import Department
-        from src.notice.models import Notice, NoticeCategory
+        from src.notice.models import Notice
         from src.project.models import Project
         from src.research.models import Research
         from src.journal.models import Article, Author, BoardMember
@@ -113,118 +114,105 @@ class DashboardStatsView(APIView):
         start_of_year = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
         
         # ===== USER STATISTICS =====
-        total_users = User.objects.filter(is_archived=False).count()
-        active_users = User.objects.filter(
-            is_archived=False,
-            last_login__gte=thirty_days_ago
-        ).count()
-        new_users_this_month = User.objects.filter(
-            is_archived=False,
+        user_qs = self._active_queryset(User)
+        total_users = user_qs.count()
+        active_users = user_qs.filter(last_login__gte=thirty_days_ago).count()
+        new_users_this_month = user_qs.filter(
             date_joined__month=now.month,
             date_joined__year=now.year
         ).count()
         
-        # Users by role
         users_by_role = {}
-        role_counts = User.objects.filter(is_archived=False).values('roles__name').annotate(count=Count('id'))
+        role_counts = user_qs.values('roles__name').annotate(count=Count('id'))
         for item in role_counts:
             if item['roles__name']:
                 users_by_role[item['roles__name']] = item['count']
         
         # ===== DEPARTMENT STATISTICS =====
-        total_departments = Department.objects.filter(is_archived=False).count()
-        active_departments = Department.objects.filter(is_archived=False, is_active=True).count()
+        department_qs = self._active_queryset(Department)
+        total_departments = department_qs.count()
+        active_departments = department_qs.filter(is_active=True).count()
         
         # ===== NOTICE STATISTICS =====
-        total_notices = Notice.objects.filter(is_archived=False).count()
-        active_notices = Notice.objects.filter(is_archived=False, status='published').count()
-        draft_notices = Notice.objects.filter(is_archived=False, status='draft').count()
-        featured_notices = Notice.objects.filter(is_archived=False, is_featured=True).count()
-        recent_notices_count = Notice.objects.filter(
-            is_archived=False,
+        notice_qs = self._active_queryset(Notice)
+        total_notices = notice_qs.count()
+        active_notices = notice_qs.filter(status='published').count()
+        draft_notices = notice_qs.filter(status='draft').count()
+        featured_notices = notice_qs.filter(is_featured=True).count()
+        recent_notices_count = notice_qs.filter(
             created_at__gte=seven_days_ago
         ).count()
         
-        # Notices by category
         notices_by_category = {}
-        category_counts = Notice.objects.filter(is_archived=False).values('category__name').annotate(count=Count('id'))
+        category_counts = notice_qs.values('category__name').annotate(count=Count('id'))
         for item in category_counts:
             if item['category__name']:
                 notices_by_category[item['category__name']] = item['count']
         
         # ===== PROJECT STATISTICS =====
-        total_projects = Project.objects.filter(is_archived=False).count()
+        project_qs = self._active_queryset(Project)
+        total_projects = project_qs.count()
         
-        # Projects by status
         projects_by_status = {}
-        status_counts = Project.objects.filter(is_archived=False).values('status').annotate(count=Count('id'))
+        status_counts = project_qs.values('status').annotate(count=Count('id'))
         for item in status_counts:
             projects_by_status[item['status']] = item['count']
         
-        # Projects by type
         projects_by_type = {}
-        type_counts = Project.objects.filter(is_archived=False).values('project_type').annotate(count=Count('id'))
+        type_counts = project_qs.values('project_type').annotate(count=Count('id'))
         for item in type_counts:
             projects_by_type[item['project_type']] = item['count']
         
-        # Projects by department
         projects_by_department = {}
-        dept_counts = Project.objects.filter(is_archived=False).values('department__name').annotate(count=Count('id'))
+        dept_counts = project_qs.values('department__name').annotate(count=Count('id'))
         for item in dept_counts:
             if item['department__name']:
                 projects_by_department[item['department__name']] = item['count']
         
-        completed_projects_this_year = Project.objects.filter(
-            is_archived=False,
+        completed_projects_this_year = project_qs.filter(
             status='completed',
             updated_at__gte=start_of_year
         ).count()
         
         # ===== RESEARCH STATISTICS =====
-        total_research = Research.objects.filter(is_archived=False).count()
+        research_qs = self._active_queryset(Research)
+        total_research = research_qs.count()
         
-        # Research by status
         research_by_status = {}
-        research_status_counts = Research.objects.filter(is_archived=False).values('status').annotate(count=Count('id'))
+        research_status_counts = research_qs.values('status').annotate(count=Count('id'))
         for item in research_status_counts:
             research_by_status[item['status']] = item['count']
         
-        # Research by type
         research_by_type = {}
-        research_type_counts = Research.objects.filter(is_archived=False).values('research_type').annotate(count=Count('id'))
+        research_type_counts = research_qs.values('research_type').annotate(count=Count('id'))
         for item in research_type_counts:
             research_by_type[item['research_type']] = item['count']
         
-        published_research_this_year = Research.objects.filter(
-            is_archived=False,
+        published_research_this_year = research_qs.filter(
             status='published',
             updated_at__gte=start_of_year
         ).count()
         
         # ===== JOURNAL STATISTICS =====
-        total_articles = Article.objects.filter(is_archived=False).count()
-        total_authors = Author.objects.filter(is_archived=False).count()
-        total_board_members = BoardMember.objects.filter(is_archived=False).count()
+        total_articles = self._active_queryset(Article).count()
+        total_authors = self._active_queryset(Author).count()
+        total_board_members = self._active_queryset(BoardMember).count()
         
         # ===== CURRICULUM STATISTICS =====
-        total_subjects = Subject.objects.filter(is_archived=False).count()
-        total_routines = Routine.objects.filter(is_archived=False).count()
-        total_suggestions = Suggestion.objects.filter(is_archived=False).count()
+        total_subjects = self._active_queryset(Subject).count()
+        total_routines = self._active_queryset(Routine).count()
+        total_suggestions = self._active_queryset(Suggestion).count()
         
         # ===== FEEDBACK STATISTICS =====
-        total_feedback_submissions = CampusFeedback.objects.filter(is_archived=False).count()
-        pending_feedback = CampusFeedback.objects.filter(is_archived=False, is_resolved=False).count()
+        feedback_qs = self._active_queryset(CampusFeedback)
+        total_feedback_submissions = feedback_qs.count()
+        pending_feedback = feedback_qs.filter(is_resolved=False).count()
         
         # ===== GRAPH DATA - TRENDS =====
-        # Notices trend (last 6 months)
         notices_trend = self._get_monthly_trend(Notice, 6)
-        
-        # Users growth (last 6 months)
         users_growth = self._get_monthly_trend(User, 6)
-        
-        # Research publications trend (last 12 months)
         research_publications_trend = self._get_monthly_trend(
-            Research.objects.filter(status='published'), 
+            research_qs.filter(status='published'),
             12
         )
         
@@ -270,6 +258,15 @@ class DashboardStatsView(APIView):
         """
         from src.user.models import User
         
+        if hasattr(queryset_or_model, 'filter'):
+            qs = queryset_or_model
+            model_class = getattr(queryset_or_model, 'model', None)
+            if model_class and self._model_has_field(model_class, 'is_archived'):
+                qs = qs.filter(is_archived=False)
+        else:
+            model_class = queryset_or_model
+            qs = self._active_queryset(model_class)
+
         now = timezone.now()
         trend_data = []
         
@@ -281,19 +278,6 @@ class DashboardStatsView(APIView):
                 month_end = month_start.replace(year=month_start.year + 1, month=1)
             else:
                 month_end = month_start.replace(month=month_start.month + 1)
-            
-            # Get queryset
-            if hasattr(queryset_or_model, 'filter'):
-                qs = queryset_or_model
-            else:
-                qs = queryset_or_model.objects.filter(is_archived=False)
-            
-            # Determine date field based on model type
-            # User model uses 'date_joined' instead of 'created_at'
-            if hasattr(queryset_or_model, 'model'):
-                model_class = queryset_or_model.model
-            else:
-                model_class = queryset_or_model
             
             if model_class == User:
                 date_field = 'date_joined'
@@ -311,3 +295,16 @@ class DashboardStatsView(APIView):
             })
         
         return trend_data
+
+    def _active_queryset(self, model):
+        queryset = model.objects.all()
+        if self._model_has_field(model, 'is_archived'):
+            return queryset.filter(is_archived=False)
+        return queryset
+
+    def _model_has_field(self, model, field_name):
+        try:
+            model._meta.get_field(field_name)
+        except FieldDoesNotExist:
+            return False
+        return True
