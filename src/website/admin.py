@@ -115,8 +115,37 @@ class GlobalEventAdmin(admin.ModelAdmin):
     )
 
 
+class ClubGalleryImageInline(admin.TabularInline):
+    model = GlobalGalleryImage
+    fk_name = "club"
+    extra = 0
+    fields = ("image", "caption", "global_event", "display_order")
+    readonly_fields = ("created_at",)
+    show_change_link = True
+
+
+@admin.register(StudentClub)
+class StudentClubAdmin(admin.ModelAdmin):
+    list_display = ["name", "department", "website_url", "is_active"]
+    search_fields = ["name", "short_description"]
+    list_filter = ["department", "is_active"]
+    readonly_fields = ["created_at", "updated_at"]
+    inlines = [ClubGalleryImageInline]
+    fieldsets = (
+        ("Club Information", {
+            "fields": ("name", "short_description", "detailed_description", "thumbnail", "website_url")
+        }),
+        ("Department", {
+            "fields": ("department",)
+        }),
+        ("Audit Information", {
+            "fields": ("created_at", "updated_at", "created_by", "updated_by"),
+            "classes": ("collapse",)
+        }),
+    )
+
+
 admin.site.register(CampusUnion)
-admin.site.register(StudentClub)
 admin.site.register(CampusSection)
 admin.site.register(CampusUnit)
 admin.site.register(ResearchFacility)

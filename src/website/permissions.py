@@ -171,10 +171,10 @@ class GlobalGalleryPermission(BasePermission):
 class GlobalGalleryImagePermission(BasePermission):
     def has_permission(self, request, view):
         user_permissions_dict = {
-            "SAFE_METHODS": "view_galleryimage",
-            "POST": "add_galleryimage",
-            "PATCH": "change_galleryimage",
-            "DELETE": "delete_galleryimage",
+            "SAFE_METHODS": "view_globalgalleryimage",
+            "POST": "add_globalgalleryimage",
+            "PATCH": "change_globalgalleryimage",
+            "DELETE": "delete_globalgalleryimage",
         }
 
         return validate_permissions(request, user_permissions_dict)

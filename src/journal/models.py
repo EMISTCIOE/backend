@@ -3,6 +3,7 @@ import uuid
 from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.urls import reverse
+from django.utils.translation import gettext_lazy as _
 
 # Create your models here.
 
@@ -49,6 +50,15 @@ class Article(models.Model):
     abstract = models.TextField()
     keywords = models.CharField(max_length=500, null=True, blank=True)
     discipline = models.CharField(max_length=500, null=True, blank=True)
+    department = models.ForeignKey(
+        "department.Department",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name=_("Department"),
+        help_text=_("Department associated with this article (optional)"),
+        related_name="journal_articles",
+    )
     authors = models.ManyToManyField(Author, related_name="article_author")
     submission_id = models.IntegerField(
         verbose_name="Submission ID",

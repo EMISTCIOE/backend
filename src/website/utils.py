@@ -63,8 +63,6 @@ def build_global_gallery_items():
             is_active=True,
         )
         .select_related(
-            
-        
             "union",
             "club",
             "department",
@@ -78,7 +76,6 @@ def build_global_gallery_items():
             "source_title",
             "source_context",
             "source_type",
-            
             "union__uuid",
             "union__name",
             "club__uuid",

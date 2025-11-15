@@ -839,11 +839,6 @@ class GlobalGalleryImageViewSet(viewsets.ModelViewSet):
     permission_classes = [GlobalGalleryImagePermission]
     queryset = (
         GlobalGalleryImage.objects.select_related(
-            "campus_event",
-            "campus_event__union",
-            "student_club_event",
-            "student_club_event__club",
-            
             "union",
             "club",
             "department",

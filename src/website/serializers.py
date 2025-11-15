@@ -1495,9 +1495,6 @@ class GlobalGalleryImageSerializer(serializers.ModelSerializer):
             "source_name",
             "source_context",
             "source_title",
-            "campus_event",
-            "student_club_event",
-            
             "union",
             "club",
             "department",
