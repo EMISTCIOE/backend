@@ -11,15 +11,19 @@ from .models import (
     CampusStaffDesignation,
     CampusUnit,
     CampusUnion,
+    CampusUnionMember,
     ResearchFacility,
     SocialMediaLink,
     StudentClub,
+    StudentClubMember,
 )
 
 admin.site.register(CampusEvent)
 admin.site.register(CampusEventGallery)
 admin.site.register(CampusUnion)
+admin.site.register(CampusUnionMember)
 admin.site.register(StudentClub)
+admin.site.register(StudentClubMember)
 admin.site.register(CampusSection)
 admin.site.register(CampusUnit)
 admin.site.register(ResearchFacility)
