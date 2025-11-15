@@ -329,7 +329,7 @@ class PublicGlobalGalleryListAPIView(GenericAPIView):
             ]
 
         items.sort(key=lambda item: item["created_at"], reverse=True)
-        page = self.paginate_queryset(items, request, view=self)
+        page = self.paginate_queryset(items)
         serializer = self.get_serializer(page, many=True)
         return self.get_paginated_response(serializer.data)
 
