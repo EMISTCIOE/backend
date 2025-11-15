@@ -226,6 +226,8 @@ class AcademicProgramListSerializer(serializers.ModelSerializer):
             "id",
             "name",
             "short_name",
+            "program_type",
+            "description",
             "department",
             "thumbnail",
             "is_active",
@@ -242,6 +244,7 @@ class AcademicProgramRetrieveSerializer(AbstractInfoRetrieveSerializer):
             "name",
             "department",
             "short_name",
+            "program_type",
             "description",
             "thumbnail",
         ]
@@ -259,7 +262,7 @@ class AcademicProgramCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AcademicProgram
-        fields = ["name", "short_name", "description", "department", "thumbnail"]
+        fields = ["name", "short_name", "description", "program_type", "department", "thumbnail"]
 
     def create(self, validated_data):
         current_user = get_user_by_context(self.context)
@@ -292,6 +295,7 @@ class AcademicProgramPatchSerializer(FileHandlingMixin, serializers.ModelSeriali
             "name",
             "short_name",
             "description",
+            "program_type",
             "department",
             "thumbnail",
             "is_active",

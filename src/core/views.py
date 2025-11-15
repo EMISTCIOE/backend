@@ -120,8 +120,8 @@ class DashboardStatsView(APIView):
         ).count()
         new_users_this_month = User.objects.filter(
             is_archived=False,
-            created_at__month=now.month,
-            created_at__year=now.year
+            date_joined__month=now.month,
+            date_joined__year=now.year
         ).count()
         
         # Users by role
@@ -268,6 +268,8 @@ class DashboardStatsView(APIView):
         Calculate monthly trend data for charts.
         Returns list of {month: 'Jan', count: 10} objects
         """
+        from src.user.models import User
+        
         now = timezone.now()
         trend_data = []
         
@@ -286,10 +288,22 @@ class DashboardStatsView(APIView):
             else:
                 qs = queryset_or_model.objects.filter(is_archived=False)
             
-            count = qs.filter(
-                created_at__gte=month_start,
-                created_at__lt=month_end
-            ).count()
+            # Determine date field based on model type
+            # User model uses 'date_joined' instead of 'created_at'
+            if hasattr(queryset_or_model, 'model'):
+                model_class = queryset_or_model.model
+            else:
+                model_class = queryset_or_model
+            
+            if model_class == User:
+                date_field = 'date_joined'
+            else:
+                date_field = 'created_at'
+            
+            count = qs.filter(**{
+                f'{date_field}__gte': month_start,
+                f'{date_field}__lt': month_end
+            }).count()
             
             trend_data.append({
                 'month': month_start.strftime('%b %Y'),
