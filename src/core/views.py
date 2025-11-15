@@ -126,10 +126,10 @@ class DashboardStatsView(APIView):
         
         # Users by role
         users_by_role = {}
-        role_counts = User.objects.filter(is_archived=False).values('role__name').annotate(count=Count('id'))
+        role_counts = User.objects.filter(is_archived=False).values('roles__name').annotate(count=Count('id'))
         for item in role_counts:
-            if item['role__name']:
-                users_by_role[item['role__name']] = item['count']
+            if item['roles__name']:
+                users_by_role[item['roles__name']] = item['count']
         
         # ===== DEPARTMENT STATISTICS =====
         total_departments = Department.objects.filter(is_archived=False).count()
