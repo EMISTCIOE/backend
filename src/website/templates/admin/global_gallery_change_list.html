@@ -36,7 +36,7 @@
                 <tr style="background-color: #f8f9fa; border-bottom: 2px solid #ddd;">
                     <th style="padding: 12px; text-align: left; font-weight: bold;">Image</th>
                     <th style="padding: 12px; text-align: left; font-weight: bold;">Caption</th>
-                    <th style="padding: 12px; text-align: left; font-weight: bold;">Event Name</th>
+                    <th style="padding: 12px; text-align: left; font-weight: bold;">Source Name</th>
                     <th style="padding: 12px; text-align: left; font-weight: bold;">Source Type</th>
                     <th style="padding: 12px; text-align: left; font-weight: bold;">Source Context</th>
                     <th style="padding: 12px; text-align: left; font-weight: bold;">Created At</th>
@@ -47,8 +47,8 @@
                     {% for item in gallery_items %}
                         <tr style="border-bottom: 1px solid #ddd;">
                             <td style="padding: 12px;">
-                                {% if item.image_html %}
-                                    {{ item.image_html|safe }}
+                                {% if item.image %}
+                                    <img src="{{ item.image }}" alt="Gallery image" style="width: 120px; height: 80px; object-fit: cover; border-radius: 4px;" />
                                 {% else %}
                                     <span style="color: #999;">No image</span>
                                 {% endif %}

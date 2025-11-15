@@ -15,7 +15,6 @@ from .models import (
     CampusUnion,
     CampusUnionMember,
     GlobalEvent,
-    GlobalGalleryCollection,
     GlobalGalleryImage,
     ResearchFacility,
     SocialMediaLink,
@@ -27,13 +26,14 @@ from .models import (
 SOURCE_TYPES = [
     {"value": "union_event", "label": "Union Event"},
     {"value": "campus_event", "label": "Campus Event"},
-    {"value": "club_event", "label": "Club Event"},
+    {"value": "club_event", "label": "Student Club Event"},
     {"value": "department_event", "label": "Department Event"},
     {"value": "union_gallery", "label": "Union Gallery"},
     {"value": "club_gallery", "label": "Club Gallery"},
     {"value": "department_gallery", "label": "Department Gallery"},
     {"value": "global_event", "label": "Global Event"},
-    {"value": "gallery_collection", "label": "Custom Collection"},
+    {"value": "college", "label": "College Gallery"},
+    {"value": "custom", "label": "Custom"},
 ]
 
 
@@ -51,8 +51,8 @@ class StudentClubMemberAdmin(admin.ModelAdmin):
     list_filter = ("club", "is_active")
 
 
-@admin.register(GlobalGalleryCollection)
-class GlobalGalleryCollectionAdmin(admin.ModelAdmin):
+@admin.register(GlobalGalleryImage)
+class GlobalGalleryImageAdmin(admin.ModelAdmin):
     change_list_template = "admin/global_gallery_change_list.html"
 
     def changelist_view(self, request, extra_context=None):
@@ -86,12 +86,6 @@ class GlobalGalleryCollectionAdmin(admin.ModelAdmin):
         )
 
         return super().changelist_view(request, extra_context=extra_context)
-
-
-@admin.register(GlobalGalleryImage)
-class GlobalGalleryImageAdmin(admin.ModelAdmin):
-    list_display = ("collection", "caption", "is_active")
-    list_filter = ("collection", "is_active")
 
 
 @admin.register(GlobalEvent)

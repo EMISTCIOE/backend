@@ -44,9 +44,9 @@ from src.website.messages import (
     SOCIAL_MEDIA_NOT_FOUND,
     STUDENT_CLUB_EVENT_DELETED_SUCCESS,
     STUDENT_CLUB_EVENT_NOT_FOUND,
-    GLOBAL_GALLERY_COLLECTION_CREATED_SUCCESS,
-    GLOBAL_GALLERY_COLLECTION_UPDATED_SUCCESS,
-    GLOBAL_GALLERY_COLLECTION_DELETED_SUCCESS,
+    GLOBAL_GALLERY_IMAGE_CREATED_SUCCESS,
+    GLOBAL_GALLERY_IMAGE_UPDATED_SUCCESS,
+    GLOBAL_GALLERY_IMAGE_DELETED_SUCCESS,
     GLOBAL_EVENT_CREATED_SUCCESS,
     GLOBAL_EVENT_UPDATED_SUCCESS,
     GLOBAL_EVENT_DELETED_SUCCESS,
@@ -72,7 +72,6 @@ from .models import (
     StudentClubEvent,
     StudentClubEventGallery,
     StudentClubMember,
-    GlobalGalleryCollection,
     GlobalGalleryImage,
     GlobalEvent,
 )
@@ -91,7 +90,7 @@ from .permissions import (
     StudentClubEventPermission,
     StudentClubPermission,
     GlobalGalleryPermission,
-    GlobalGalleryCollectionPermission,
+    GlobalGalleryImagePermission,
     GlobalEventPermission,
 )
 from .serializers import (
@@ -137,9 +136,9 @@ from .serializers import (
     ResearchFacilityPatchSerializer,
     ResearchFacilityRetrieveSerializer,
     GlobalGallerySerializer,
-    GlobalGalleryCollectionListSerializer,
-    GlobalGalleryCollectionCreateSerializer,
-    GlobalGalleryCollectionPatchSerializer,
+    GlobalGalleryImageSerializer,
+    GlobalGalleryImageCreateSerializer,
+    GlobalGalleryImageUpdateSerializer,
     GlobalEventCreateSerializer,
     GlobalEventListSerializer,
     GlobalEventPatchSerializer,
@@ -1013,48 +1012,43 @@ class StudentClubEventGalleryDestroyAPIView(generics.DestroyAPIView):
         )
 
 
-class GlobalGalleryCollectionViewSet(viewsets.ModelViewSet):
-    permission_classes = [GlobalGalleryCollectionPermission]
+class GlobalGalleryImageViewSet(viewsets.ModelViewSet):
+    permission_classes = [GlobalGalleryImagePermission]
     queryset = (
-        GlobalGalleryCollection.objects.select_related(
+        GlobalGalleryImage.objects.select_related(
             "campus_event",
+            "campus_event__union",
             "student_club_event",
+            "student_club_event__club",
             "department_event",
+            "department_event__department",
             "union",
             "club",
-            "global_event",
             "department",
+            "global_event",
         )
-        .prefetch_related("images")
-        .all()
+        .filter(is_archived=False)
+        .order_by("-created_at")
     )
     filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
-    filterset_fields = [
-        "is_active",
-        "campus_event",
-        "student_club_event",
-        "department_event",
-        "union",
-        "club",
-        "global_event",
-        "department",
-    ]
-    ordering_fields = ["created_at", "title"]
-    http_method_names = ["get", "post", "put", "patch", "delete"]
+    filterset_fields = ["is_active", "source_type"]
+    search_fields = ["caption", "source_title", "source_context"]
+    ordering_fields = ["created_at", "display_order"]
+    http_method_names = ["get", "post", "patch", "delete"]
 
     def get_serializer_class(self):
         if self.action in ["list", "retrieve"]:
-            return GlobalGalleryCollectionListSerializer
+            return GlobalGalleryImageSerializer
         if self.action == "create":
-            return GlobalGalleryCollectionCreateSerializer
-        return GlobalGalleryCollectionPatchSerializer
+            return GlobalGalleryImageCreateSerializer
+        return GlobalGalleryImageUpdateSerializer
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(
-            {"message": GLOBAL_GALLERY_COLLECTION_CREATED_SUCCESS},
+            {"message": GLOBAL_GALLERY_IMAGE_CREATED_SUCCESS},
             status=status.HTTP_201_CREATED,
         )
 
@@ -1069,7 +1063,7 @@ class GlobalGalleryCollectionViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(
-            {"message": GLOBAL_GALLERY_COLLECTION_UPDATED_SUCCESS},
+            {"message": GLOBAL_GALLERY_IMAGE_UPDATED_SUCCESS},
             status=status.HTTP_200_OK,
         )
 
@@ -1079,12 +1073,11 @@ class GlobalGalleryCollectionViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        for image in instance.images.all():
-            if image.image:
-                image.image.delete(save=False)
+        if instance.image:
+            instance.image.delete(save=False)
         instance.delete()
         return Response(
-            {"message": GLOBAL_GALLERY_COLLECTION_DELETED_SUCCESS},
+            {"message": GLOBAL_GALLERY_IMAGE_DELETED_SUCCESS},
             status=status.HTTP_200_OK,
         )
 

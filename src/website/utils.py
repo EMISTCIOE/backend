@@ -2,6 +2,79 @@ def nepali_year_choices(start=2075, end=2090):
     return [(year, str(year)) for year in range(start, end + 1)]
 
 
+def resolve_gallery_image_source(image):
+    if image.campus_event:
+        union_name = getattr(image.campus_event.union, "name", None)
+        if union_name:
+            return (
+                "union_event",
+                str(image.campus_event.uuid),
+                image.campus_event.title,
+                union_name,
+            )
+        return (
+            "campus_event",
+            str(image.campus_event.uuid),
+            image.campus_event.title,
+            "Campus Event",
+        )
+
+    if image.student_club_event:
+        return (
+            "club_event",
+            str(image.student_club_event.uuid),
+            image.student_club_event.title,
+            image.student_club_event.club.name if image.student_club_event.club else "",
+        )
+
+    if image.department_event:
+        return (
+            "department_event",
+            str(image.department_event.uuid),
+            image.department_event.title,
+            image.department_event.department.name if image.department_event.department else "",
+        )
+
+    if image.global_event:
+        return (
+            "global_event",
+            str(image.global_event.uuid),
+            image.global_event.title,
+            image.global_event.description or "Global Event",
+        )
+
+    if image.union:
+        return (
+            "union_gallery",
+            str(image.union.uuid),
+            image.union.name,
+            image.source_title or "Union Gallery",
+        )
+
+    if image.club:
+        return (
+            "club_gallery",
+            str(image.club.uuid),
+            image.club.name,
+            image.source_title or "Club Gallery",
+        )
+
+    if image.department:
+        return (
+            "department_gallery",
+            str(image.department.uuid),
+            image.department.name,
+            image.source_title or "Department Gallery",
+        )
+
+    return (
+        image.source_type or "college",
+        "",
+        image.source_title or "College",
+        image.source_context or "",
+    )
+
+
 def build_global_gallery_items():
     """Aggregate gallery images from campus, student club, and department events."""
     from src.website.models import CampusEventGallery, StudentClubEventGallery, GlobalGalleryImage
@@ -110,87 +183,54 @@ def build_global_gallery_items():
     collection_gallery_qs = (
         GlobalGalleryImage.objects.filter(
             is_archived=False,
-            collection__is_archived=False,
-            collection__is_active=True,
+            is_active=True,
         )
         .select_related(
-            "collection",
-            "collection__campus_event",
-            "collection__student_club_event",
-            "collection__department_event",
-            "collection__union",
-            "collection__club",
-            "collection__department",
-            "collection__global_event",
+            "campus_event",
+            "campus_event__union",
+            "student_club_event",
+            "student_club_event__club",
+            "department_event",
+            "department_event__department",
+            "union",
+            "club",
+            "department",
+            "global_event",
         )
         .only(
             "uuid",
             "image",
             "caption",
             "created_at",
-            "collection__uuid",
-            "collection__title",
-            "collection__description",
-            "collection__campus_event__uuid",
-            "collection__campus_event__title",
-            "collection__campus_event__union__name",
-            "collection__student_club_event__uuid",
-            "collection__student_club_event__title",
-            "collection__department_event__uuid",
-            "collection__department_event__title",
-            "collection__union__name",
-            "collection__club__name",
-            "collection__department__name",
-            "collection__global_event__uuid",
-            "collection__global_event__title",
+            "source_title",
+            "source_context",
+            "source_type",
+            "campus_event__uuid",
+            "campus_event__title",
+            "campus_event__union__name",
+            "student_club_event__uuid",
+            "student_club_event__title",
+            "student_club_event__club__name",
+            "department_event__uuid",
+            "department_event__title",
+            "department_event__department__name",
+            "union__uuid",
+            "union__name",
+            "club__uuid",
+            "club__name",
+            "department__uuid",
+            "department__name",
+            "global_event__uuid",
+            "global_event__title",
         )
     )
 
     def _resolve_collection_context(collection):
-        if collection.campus_event:
-            return (
-                "campus_event",
-                str(collection.campus_event.uuid),
-                collection.campus_event.title,
-                collection.campus_event.union.name if collection.campus_event.union else "Campus Event",
-            )
-        if collection.student_club_event:
-            return (
-                "club_event",
-                str(collection.student_club_event.uuid),
-                collection.student_club_event.title,
-                collection.student_club_event.club.name if collection.student_club_event.club else "Student Club Event",
-            )
-        if collection.department_event:
-            return (
-                "department_event",
-                str(collection.department_event.uuid),
-                collection.department_event.title,
-                collection.department_event.department.name if collection.department_event.department else "Department Event",
-            )
-        if collection.global_event:
-            return (
-                "global_event",
-                str(collection.global_event.uuid),
-                collection.global_event.title,
-                collection.global_event.description or "Global Event",
-            )
-        if collection.union:
-            return ("union_gallery", str(collection.union.uuid), collection.union.name, collection.title or "Union Gallery")
-        if collection.club:
-            return ("club_gallery", str(collection.club.uuid), collection.club.name, collection.title or "Club Gallery")
-        if collection.department:
-            return ("department_gallery", str(collection.department.uuid), collection.department.name, collection.title or "Department Gallery")
-        return (
-            "gallery_collection",
-            str(collection.uuid),
-            collection.title or "Gallery",
-            collection.description or "",
-        )
+        return resolve_gallery_image_source(collection)
 
     for gallery in collection_gallery_qs:
         source_type, source_identifier, source_name, source_context = _resolve_collection_context(
-            gallery.collection
+            gallery
         )
         items.append(
             {

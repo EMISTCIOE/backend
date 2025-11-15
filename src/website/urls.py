@@ -14,13 +14,13 @@ from .views import (
     CampusSectionViewSet,
     CampusUnitViewSet,
     CampusUnionViewSet,
+    GlobalGalleryImageViewSet,
+    GlobalGalleryListAPIView,
+    GlobalEventViewSet,
     SocialMediaLinkDeleteAPIView,
     StudentClubEventGalleryDestroyAPIView,
     StudentClubEventViewSet,
     StudentClubViewSet,
-    GlobalGalleryListAPIView,
-    GlobalGalleryCollectionViewSet,
-    GlobalEventViewSet,
 )
 from .listing_apis.views import FiscalSessionBSForCampusReportListAPIView
 
@@ -55,9 +55,9 @@ router.register(
     basename="student-club-event",
 )
 router.register(
-    "gallery-collections",
-    GlobalGalleryCollectionViewSet,
-    basename="gallery-collection",
+    "gallery-images",
+    GlobalGalleryImageViewSet,
+    basename="gallery-image",
 )
 router.register(
     "global-events",

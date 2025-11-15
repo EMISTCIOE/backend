@@ -997,110 +997,95 @@ class GlobalEvent(AuditInfoModel):
         return self.title
 
 
-class GlobalGalleryCollection(AuditInfoModel):
-    """A collection of gallery images that can be linked to various campus entities."""
-
-    title = models.CharField(
-        _("Title"),
-        max_length=255,
-        blank=True,
-        help_text=_("Optional name for the gallery collection."),
-    )
-    description = models.TextField(
-        _("Description"),
-        blank=True,
-        help_text=_("Additional notes to describe the collection."),
-    )
-    campus_event = models.ForeignKey(
-        CampusEvent,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="gallery_collections",
-        verbose_name=_("Campus Event"),
-        help_text=_("Associate this collection with a campus-wide event."),
-    )
-    student_club_event = models.ForeignKey(
-        StudentClubEvent,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="gallery_collections",
-        verbose_name=_("Student Club Event"),
-        help_text=_("Associate this collection with a club event."),
-    )
-    department_event = models.ForeignKey(
-        DepartmentEvent,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="gallery_collections",
-        verbose_name=_("Department Event"),
-        help_text=_("Associate this collection with a department event."),
-    )
-    union = models.ForeignKey(
-        CampusUnion,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="gallery_collections",
-        verbose_name=_("Union"),
-        help_text=_("Optional student union linked to the gallery."),
-    )
-    club = models.ForeignKey(
-        StudentClub,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="gallery_collections",
-        verbose_name=_("Student Club"),
-        help_text=_("Optional student club linked to the gallery."),
-    )
-    department = models.ForeignKey(
-        Department,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="gallery_collections",
-        verbose_name=_("Department"),
-        help_text=_("Optional department linked to the gallery."),
-    )
-    global_event = models.ForeignKey(
-        GlobalEvent,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="gallery_collections",
-        verbose_name=_("Global Event"),
-        help_text=_("Associate this collection with a global event."),
-    )
-    is_active = models.BooleanField(
-        _("Is Active"),
-        default=True,
-        help_text=_("Inactive galleries will be hidden from public listings."),
-    )
-
-    class Meta:
-        verbose_name = _("Gallery Collection")
-        verbose_name_plural = _("Gallery Collections")
-
-    def __str__(self):
-        ctx = self.title or "Gallery"
-        if self.campus_event:
-            ctx = f"{ctx} ({self.campus_event.title})"
-        if self.global_event:
-            ctx = f"{ctx} ({self.global_event.title})"
-        return ctx
-
-
 class GlobalGalleryImage(AuditInfoModel):
     """Images belonging to a gallery collection."""
 
-    collection = models.ForeignKey(
-        GlobalGalleryCollection,
-        on_delete=models.CASCADE,
-        related_name="images",
-        verbose_name=_("Gallery Collection"),
+    class SourceType(models.TextChoices):
+        CAMPUS_EVENT = "campus_event", _("Campus Event")
+        UNION_EVENT = "union_event", _("Union Event")
+        CLUB_EVENT = "club_event", _("Student Club Event")
+        DEPARTMENT_EVENT = "department_event", _("Department Event")
+        GLOBAL_EVENT = "global_event", _("Global Event")
+        UNION_GALLERY = "union_gallery", _("Union Gallery")
+        CLUB_GALLERY = "club_gallery", _("Club Gallery")
+        DEPARTMENT_GALLERY = "department_gallery", _("Department Gallery")
+        COLLEGE = "college", _("College Gallery")
+        CUSTOM = "custom", _("Custom Gallery")
+
+    source_type = models.CharField(
+        _("Source Type"),
+        max_length=32,
+        choices=SourceType.choices,
+        default=SourceType.COLLEGE,
+        help_text=_("Primary source category applied to this image."),
+    )
+    source_title = models.CharField(
+        _("Source Title"),
+        max_length=255,
+        blank=True,
+        help_text=_("Optional title or headline describing the source."),
+    )
+    source_context = models.CharField(
+        _("Source Context"),
+        max_length=255,
+        blank=True,
+        help_text=_("Optional context shown alongside this image."),
+    )
+    campus_event = models.ForeignKey(
+        CampusEvent,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="global_gallery_images",
+        verbose_name=_("Campus Event"),
+    )
+    student_club_event = models.ForeignKey(
+        StudentClubEvent,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="global_gallery_images",
+        verbose_name=_("Student Club Event"),
+    )
+    department_event = models.ForeignKey(
+        DepartmentEvent,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="global_gallery_images",
+        verbose_name=_("Department Event"),
+    )
+    union = models.ForeignKey(
+        CampusUnion,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="global_gallery_images",
+        verbose_name=_("Union"),
+    )
+    club = models.ForeignKey(
+        StudentClub,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="global_gallery_images",
+        verbose_name=_("Student Club"),
+    )
+    department = models.ForeignKey(
+        Department,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="global_gallery_images",
+        verbose_name=_("Department"),
+    )
+    global_event = models.ForeignKey(
+        GlobalEvent,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="global_gallery_images",
+        verbose_name=_("Global Event"),
     )
     image = models.ImageField(
         _("Image"),
@@ -1125,7 +1110,8 @@ class GlobalGalleryImage(AuditInfoModel):
         ordering = ["display_order", "-created_at"]
 
     def __str__(self):
-        return self.caption or f"{self.collection.title or 'Gallery'} Image"
+        fallback = self.source_title or "Gallery"
+        return self.caption or f"{fallback} Image"
 
 
 class CampusFeedback(PublicAuditInfoModel):

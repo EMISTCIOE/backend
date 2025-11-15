@@ -7,7 +7,7 @@ from src.base.serializers import AbstractInfoRetrieveSerializer
 
 # Project Imports
 from src.core.models import FiscalSessionBS
-from src.department.models import Department
+from src.department.models import Department, DepartmentEvent
 from src.libs.get_context import get_user_by_context
 from src.libs.mixins import FileHandlingMixin
 from src.website.validators import (
@@ -69,9 +69,9 @@ from .models import (
     StudentClubEventGallery,
     StudentClubMember,
     GlobalEvent,
-    GlobalGalleryCollection,
     GlobalGalleryImage,
 )
+from .utils import resolve_gallery_image_source
 
 
 class DepartmentSummarySerializer(serializers.ModelSerializer):
@@ -1655,113 +1655,205 @@ class GlobalGallerySerializer(serializers.Serializer):
 
 
 class GlobalGalleryImageSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(required=False)
+    source_type = serializers.SerializerMethodField()
+    source_identifier = serializers.SerializerMethodField()
+    source_name = serializers.SerializerMethodField()
+    source_context = serializers.SerializerMethodField()
 
     class Meta:
         model = GlobalGalleryImage
-        fields = ["id", "image", "caption", "display_order"]
-
-
-class GlobalGalleryCollectionListSerializer(serializers.ModelSerializer):
-    campus_event = serializers.SerializerMethodField()
-    student_club_event = serializers.SerializerMethodField()
-    department_event = serializers.SerializerMethodField()
-    union = serializers.SerializerMethodField()
-    club = serializers.SerializerMethodField()
-    global_event = serializers.SerializerMethodField()
-    images = GlobalGalleryImageSerializer(many=True, read_only=True)
-    department = DepartmentSummarySerializer(read_only=True)
-
-    class Meta:
-        model = GlobalGalleryCollection
         fields = [
+            "id",
             "uuid",
-            "title",
-            "description",
+            "image",
+            "caption",
+            "display_order",
             "is_active",
-            "campus_event",
-            "student_club_event",
-            "department_event",
-            "union",
-            "club",
-            "global_event",
-            "department",
-            "images",
             "created_at",
-        ]
-
-    def _serialize_entity(self, attr_name, obj):
-        entity = getattr(obj, attr_name)
-        if entity:
-            name = getattr(entity, "name", getattr(entity, "title", ""))
-            return {"uuid": str(entity.uuid), "name": name}
-        return None
-
-    def get_campus_event(self, obj):
-        return self._serialize_entity("campus_event", obj)
-
-    def get_student_club_event(self, obj):
-        return self._serialize_entity("student_club_event", obj)
-
-    def get_department_event(self, obj):
-        return self._serialize_entity("department_event", obj)
-
-    def get_union(self, obj):
-        return self._serialize_entity("union", obj)
-
-    def get_club(self, obj):
-        return self._serialize_entity("club", obj)
-
-    def get_global_event(self, obj):
-        if obj.global_event:
-            return {"uuid": str(obj.global_event.uuid), "name": obj.global_event.title}
-        return None
-
-
-class GlobalGalleryCollectionCreateSerializer(serializers.ModelSerializer):
-    images = GlobalGalleryImageSerializer(many=True)
-
-    class Meta:
-        model = GlobalGalleryCollection
-        fields = [
-            "title",
-            "description",
+            "source_type",
+            "source_identifier",
+            "source_name",
+            "source_context",
+            "source_title",
             "campus_event",
             "student_club_event",
             "department_event",
             "union",
             "club",
             "department",
-            "is_active",
-            "images",
+            "global_event",
         ]
+
+    def _source_values(self, obj):
+        return resolve_gallery_image_source(obj)
+
+    def get_source_type(self, obj):
+        return self._source_values(obj)[0]
+
+    def get_source_identifier(self, obj):
+        return self._source_values(obj)[1]
+
+    def get_source_name(self, obj):
+        return self._source_values(obj)[2]
+
+    def get_source_context(self, obj):
+        return self._source_values(obj)[3]
+
+
+class GlobalGalleryImageUploadSerializer(serializers.Serializer):
+    image = serializers.ImageField()
+    caption = serializers.CharField(required=False, allow_blank=True)
+    display_order = serializers.IntegerField(required=False, min_value=1)
+
+
+class GlobalGalleryImageCreateSerializer(serializers.Serializer):
+    campus_event = serializers.PrimaryKeyRelatedField(
+        queryset=CampusEvent.objects.filter(is_active=True, is_archived=False),
+        allow_null=True,
+        required=False,
+    )
+    student_club_event = serializers.PrimaryKeyRelatedField(
+        queryset=StudentClubEvent.objects.filter(is_active=True, is_archived=False),
+        allow_null=True,
+        required=False,
+    )
+    department_event = serializers.PrimaryKeyRelatedField(
+        queryset=DepartmentEvent.objects.filter(is_active=True, is_archived=False),
+        allow_null=True,
+        required=False,
+    )
+    union = serializers.PrimaryKeyRelatedField(
+        queryset=CampusUnion.objects.filter(is_active=True, is_archived=False),
+        allow_null=True,
+        required=False,
+    )
+    club = serializers.PrimaryKeyRelatedField(
+        queryset=StudentClub.objects.filter(is_active=True, is_archived=False),
+        allow_null=True,
+        required=False,
+    )
+    department = serializers.PrimaryKeyRelatedField(
+        queryset=Department.objects.filter(is_active=True, is_archived=False),
+        allow_null=True,
+        required=False,
+    )
+    global_event = serializers.PrimaryKeyRelatedField(
+        queryset=GlobalEvent.objects.filter(is_active=True, is_archived=False),
+        allow_null=True,
+        required=False,
+    )
+    source_title = serializers.CharField(required=False, allow_blank=True)
+    source_context = serializers.CharField(required=False, allow_blank=True)
+    source_type = serializers.ChoiceField(
+        choices=GlobalGalleryImage.SourceType.choices,
+        required=False,
+    )
+    is_active = serializers.BooleanField(default=True)
+    images = GlobalGalleryImageUploadSerializer(many=True)
+
+    def validate(self, attrs):
+        relation_fields = {
+            "campus_event": attrs.get("campus_event"),
+            "student_club_event": attrs.get("student_club_event"),
+            "department_event": attrs.get("department_event"),
+            "union": attrs.get("union"),
+            "club": attrs.get("club"),
+            "department": attrs.get("department"),
+            "global_event": attrs.get("global_event"),
+        }
+        populated = [name for name, value in relation_fields.items() if value]
+        if len(populated) > 1:
+            raise serializers.ValidationError(
+                "You can only associate one source relation per upload."
+            )
+
+        if not populated and not attrs.get("source_title"):
+            raise serializers.ValidationError(
+                {"source_title": "Provide a source title when no relation is selected."}
+            )
+
+        if not attrs.get("images"):
+            raise serializers.ValidationError(
+                {"images": "Upload at least one gallery image."}
+            )
+
+        attrs["resolved_source_type"] = self._resolve_source_type(attrs, populated)
+        attrs["resolved_relation"] = populated[0] if populated else None
+        return attrs
+
+    def _resolve_source_type(self, attrs, populated_relations):
+        if populated_relations:
+            relation_name = populated_relations[0]
+            if relation_name == "campus_event":
+                event = attrs.get("campus_event")
+                if event and getattr(event, "union", None):
+                    return GlobalGalleryImage.SourceType.UNION_EVENT
+                return GlobalGalleryImage.SourceType.CAMPUS_EVENT
+            if relation_name == "student_club_event":
+                return GlobalGalleryImage.SourceType.CLUB_EVENT
+            if relation_name == "department_event":
+                return GlobalGalleryImage.SourceType.DEPARTMENT_EVENT
+            if relation_name == "global_event":
+                return GlobalGalleryImage.SourceType.GLOBAL_EVENT
+            if relation_name == "union":
+                return GlobalGalleryImage.SourceType.UNION_GALLERY
+            if relation_name == "club":
+                return GlobalGalleryImage.SourceType.CLUB_GALLERY
+            if relation_name == "department":
+                return GlobalGalleryImage.SourceType.DEPARTMENT_GALLERY
+
+        return attrs.get("source_type", GlobalGalleryImage.SourceType.COLLEGE)
 
     def create(self, validated_data):
         current_user = get_user_by_context(self.context)
         images_data = validated_data.pop("images", [])
-        validated_data["created_by"] = current_user
-        collection = GlobalGalleryCollection.objects.create(**validated_data)
-        self._create_images(collection, images_data, current_user)
-        return collection
+        resolved_type = validated_data.pop("resolved_source_type")
+        resolved_relation = validated_data.pop("resolved_relation")
+        relation_payload = {
+            field: validated_data.get(field)
+            for field in [
+                "campus_event",
+                "student_club_event",
+                "department_event",
+                "union",
+                "club",
+                "department",
+                "global_event",
+            ]
+        }
+        source_title = validated_data.get("source_title", "").strip()
+        source_context = validated_data.get("source_context", "").strip()
 
-    def _create_images(self, collection, images_data, user):
+        created_images = []
         for idx, image_data in enumerate(images_data, start=1):
-            image_data.setdefault("display_order", idx)
-            GlobalGalleryImage.objects.create(
-                collection=collection,
-                created_by=user,
-                **image_data,
+            image_kwargs = {
+                "created_by": current_user,
+                "source_type": resolved_type,
+                "source_title": source_title,
+                "source_context": source_context,
+                "is_active": validated_data.get("is_active", True),
+                "caption": image_data.get("caption", "").strip(),
+                "display_order": image_data.get("display_order") or idx,
+            }
+            if resolved_relation:
+                image_kwargs[resolved_relation] = relation_payload[resolved_relation]
+            image_kwargs["image"] = image_data["image"]
+            created_images.append(
+                GlobalGalleryImage.objects.create(**image_kwargs)
             )
+        return created_images
 
 
-class GlobalGalleryCollectionPatchSerializer(serializers.ModelSerializer):
-    images = GlobalGalleryImageSerializer(many=True, required=False)
-
+class GlobalGalleryImageUpdateSerializer(FileHandlingMixin, serializers.ModelSerializer):
     class Meta:
-        model = GlobalGalleryCollection
+        model = GlobalGalleryImage
         fields = [
-            "title",
-            "description",
+            "image",
+            "caption",
+            "display_order",
+            "is_active",
+            "source_title",
+            "source_context",
             "campus_event",
             "student_club_event",
             "department_event",
@@ -1769,26 +1861,14 @@ class GlobalGalleryCollectionPatchSerializer(serializers.ModelSerializer):
             "club",
             "department",
             "global_event",
-            "is_active",
-            "images",
         ]
 
     def update(self, instance, validated_data):
         current_user = get_user_by_context(self.context)
-        images_data = validated_data.pop("images", None)
+        self.handle_file_update(instance, validated_data, "image")
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-
-        if images_data is not None:
-            instance.images.all().delete()
-            for idx, image_data in enumerate(images_data, start=1):
-                image_data.setdefault("display_order", idx)
-                GlobalGalleryImage.objects.create(
-                    collection=instance,
-                    created_by=current_user,
-                    **image_data,
-                )
 
         instance.updated_by = current_user
         instance.save()
