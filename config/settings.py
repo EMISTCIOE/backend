@@ -343,7 +343,7 @@ JAZZMIN_SETTINGS = {
     "site_title": "TCIOE Developers",
     "site_header": "Developers Panel",
     "site_brand": "TCIOE Developers",
-    "site_logo": "images/logo.jpg",
+    "site_logo": "images/.jpg",
     "custom_css": "css/custom_jazzmin.css",
     "custom_js": "js/custom_jazzmin.js",
 }
