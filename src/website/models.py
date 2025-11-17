@@ -12,7 +12,7 @@ from src.core.constants import (
     StaffMemberTitle,
 )
 from src.core.models import FiscalSessionBS
-from src.department.models import Department, DepartmentEvent
+from src.department.models import Department
 from src.website.constants import (
     ACADEMIC_CALENDER_FILE_PATH,
     CAMPUS_DOWNLOADS_FILE_PATH,
@@ -879,9 +879,6 @@ class GlobalGalleryImage(AuditInfoModel):
         blank=True,
         help_text=_("Optional context shown alongside this image."),
     )
-
-
- 
     union = models.ForeignKey(
         CampusUnion,
         null=True,
