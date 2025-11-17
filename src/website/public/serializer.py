@@ -389,6 +389,8 @@ class PublicGlobalEventSerializer(serializers.ModelSerializer):
             "thumbnail",
             "registration_link",
             "location",
+            "is_approved_by_department",
+            "is_approved_by_campus",
             "unions",
             "clubs",
             "departments",

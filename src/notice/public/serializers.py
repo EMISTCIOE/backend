@@ -48,6 +48,8 @@ class PublicNoticeListSerializer(serializers.ModelSerializer):
             "description",
             "thumbnail",
             "is_featured",
+            "is_approved_by_department",
+            "is_approved_by_campus",
             "department",
             "category",
             "published_at",

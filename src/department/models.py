@@ -351,6 +351,16 @@ class DepartmentEvent(AuditInfoModel):
         blank=True,
         help_text=_("Event venue or location."),
     )
+    is_approved_by_department = models.BooleanField(
+        default=False,
+        verbose_name=_("Approved by Department"),
+        help_text=_("Indicates whether the department has approved this event."),
+    )
+    is_approved_by_campus = models.BooleanField(
+        default=False,
+        verbose_name=_("Approved by Campus"),
+        help_text=_("Indicates whether the campus has approved this event."),
+    )
 
     class Meta:
         verbose_name = _("Department Event")

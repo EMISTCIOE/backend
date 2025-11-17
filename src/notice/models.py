@@ -64,6 +64,16 @@ class Notice(AuditInfoModel):
         verbose_name=_("Department"),
         help_text=_("Department associated with this notice."),
     )
+    is_approved_by_department = models.BooleanField(
+        default=False,
+        verbose_name=_("Approved by Department"),
+        help_text=_("Indicates whether the department has approved this notice."),
+    )
+    is_approved_by_campus = models.BooleanField(
+        default=False,
+        verbose_name=_("Approved by Campus"),
+        help_text=_("Indicates whether the campus has approved this notice."),
+    )
     is_featured = models.BooleanField(
         default=False,
         verbose_name=_("Featured"),

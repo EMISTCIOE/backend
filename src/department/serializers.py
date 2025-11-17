@@ -444,6 +444,8 @@ class DepartmentEventListSerializer(serializers.ModelSerializer):
             "thumbnail",
             "department",
             "is_active",
+            "is_approved_by_department",
+            "is_approved_by_campus",
         ]
 
 
@@ -465,6 +467,8 @@ class DepartmentEventRetrieveSerializer(AbstractInfoRetrieveSerializer):
             "registration_link",
             "location",
             "department",
+            "is_approved_by_department",
+            "is_approved_by_campus",
             "gallery",
         ]
         fields += AbstractInfoRetrieveSerializer.Meta.fields
