@@ -4,7 +4,12 @@ from django_filters.filterset import FilterSet
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.generics import CreateAPIView, ListAPIView, RetrieveAPIView, GenericAPIView
+from rest_framework.generics import (
+    CreateAPIView,
+    ListAPIView,
+    RetrieveAPIView,
+    GenericAPIView,
+)
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -76,8 +81,6 @@ class PublicCampusDownloadListAPIView(ListAPIView):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     ordering = ["-created_at"]
     filterset_fields = ["uuid"]
-
-
 
 
 class PublicCampusKeyOfficialFilterSet(FilterSet):
@@ -233,9 +236,6 @@ class PublicStudentClubReadOnlyViewSet(ReadOnlyModelViewSet):
             )
 
 
-
-
-
 class PublicGlobalGalleryPagination(LimitOffsetPagination):
     default_limit = 24
     max_limit = 120
@@ -310,6 +310,7 @@ class PublicGlobalEventRetrieveAPIView(RetrieveAPIView):
     """
     Retrieve a specific global event by UUID.
     """
+
     permission_classes = [AllowAny]
     serializer_class = PublicGlobalEventSerializer
     lookup_field = "uuid"

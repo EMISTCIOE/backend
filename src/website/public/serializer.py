@@ -75,8 +75,6 @@ class PublicCampusUnionCompactSerializer(serializers.ModelSerializer):
         fields = ["uuid", "name", "thumbnail", "department"]
 
 
-
-
 class PublicCampusKeyOfficialSerializer(serializers.ModelSerializer):
     designation = serializers.SlugRelatedField(read_only=True, slug_field="code")
     designation_display = serializers.CharField(
@@ -203,7 +201,14 @@ class PublicStudentClubListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StudentClub
-        fields = ["uuid", "name", "short_description", "thumbnail", "website_url", "department"]
+        fields = [
+            "uuid",
+            "name",
+            "short_description",
+            "thumbnail",
+            "website_url",
+            "department",
+        ]
 
 
 class PublicStudentClubRetrieveSerializer(serializers.ModelSerializer):
@@ -222,9 +227,6 @@ class PublicStudentClubRetrieveSerializer(serializers.ModelSerializer):
             "members",
             "department",
         ]
-
-
-
 
 
 class PublicCampusSectionListSerializer(serializers.ModelSerializer):
@@ -344,6 +346,7 @@ class PublicResearchFacilityListSerializer(serializers.ModelSerializer):
 
 class PublicResearchFacilityRetrieveSerializer(serializers.ModelSerializer):
     detailed_description = serializers.CharField(source="description", read_only=True)
+
     class Meta:
         model = ResearchFacility
         fields = [
@@ -393,10 +396,7 @@ class PublicGlobalEventSerializer(serializers.ModelSerializer):
         ]
 
     def _serialize_relationship(self, queryset):
-        return [
-            {"uuid": str(item.uuid), "name": item.name}
-            for item in queryset.all()
-        ]
+        return [{"uuid": str(item.uuid), "name": item.name} for item in queryset.all()]
 
     def get_clubs(self, obj):
         return self._serialize_relationship(obj.clubs)

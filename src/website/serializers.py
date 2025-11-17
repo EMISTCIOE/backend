@@ -7,7 +7,7 @@ from src.base.serializers import AbstractInfoRetrieveSerializer
 
 # Project Imports
 from src.core.models import FiscalSessionBS
-from src.department.models import Department, DepartmentEvent
+from src.department.models import Department
 from src.libs.get_context import get_user_by_context
 from src.libs.mixins import FileHandlingMixin
 from src.website.validators import (
@@ -37,15 +37,10 @@ from .messages import (
     CAMPUS_UNIT_UPDATED_SUCCESS,
     EVENT_DATE_ERROR,
     RESEARCH_FACILITY_CREATED_SUCCESS,
-    RESEARCH_FACILITY_DELETED_SUCCESS,
-    RESEARCH_FACILITY_NOT_FOUND,
     RESEARCH_FACILITY_UPDATED_SUCCESS,
     SOCIAL_MEDIA_ALREADY_EXISTS,
-    STUDENT_CLUB_EVENT_CREATED_SUCCESS,
-    STUDENT_CLUB_EVENT_UPDATED_SUCCESS,
     GLOBAL_EVENT_CREATED_SUCCESS,
     GLOBAL_EVENT_UPDATED_SUCCESS,
-    GLOBAL_EVENT_DELETED_SUCCESS,
     YEAR_ORDER_ERROR,
 )
 from .models import (
@@ -1653,8 +1648,8 @@ class GlobalGalleryImageUpdateSerializer(FileHandlingMixin, serializers.ModelSer
             "is_active",
             "source_title",
             "source_context",
-            "campus_event",
-            "student_club_event",
+            # "campus_event",
+            # "student_club_event",
             
             "union",
             "club",

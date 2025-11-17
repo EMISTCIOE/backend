@@ -5,7 +5,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
 from rest_framework import generics, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import NotFound
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -22,8 +21,6 @@ from src.website.messages import (
     CAMPUS_CLUB_NOT_FOUND,
     CAMPUS_DOWNLOAD_DELETED_SUCCESS,
     CAMPUS_DOWNLOAD_NOT_FOUND,
-    CAMPUS_EVENT_DELETED_SUCCESS,
-    CAMPUS_EVENT_NOT_FOUND,
     CAMPUS_FEEDBACK_RESOLVE_SUCCESS,
     CAMPUS_INFO_NOT_FOUND,
     CAMPUS_REPORT_DELETED_SUCCESS,
@@ -36,14 +33,10 @@ from src.website.messages import (
     RESEARCH_FACILITY_NOT_FOUND,
     CAMPUS_UNION_DELETED_SUCCESS,
     CAMPUS_UNION_NOT_FOUND,
-    EVENT_GALLERY_DELETED_SUCCESS,
-    EVENT_GALLERY_NOT_FOUND,
     MEMBER_DELETED_SUCCESS,
     MEMBER_NOT_FOUND,
     SOCIAL_MEDIA_DELETED_SUCCESS,
     SOCIAL_MEDIA_NOT_FOUND,
-    STUDENT_CLUB_EVENT_DELETED_SUCCESS,
-    STUDENT_CLUB_EVENT_NOT_FOUND,
     GLOBAL_GALLERY_IMAGE_CREATED_SUCCESS,
     GLOBAL_GALLERY_IMAGE_UPDATED_SUCCESS,
     GLOBAL_GALLERY_IMAGE_DELETED_SUCCESS,
