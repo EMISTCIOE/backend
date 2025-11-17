@@ -26,6 +26,8 @@ SOURCE_TYPES = [
     {"value": "union_gallery", "label": "Union Gallery"},
     {"value": "club_gallery", "label": "Club Gallery"},
     {"value": "department_gallery", "label": "Department Gallery"},
+    {"value": "unit_gallery", "label": "Campus Unit Gallery"},
+    {"value": "section_gallery", "label": "Campus Section Gallery"},
     {"value": "global_event", "label": "Global Event"},
     {"value": "college", "label": "College Gallery"},
     {"value": "custom", "label": "Custom"},

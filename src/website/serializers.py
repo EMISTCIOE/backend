@@ -1493,6 +1493,8 @@ class GlobalGalleryImageSerializer(serializers.ModelSerializer):
             "union",
             "club",
             "department",
+            "unit",
+            "section",
             "global_event",
         ]
 
@@ -1535,6 +1537,16 @@ class GlobalGalleryImageCreateSerializer(serializers.Serializer):
         allow_null=True,
         required=False,
     )
+    unit = serializers.PrimaryKeyRelatedField(
+        queryset=CampusUnit.objects.filter(is_active=True, is_archived=False),
+        allow_null=True,
+        required=False,
+    )
+    section = serializers.PrimaryKeyRelatedField(
+        queryset=CampusSection.objects.filter(is_active=True, is_archived=False),
+        allow_null=True,
+        required=False,
+    )
     global_event = serializers.PrimaryKeyRelatedField(
         queryset=GlobalEvent.objects.filter(is_active=True, is_archived=False),
         allow_null=True,
@@ -1556,6 +1568,8 @@ class GlobalGalleryImageCreateSerializer(serializers.Serializer):
             "union": attrs.get("union"),
             "club": attrs.get("club"),
             "department": attrs.get("department"),
+            "unit": attrs.get("unit"),
+            "section": attrs.get("section"),
             "global_event": attrs.get("global_event"),
         }
         populated = [name for name, value in relation_fields.items() if value]
@@ -1597,6 +1611,10 @@ class GlobalGalleryImageCreateSerializer(serializers.Serializer):
                 return GlobalGalleryImage.SourceType.CLUB_GALLERY
             if relation_name == "department":
                 return GlobalGalleryImage.SourceType.DEPARTMENT_GALLERY
+            if relation_name == "unit":
+                return GlobalGalleryImage.SourceType.UNIT_GALLERY
+            if relation_name == "section":
+                return GlobalGalleryImage.SourceType.SECTION_GALLERY
 
         return attrs.get("source_type", GlobalGalleryImage.SourceType.COLLEGE)
 
@@ -1612,6 +1630,8 @@ class GlobalGalleryImageCreateSerializer(serializers.Serializer):
                 "union",
                 "club",
                 "department",
+                "unit",
+                "section",
                 "global_event",
             ]
         }
@@ -1654,6 +1674,8 @@ class GlobalGalleryImageUpdateSerializer(FileHandlingMixin, serializers.ModelSer
             "union",
             "club",
             "department",
+            "unit",
+            "section",
             "global_event",
         ]
 

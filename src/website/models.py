@@ -857,6 +857,8 @@ class GlobalGalleryImage(AuditInfoModel):
         UNION_GALLERY = "union_gallery", _("Union Gallery")
         CLUB_GALLERY = "club_gallery", _("Club Gallery")
         DEPARTMENT_GALLERY = "department_gallery", _("Department Gallery")
+        UNIT_GALLERY = "unit_gallery", _("Campus Unit Gallery")
+        SECTION_GALLERY = "section_gallery", _("Campus Section Gallery")
         COLLEGE = "college", _("College Gallery")
         CUSTOM = "custom", _("Custom Gallery")
 
@@ -902,6 +904,22 @@ class GlobalGalleryImage(AuditInfoModel):
         on_delete=models.SET_NULL,
         related_name="global_gallery_images",
         verbose_name=_("Department"),
+    )
+    unit = models.ForeignKey(
+        CampusUnit,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="global_gallery_images",
+        verbose_name=_("Campus Unit"),
+    )
+    section = models.ForeignKey(
+        CampusSection,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="global_gallery_images",
+        verbose_name=_("Campus Section"),
     )
     global_event = models.ForeignKey(
         GlobalEvent,

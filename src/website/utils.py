@@ -35,6 +35,22 @@ def resolve_gallery_image_source(image):
             image.source_title or "Department Gallery",
         )
 
+    if image.unit:
+        return (
+            "unit_gallery",
+            str(image.unit.uuid),
+            image.unit.name,
+            image.source_title or "Campus Unit Gallery",
+        )
+
+    if image.section:
+        return (
+            "section_gallery",
+            str(image.section.uuid),
+            image.section.name,
+            image.source_title or "Campus Section Gallery",
+        )
+
     return (
         image.source_type or "college",
         "",
@@ -66,6 +82,8 @@ def build_global_gallery_items():
             "union",
             "club",
             "department",
+            "unit",
+            "section",
             "global_event",
         )
         .only(
@@ -82,6 +100,10 @@ def build_global_gallery_items():
             "club__name",
             "department__uuid",
             "department__name",
+            "unit__uuid",
+            "unit__name",
+            "section__uuid",
+            "section__name",
             "global_event__uuid",
             "global_event__title",
         )
