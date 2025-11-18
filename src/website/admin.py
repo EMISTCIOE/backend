@@ -187,6 +187,7 @@ class CampusKeyOfficialAdmin(admin.ModelAdmin):
         "full_name",
         "designation",
         "department",
+        "unit",
         "email",
         "phone_number",
         "is_key_official",
@@ -198,8 +199,10 @@ class CampusKeyOfficialAdmin(admin.ModelAdmin):
         "designation__code",
         "email",
         "department__name",
+        "unit__name",
     )
-    list_filter = ("designation", "is_key_official", "is_active", "department")
+    list_filter = ("designation", "is_key_official", "is_active", "department", "unit")
+    readonly_fields = ("created_at", "updated_at", "created_by", "updated_by")
     fieldsets = (
         (
             "Personal Information",
@@ -214,9 +217,11 @@ class CampusKeyOfficialAdmin(admin.ModelAdmin):
                     "designation",
                     "department",
                     "program",
+                    "unit",
                     "display_order",
                     "is_key_official",
                 ),
+                "description": "Note: Assign either a department OR a unit, not both. Program is only applicable with departments.",
             },
         ),
         (

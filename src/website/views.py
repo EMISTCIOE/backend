@@ -213,9 +213,19 @@ class CampusKeyOfficialViewSet(viewsets.ModelViewSet):
     permission_classes = [CampusKeyOfficialPermission]
     queryset = CampusKeyOfficial.objects.filter(is_archived=False).select_related(
         "designation",
+        "department",
+        "program",
+        "unit",
     )
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
-    search_fields = ["full_name", "designation__title", "designation__code", "email"]
+    search_fields = [
+        "full_name",
+        "designation__title",
+        "designation__code",
+        "email",
+        "department__name",
+        "unit__name",
+    ]
     ordering_fields = ["full_name", "created_at", "display_order"]
     ordering = ["display_order", "-created_at"]
     filterset_class = CampusKeyOfficialFilterSet

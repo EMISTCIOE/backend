@@ -9,6 +9,7 @@ class EmailTypes(BaseEnum):
 
 class StaffMemberTitle(BaseEnum):
     ER = "ER"
+    AR = "AR"
     PROF = "PROF"
     DR = "DR"
     MR = "MR"

@@ -160,7 +160,7 @@ class CampusKeyOfficial(AuditInfoModel):
     )
     full_name = models.CharField(
         _("Full Name"),
-        max_length=100,
+        max_length=200,
     )
     designation = models.ForeignKey(
         CampusStaffDesignation,
@@ -187,6 +187,17 @@ class CampusKeyOfficial(AuditInfoModel):
         null=True,
         blank=True,
         help_text=_("Academic program the staff member is part of (if applicable)."),
+    )
+    unit = models.ForeignKey(
+        "CampusUnit",
+        on_delete=models.CASCADE,
+        related_name="staff_members",
+        verbose_name=_("Campus Unit"),
+        null=True,
+        blank=True,
+        help_text=_(
+            "Administrative unit the staff member is associated with (if applicable).",
+        ),
     )
     display_order = models.PositiveSmallIntegerField(
         _("Display Order"),

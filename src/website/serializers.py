@@ -218,8 +218,10 @@ class CampusKeyOfficialListSerializer(serializers.ModelSerializer):
         source="get_title_prefix_display",
         read_only=True,
     )
-    department = DepartmentSummarySerializer(read_only=True)
+    # Return department OR unit in the department field (only one can exist)
+    department = serializers.SerializerMethodField()
     program = serializers.SerializerMethodField()
+    unit = serializers.SerializerMethodField()
 
     class Meta:
         model = CampusKeyOfficial
@@ -238,8 +240,29 @@ class CampusKeyOfficialListSerializer(serializers.ModelSerializer):
             "is_active",
             "department",
             "program",
+            "unit",
             "display_order",
         ]
+
+    def get_department(self, obj):
+        """Return department info if exists, otherwise return unit info."""
+        if obj.department:
+            return {
+                "id": obj.department.id,
+                "uuid": str(obj.department.uuid),
+                "name": obj.department.name,
+                "short_name": obj.department.short_name,
+                "type": "department",
+            }
+        elif obj.unit:
+            return {
+                "id": obj.unit.id,
+                "uuid": str(obj.unit.uuid),
+                "name": obj.unit.name,
+                "short_name": obj.unit.short_name,
+                "type": "unit",
+            }
+        return None
 
     def get_program(self, obj):
         if obj.program:
@@ -247,6 +270,17 @@ class CampusKeyOfficialListSerializer(serializers.ModelSerializer):
                 "id": obj.program.id,
                 "name": obj.program.name,
                 "short_name": obj.program.short_name,
+            }
+        return None
+
+    def get_unit(self, obj):
+        """Return unit info separately for clarity."""
+        if obj.unit:
+            return {
+                "id": obj.unit.id,
+                "uuid": str(obj.unit.uuid),
+                "name": obj.unit.name,
+                "short_name": obj.unit.short_name,
             }
         return None
 
@@ -260,8 +294,10 @@ class CampusKeyOfficialRetrieveSerializer(AbstractInfoRetrieveSerializer):
         source="designation.title",
         read_only=True,
     )
-    department = DepartmentSummarySerializer(read_only=True)
+    # Return department OR unit info
+    department = serializers.SerializerMethodField()
     program = serializers.SerializerMethodField()
+    unit = serializers.SerializerMethodField()
 
     class Meta(AbstractInfoRetrieveSerializer.Meta):
         model = CampusKeyOfficial
@@ -278,10 +314,43 @@ class CampusKeyOfficialRetrieveSerializer(AbstractInfoRetrieveSerializer):
             "is_key_official",
             "department",
             "program",
+            "unit",
             "display_order",
         ]
 
-        fields += AbstractInfoRetrieveSerializer.Meta.fields
+    def get_department(self, obj):
+        """Return department info if exists, otherwise return unit info."""
+        if obj.department:
+            return {
+                "id": obj.department.id,
+                "uuid": str(obj.department.uuid),
+                "name": obj.department.name,
+                "short_name": obj.department.short_name,
+                "email": obj.department.email,
+                "type": "department",
+            }
+        elif obj.unit:
+            return {
+                "id": obj.unit.id,
+                "uuid": str(obj.unit.uuid),
+                "name": obj.unit.name,
+                "short_name": obj.unit.short_name,
+                "email": obj.unit.email,
+                "type": "unit",
+            }
+        return None
+
+    def get_unit(self, obj):
+        """Return unit info separately."""
+        if obj.unit:
+            return {
+                "id": obj.unit.id,
+                "uuid": str(obj.unit.uuid),
+                "name": obj.unit.name,
+                "short_name": obj.unit.short_name,
+                "email": obj.unit.email,
+            }
+        return None
 
     def get_program(self, obj):
         if obj.program:
@@ -311,6 +380,11 @@ class CampusKeyOfficialCreateSerializer(serializers.ModelSerializer):
         allow_null=True,
         required=False,
     )
+    unit = serializers.PrimaryKeyRelatedField(
+        queryset=CampusUnit.objects.filter(is_active=True),
+        allow_null=True,
+        required=False,
+    )
 
     class Meta:
         model = CampusKeyOfficial
@@ -326,6 +400,7 @@ class CampusKeyOfficialCreateSerializer(serializers.ModelSerializer):
             "is_active",
             "department",
             "program",
+            "unit",
             "display_order",
         ]
 
@@ -342,10 +417,25 @@ class CampusKeyOfficialCreateSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         program = attrs.get("program")
         department = attrs.get("department")
+        unit = attrs.get("unit")
+
+        # Ensure only one of department or unit is provided
+        if department and unit:
+            raise serializers.ValidationError(
+                "Cannot assign both department and unit. Please provide only one.",
+            )
 
         if program and department and program.department != department:
             raise serializers.ValidationError(
                 {"program": "Program must belong to the selected department."},
+            )
+
+        # Program can only be assigned with department, not unit
+        if program and not department:
+            raise serializers.ValidationError(
+                {
+                    "program": "Program can only be assigned when a department is selected.",
+                },
             )
 
         return attrs
@@ -376,6 +466,11 @@ class CampusKeyOfficialPatchSerializer(serializers.ModelSerializer):
         allow_null=True,
         required=False,
     )
+    unit = serializers.PrimaryKeyRelatedField(
+        queryset=CampusUnit.objects.filter(is_active=True),
+        allow_null=True,
+        required=False,
+    )
 
     class Meta:
         model = CampusKeyOfficial
@@ -391,6 +486,7 @@ class CampusKeyOfficialPatchSerializer(serializers.ModelSerializer):
             "is_active",
             "department",
             "program",
+            "unit",
             "display_order",
         ]
 
@@ -407,16 +503,33 @@ class CampusKeyOfficialPatchSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         program = attrs.get("program")
         department = attrs.get("department")
+        unit = attrs.get("unit")
 
-        # If program is not provided in attrs, use existing value
+        # If values not provided in attrs, use existing values from instance
         if program is None and "program" not in attrs:
             program = getattr(self.instance, "program", None)
         if department is None and "department" not in attrs:
             department = getattr(self.instance, "department", None)
+        if unit is None and "unit" not in attrs:
+            unit = getattr(self.instance, "unit", None)
+
+        # Ensure only one of department or unit is provided
+        if department and unit:
+            raise serializers.ValidationError(
+                "Cannot assign both department and unit. Please provide only one.",
+            )
 
         if program and department and program.department != department:
             raise serializers.ValidationError(
                 {"program": "Program must belong to the selected department."},
+            )
+
+        # Program can only be assigned with department, not unit
+        if program and not department:
+            raise serializers.ValidationError(
+                {
+                    "program": "Program can only be assigned when a department is selected.",
+                },
             )
 
         return attrs
