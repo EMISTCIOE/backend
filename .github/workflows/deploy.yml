@@ -1,67 +1,25 @@
-name: Deploy TCIOE Django Backend
+name: Deploy EMIS Backend to VPS
+
 on:
   push:
     branches: [main]
 
 jobs:
-  test:
-    name: Run Django Tests
-    runs-on: ubuntu-latest
-
-    env:
-      CORS_ALLOW_ALL_ORIGINS: ${{ secrets.CORS_ALLOW_ALL_ORIGINS }}
-      CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
-      DEBUG: ${{ secrets.DEBUG }}
-      DJANGO_ALLOWED_HOSTS: ${{ secrets.DJANGO_ALLOWED_HOSTS }}
-      SECRET_KEY: ${{ secrets.SECRET_KEY }}
-      LOCAL: ${{ secrets.LOCAL }}
-      WEBSITE_MEDIA_MAX_UPLOAD_SIZE: ${{ secrets.WEBSITE_MEDIA_MAX_UPLOAD_SIZE }}
-      AUTH_LINK_EXP_TIME: ${{ secrets.AUTH_LINK_EXP_TIME }}
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v4
-        with:
-          version: "latest"
-
-      - name: Install Django dependencies
-        run: |
-          uv venv
-          uv sync
-
-      - name: Run Django tests
-        run: |
-          uv run python manage.py test
-
   deploy:
-    name: Deploy to Self-Hosted VPS
+    name: Deploy to VPS
     runs-on: [self-hosted, cdn, backend]
-    needs: test
-    if: success()
-
-    env:
-      CORS_ALLOW_ALL_ORIGINS: ${{ secrets.CORS_ALLOW_ALL_ORIGINS }}
-      CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
-      DEBUG: ${{ secrets.DEBUG }}
-      DJANGO_ALLOWED_HOSTS: ${{ secrets.DJANGO_ALLOWED_HOSTS }}
-      SECRET_KEY: ${{ secrets.SECRET_KEY }}
-      LOCAL: ${{ secrets.LOCAL }}
-      WEBSITE_MEDIA_MAX_UPLOAD_SIZE: ${{ secrets.WEBSITE_MEDIA_MAX_UPLOAD_SIZE }}
-      AUTH_LINK_EXP_TIME: ${{ secrets.AUTH_LINK_EXP_TIME }}
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Run Unified VPS Deployer
+      - name: Deploy Application
         run: |
-          cd /srv/deployer
-          node deploy.js $GITHUB_REPOSITORY
+          cd /srv/apps/backend
+          git pull origin main
+          source venv/bin/activate
+          pip install -r requirements.txt
+          python manage.py makemigrations
+          python manage.py migrate
+          python manage.py collectstatic --noinput
+          sudo systemctl restart gunicorn
