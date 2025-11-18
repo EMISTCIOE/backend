@@ -37,9 +37,6 @@ class DepartmentDownloadPermission(BasePermission):
         return validate_permissions(request, user_permissions_dict)
 
 
-
-
-
 class DepartmentPlanAndPolicyPermission(BasePermission):
     def has_permission(self, request, view):
         user_permissions_dict = {
@@ -47,16 +44,5 @@ class DepartmentPlanAndPolicyPermission(BasePermission):
             "POST": "add_department_plan_and_policy",
             "PATCH": "edit_department_plan_and_policy",
             "DELETE": "delete_department_plan_and_policy",
-        }
-        return validate_permissions(request, user_permissions_dict)
-
-
-class StaffMemberPermission(BasePermission):
-    def has_permission(self, request, view):
-        user_permissions_dict = {
-            "SAFE_METHODS": "view_staff_member",
-            "POST": "add_staff_member",
-            "PATCH": "edit_staff_member",
-            "DELETE": "delete_staff_member",
         }
         return validate_permissions(request, user_permissions_dict)

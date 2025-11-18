@@ -10,13 +10,13 @@ from src.website.models import (
     CampusFeedback,
     CampusInfo,
     CampusKeyOfficial,
-    CampusSection,
-    CampusUnit,
-    ResearchFacility,
     CampusReport,
+    CampusSection,
     CampusUnion,
     CampusUnionMember,
+    CampusUnit,
     GlobalEvent,
+    ResearchFacility,
     SocialMediaLink,
     StudentClub,
     StudentClubMember,
@@ -231,7 +231,9 @@ class PublicStudentClubRetrieveSerializer(serializers.ModelSerializer):
 
 class PublicCampusSectionListSerializer(serializers.ModelSerializer):
     officials = PublicCampusKeyOfficialSerializer(
-        source="members", many=True, read_only=True
+        source="members",
+        many=True,
+        read_only=True,
     )
     department_head = PublicCampusKeyOfficialSerializer(
         read_only=True,
@@ -253,7 +255,9 @@ class PublicCampusSectionListSerializer(serializers.ModelSerializer):
 
 class PublicCampusSectionRetrieveSerializer(serializers.ModelSerializer):
     officials = PublicCampusKeyOfficialSerializer(
-        source="members", many=True, read_only=True
+        source="members",
+        many=True,
+        read_only=True,
     )
     department_head = PublicCampusKeyOfficialSerializer(
         read_only=True,
@@ -282,7 +286,9 @@ class PublicCampusSectionRetrieveSerializer(serializers.ModelSerializer):
 
 class PublicCampusUnitListSerializer(serializers.ModelSerializer):
     officials = PublicCampusKeyOfficialSerializer(
-        source="members", many=True, read_only=True
+        source="members",
+        many=True,
+        read_only=True,
     )
     department_head = PublicCampusKeyOfficialSerializer(
         read_only=True,
@@ -304,7 +310,9 @@ class PublicCampusUnitListSerializer(serializers.ModelSerializer):
 
 class PublicCampusUnitRetrieveSerializer(serializers.ModelSerializer):
     officials = PublicCampusKeyOfficialSerializer(
-        source="members", many=True, read_only=True
+        source="members",
+        many=True,
+        read_only=True,
     )
     department_head = PublicCampusKeyOfficialSerializer(
         read_only=True,

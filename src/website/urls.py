@@ -1,26 +1,24 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
+from .listing_apis.views import FiscalSessionBSForCampusReportListAPIView
 from .views import (
     AcademicCalendarViewSet,
     CampusDownloadViewSet,
-   
     CampusFeedbackViewSet,
     CampusInfoAPIView,
     CampusKeyOfficialViewSet,
-    CampusStaffDesignationViewSet,
     CampusReportViewSet,
     CampusSectionViewSet,
-    CampusUnitViewSet,
+    CampusStaffDesignationViewSet,
     CampusUnionViewSet,
+    CampusUnitViewSet,
+    GlobalEventViewSet,
     GlobalGalleryImageViewSet,
     GlobalGalleryListAPIView,
-    GlobalEventViewSet,
     SocialMediaLinkDeleteAPIView,
-    
     StudentClubViewSet,
 )
-from .listing_apis.views import FiscalSessionBSForCampusReportListAPIView
 
 router = DefaultRouter(trailing_slash=False)
 
@@ -63,7 +61,6 @@ urlpatterns = [
         "campus-info/social-media-links/<int:pk>/delete",
         SocialMediaLinkDeleteAPIView.as_view(),
     ),
-
     # Listing APIs
     path(
         "campus-reports/fiscal-sessions",

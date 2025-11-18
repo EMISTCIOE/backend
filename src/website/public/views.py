@@ -6,9 +6,9 @@ from rest_framework import status
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.generics import (
     CreateAPIView,
+    GenericAPIView,
     ListAPIView,
     RetrieveAPIView,
-    GenericAPIView,
 )
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import AllowAny
@@ -21,12 +21,12 @@ from src.website.models import (
     CampusDownload,
     CampusInfo,
     CampusKeyOfficial,
-    CampusSection,
-    CampusUnit,
-    ResearchFacility,
     CampusReport,
+    CampusSection,
     CampusUnion,
+    CampusUnit,
     GlobalEvent,
+    ResearchFacility,
     StudentClub,
 )
 from src.website.public.messages import CAMPUS_INFO_NOT_FOUND
@@ -41,16 +41,16 @@ from .serializer import (
     PublicCampusReportListSerializer,
     PublicCampusSectionListSerializer,
     PublicCampusSectionRetrieveSerializer,
-    PublicCampusUnitListSerializer,
-    PublicCampusUnitRetrieveSerializer,
     PublicCampusUnionListSerializer,
     PublicCampusUnionRetrieveSerializer,
-    PublicStudentClubListSerializer,
-    PublicStudentClubRetrieveSerializer,
+    PublicCampusUnitListSerializer,
+    PublicCampusUnitRetrieveSerializer,
+    PublicGlobalEventSerializer,
+    PublicGlobalGallerySerializer,
     PublicResearchFacilityListSerializer,
     PublicResearchFacilityRetrieveSerializer,
-    PublicGlobalGallerySerializer,
-    PublicGlobalEventSerializer,
+    PublicStudentClubListSerializer,
+    PublicStudentClubRetrieveSerializer,
 )
 
 
@@ -85,7 +85,8 @@ class PublicCampusDownloadListAPIView(ListAPIView):
 
 class PublicCampusKeyOfficialFilterSet(FilterSet):
     designation = django_filters.CharFilter(
-        field_name="designation__code", lookup_expr="iexact"
+        field_name="designation__code",
+        lookup_expr="iexact",
     )
     is_key_official = django_filters.BooleanFilter()
 
@@ -100,7 +101,7 @@ class PublicCampusKeyOfficialListAPIView(ListAPIView):
     permission_classes = [AllowAny]
     serializer_class = PublicCampusKeyOfficialSerializer
     queryset = CampusKeyOfficial.objects.filter(is_active=True).select_related(
-        "designation"
+        "designation",
     )
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     ordering = ["display_order"]
@@ -317,5 +318,6 @@ class PublicGlobalEventRetrieveAPIView(RetrieveAPIView):
 
     def get_queryset(self):
         return GlobalEvent.objects.filter(
-            is_active=True, is_archived=False
+            is_active=True,
+            is_archived=False,
         ).prefetch_related("unions", "clubs", "departments")

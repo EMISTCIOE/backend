@@ -1,13 +1,13 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from .views import ProjectViewSet, ProjectTagViewSet
+from .views import ProjectTagViewSet, ProjectViewSet
 
 router = DefaultRouter(trailing_slash=False)
 
-router.register('projects', ProjectViewSet, basename='project')
-router.register('project-tags', ProjectTagViewSet, basename='project-tag')
+router.register("projects", ProjectViewSet, basename="project")
+router.register("project-tags", ProjectTagViewSet, basename="project-tag")
 
 urlpatterns = [
-    path('', include(router.urls)),
+    path("", include(router.urls)),
 ]

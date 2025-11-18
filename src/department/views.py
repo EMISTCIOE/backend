@@ -23,8 +23,6 @@ from .messages import (
     DEPARTMENT_PLANS_NOT_FOUND,
     SOCIAL_LINK_DELETED_SUCCESS,
     SOCIAL_LINK_NOT_FOUND,
-    STAFF_MEMBER_DELETED_SUCCESS,
-    STAFF_MEMBER_NOT_FOUND,
 )
 from .models import (
     AcademicProgram,
@@ -32,14 +30,12 @@ from .models import (
     DepartmentDownload,
     DepartmentPlanAndPolicy,
     DepartmentSocialMedia,
-    StaffMember,
 )
 from .permissions import (
     AcademicProgramPermission,
     DepartmentDownloadPermission,
     DepartmentPermission,
     DepartmentPlanAndPolicyPermission,
-    StaffMemberPermission,
 )
 from .serializers import (
     AcademicProgramCreateSerializer,
@@ -58,10 +54,6 @@ from .serializers import (
     DepartmentPlanAndPolicyPatchSerializer,
     DepartmentPlanAndPolicyRetrieveSerializer,
     DepartmentRetrieveSerializer,
-    StaffMemberCreateSerializer,
-    StaffMemberListSerializer,
-    StaffMemberPatchSerializer,
-    StaffMemberRetrieveSerializer,
 )
 
 
@@ -255,11 +247,6 @@ class DepartmentDownloadViewSet(ModelViewSet):
         )
 
 
-
-
-
-
-
 class FilterForDepartmentPlanAndPolicyViewSet(FilterSet):
     class Meta:
         model = DepartmentPlanAndPolicy
@@ -311,62 +298,5 @@ class DepartmentPlanAndPolicyViewSet(ModelViewSet):
         instance.delete()
         return Response(
             {"message": DEPARTMENT_PLANS_DELETED_SUCCESS},
-            status=status.HTTP_200_OK,
-        )
-
-
-class FilterForStaffMemberViewSet(FilterSet):
-    date = django_filters.DateFromToRangeFilter(field_name="created_at")
-
-    class Meta:
-        model = StaffMember
-        fields = ["department", "date", "program", "designation", "is_active"]
-
-
-class StaffMemberViewSet(ModelViewSet):
-    permission_classes = [StaffMemberPermission]
-    filterset_class = FilterForStaffMemberViewSet
-    filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
-    search_fields = ["name", "email", "phone_number"]
-    queryset = StaffMember.objects.filter(is_archived=False)
-    ordering_fields = ["-created_at", "display_order", "name"]
-    http_method_names = ["options", "head", "get", "patch", "post", "delete"]
-
-    def get_serializer_class(self):
-        if self.request.method == "GET":
-            return (
-                StaffMemberListSerializer
-                if self.action == "list"
-                else StaffMemberRetrieveSerializer
-            )
-        if self.request.method == "POST":
-            return StaffMemberCreateSerializer
-        if self.request.method == "PATCH":
-            return StaffMemberPatchSerializer
-        return StaffMemberRetrieveSerializer
-
-    @transaction.atomic
-    def create(self, request, *args, **kwargs):
-        set_binary_files_null_if_empty(["photo"], request.data)
-        return super().create(request, *args, **kwargs)
-
-    @transaction.atomic
-    def update(self, request, *args, **kwargs):
-        set_binary_files_null_if_empty(["photo"], request.data)
-        return super().update(request, *args, **kwargs)
-
-    def destroy(self, request, *args, **kwargs):
-        try:
-            instance = self.get_object()
-            instance.photo.delete(save=False)
-        except Exception:
-            return Response(
-                {"detail": STAFF_MEMBER_NOT_FOUND},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        instance.delete()
-        return Response(
-            {"message": STAFF_MEMBER_DELETED_SUCCESS},
             status=status.HTTP_200_OK,
         )

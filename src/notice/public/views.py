@@ -59,7 +59,14 @@ class FilterForPublicNoticeListAPIView(FilterSet):
 
     class Meta:
         model = Notice
-        fields = ["uuid", "department", "is_featured", "category", "start_date", "end_date"]
+        fields = [
+            "uuid",
+            "department",
+            "is_featured",
+            "category",
+            "start_date",
+            "end_date",
+        ]
 
 
 class PublicNoticeListAPIView(generics.ListAPIView):

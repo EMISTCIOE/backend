@@ -13,7 +13,14 @@ class NoticeMediaInline(admin.TabularInline):
 
 @admin.register(Notice)
 class NoticeAdmin(admin.ModelAdmin):
-    list_display = ("title", "category", "department", "status", "published_at", "is_featured")
+    list_display = (
+        "title",
+        "category",
+        "department",
+        "status",
+        "published_at",
+        "is_featured",
+    )
     list_filter = ("status", "category", "department", "is_featured")
     search_fields = ("title",)
     inlines = [NoticeMediaInline]

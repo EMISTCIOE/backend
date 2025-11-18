@@ -9,9 +9,9 @@ from .models import (
     CampusKeyOfficial,
     CampusSection,
     CampusStaffDesignation,
-    CampusUnit,
     CampusUnion,
     CampusUnionMember,
+    CampusUnit,
     GlobalEvent,
     GlobalGalleryImage,
     ResearchFacility,
@@ -19,7 +19,6 @@ from .models import (
     StudentClub,
     StudentClubMember,
 )
-
 
 SOURCE_TYPES = [
     {"value": "union_event", "label": "Union Event"},
@@ -79,7 +78,7 @@ class GlobalGalleryImageAdmin(admin.ModelAdmin):
                 "source_types": SOURCE_TYPES,
                 "selected_source_type": source_type,
                 "search_query": search_query,
-            }
+            },
         )
 
         return super().changelist_view(request, extra_context=extra_context)
@@ -98,22 +97,17 @@ class GlobalEventAdmin(admin.ModelAdmin):
     search_fields = ("title", "location")
     list_filter = ("event_type", "is_active")
     fieldsets = (
-        ("Event Information", {
-            "fields": ("title", "description", "event_type")
-        }),
-        ("Date & Location", {
-            "fields": ("event_start_date", "event_end_date", "location")
-        }),
-        ("Registration", {
-            "fields": ("registration_link",)
-        }),
-        ("Media", {
-            "fields": ("thumbnail",)
-        }),
-        ("Associations", {
-            "fields": ("unions", "clubs", "departments"),
-            "classes": ("collapse",)
-        }),
+        ("Event Information", {"fields": ("title", "description", "event_type")}),
+        (
+            "Date & Location",
+            {"fields": ("event_start_date", "event_end_date", "location")},
+        ),
+        ("Registration", {"fields": ("registration_link",)}),
+        ("Media", {"fields": ("thumbnail",)}),
+        (
+            "Associations",
+            {"fields": ("unions", "clubs", "departments"), "classes": ("collapse",)},
+        ),
     )
 
     def save_model(self, request, obj, form, change):
@@ -140,16 +134,26 @@ class StudentClubAdmin(admin.ModelAdmin):
     readonly_fields = ["created_at", "updated_at"]
     inlines = [ClubGalleryImageInline]
     fieldsets = (
-        ("Club Information", {
-            "fields": ("name", "short_description", "detailed_description", "thumbnail", "website_url")
-        }),
-        ("Department", {
-            "fields": ("department",)
-        }),
-        ("Audit Information", {
-            "fields": ("created_at", "updated_at", "created_by", "updated_by"),
-            "classes": ("collapse",)
-        }),
+        (
+            "Club Information",
+            {
+                "fields": (
+                    "name",
+                    "short_description",
+                    "detailed_description",
+                    "thumbnail",
+                    "website_url",
+                ),
+            },
+        ),
+        ("Department", {"fields": ("department",)}),
+        (
+            "Audit Information",
+            {
+                "fields": ("created_at", "updated_at", "created_by", "updated_by"),
+                "classes": ("collapse",),
+            },
+        ),
     )
 
 
@@ -182,13 +186,65 @@ class CampusKeyOfficialAdmin(admin.ModelAdmin):
         "title_prefix",
         "full_name",
         "designation",
+        "department",
         "email",
         "phone_number",
         "is_key_official",
         "is_active",
     )
-    search_fields = ("full_name", "designation__title", "designation__code", "email")
-    list_filter = ("designation", "is_key_official", "is_active")
+    search_fields = (
+        "full_name",
+        "designation__title",
+        "designation__code",
+        "email",
+        "department__name",
+    )
+    list_filter = ("designation", "is_key_official", "is_active", "department")
+    fieldsets = (
+        (
+            "Personal Information",
+            {
+                "fields": ("title_prefix", "full_name", "photo"),
+            },
+        ),
+        (
+            "Position & Assignment",
+            {
+                "fields": (
+                    "designation",
+                    "department",
+                    "program",
+                    "display_order",
+                    "is_key_official",
+                ),
+            },
+        ),
+        (
+            "Contact Information",
+            {
+                "fields": ("email", "phone_number"),
+            },
+        ),
+        (
+            "Additional Information",
+            {
+                "fields": ("message",),
+            },
+        ),
+        (
+            "Status",
+            {
+                "fields": ("is_active",),
+            },
+        ),
+        (
+            "Audit Information",
+            {
+                "fields": ("created_at", "updated_at", "created_by", "updated_by"),
+                "classes": ("collapse",),
+            },
+        ),
+    )
 
 
 admin.site.register(CampusFeedback)

@@ -10,13 +10,13 @@ from src.website.public.views import (
     PublicCampusKeyOfficialListAPIView,
     PublicCampusReportListAPIView,
     PublicCampusSectionReadOnlyViewSet,
-    PublicCampusUnitReadOnlyViewSet,
-    PublicResearchFacilityReadOnlyViewSet,
     PublicCampusUnionReadOnlyViewSet,
-    PublicStudentClubReadOnlyViewSet,
-    PublicGlobalGalleryListAPIView,
+    PublicCampusUnitReadOnlyViewSet,
     PublicGlobalEventListAPIView,
     PublicGlobalEventRetrieveAPIView,
+    PublicGlobalGalleryListAPIView,
+    PublicResearchFacilityReadOnlyViewSet,
+    PublicStudentClubReadOnlyViewSet,
 )
 
 router = DefaultRouter(trailing_slash=False)

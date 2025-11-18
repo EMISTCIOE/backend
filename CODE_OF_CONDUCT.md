@@ -62,7 +62,7 @@ We value collaboration, respect, and quality contributions. This code of conduct
    - Write unit tests for new components and features.
    - Ensure changes don't break existing functionality.
 
-## **📁 Folder & File Naming Conventions**
+## ** Folder & File Naming Conventions**
 
    - Follow Python naming convention PEP8 (https://peps.python.org/pep-0008/)
 

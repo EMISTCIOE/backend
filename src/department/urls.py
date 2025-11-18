@@ -7,7 +7,6 @@ from .views import (
     DepartmentPlanAndPolicyViewSet,
     DepartmentSocialMediaDestroyAPIView,
     DepartmentViewSet,
-    StaffMemberViewSet,
 )
 
 router = routers.DefaultRouter(trailing_slash=False)
@@ -29,8 +28,6 @@ router.register(
     DepartmentPlanAndPolicyViewSet,
     basename="department-plan-and-policy",
 )
-
-router.register("staff-members", StaffMemberViewSet, basename="staff-member")
 
 urlpatterns = [
     path(

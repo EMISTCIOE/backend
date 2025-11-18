@@ -2,15 +2,15 @@ from rest_framework import serializers
 
 # Project Imports
 from src.department.models import (
-    Department,
-    DepartmentSocialMedia,
-    StaffMember,
     AcademicProgram,
+    Department,
     DepartmentDownload,
     DepartmentEvent,
     DepartmentEventGallery,
     DepartmentPlanAndPolicy,
+    DepartmentSocialMedia,
 )
+from src.website.models import CampusKeyOfficial
 
 
 class PublicDepartmentSocialLinkSerializer(serializers.ModelSerializer):
@@ -52,8 +52,12 @@ class PublicDepartmentDetailSerializer(serializers.ModelSerializer):
 
 
 class PublicDepartmentStaffSerializer(serializers.ModelSerializer):
+    designation = serializers.CharField(source="designation.title", read_only=True)
+    title = serializers.CharField(source="title_prefix", read_only=True)
+    name = serializers.CharField(source="full_name", read_only=True)
+
     class Meta:
-        model = StaffMember
+        model = CampusKeyOfficial
         fields = [
             "uuid",
             "title",

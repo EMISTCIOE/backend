@@ -36,11 +36,11 @@ from .messages import (
     CAMPUS_UNIT_CREATED_SUCCESS,
     CAMPUS_UNIT_UPDATED_SUCCESS,
     EVENT_DATE_ERROR,
+    GLOBAL_EVENT_CREATED_SUCCESS,
+    GLOBAL_EVENT_UPDATED_SUCCESS,
     RESEARCH_FACILITY_CREATED_SUCCESS,
     RESEARCH_FACILITY_UPDATED_SUCCESS,
     SOCIAL_MEDIA_ALREADY_EXISTS,
-    GLOBAL_EVENT_CREATED_SUCCESS,
-    GLOBAL_EVENT_UPDATED_SUCCESS,
     YEAR_ORDER_ERROR,
 )
 from .models import (
@@ -49,18 +49,18 @@ from .models import (
     CampusFeedback,
     CampusInfo,
     CampusKeyOfficial,
+    CampusReport,
     CampusSection,
     CampusStaffDesignation,
-    CampusUnit,
-    ResearchFacility,
-    CampusReport,
     CampusUnion,
     CampusUnionMember,
+    CampusUnit,
+    GlobalEvent,
+    GlobalGalleryImage,
+    ResearchFacility,
     SocialMediaLink,
     StudentClub,
     StudentClubMember,
-    GlobalEvent,
-    GlobalGalleryImage,
 )
 from .utils import resolve_gallery_image_source
 
@@ -81,19 +81,21 @@ def _validate_designation_codes(codes):
 
     existing_codes = set(
         CampusStaffDesignation.objects.filter(code__in=cleaned_codes).values_list(
-            "code", flat=True
-        )
+            "code",
+            flat=True,
+        ),
     )
     invalid_codes = sorted(
-        {code for code in cleaned_codes if code not in existing_codes}
+        {code for code in cleaned_codes if code not in existing_codes},
     )
     if invalid_codes:
         raise serializers.ValidationError(
-            f"Invalid designation codes: {', '.join(invalid_codes)}"
+            f"Invalid designation codes: {', '.join(invalid_codes)}",
         )
 
     # Preserve original order while removing duplicates
     return list(dict.fromkeys(cleaned_codes))
+
 
 # Campus Info Serializers
 # ---------------------------------------------------------------------------------------------------
@@ -160,13 +162,12 @@ class CampusInfoPatchSerializer(serializers.ModelSerializer):
             if "id" in social_link:
                 if media_ins.exclude(pk=social_link["id"].id).exists():
                     raise serializers.ValidationError(
-                        {"message": SOCIAL_MEDIA_ALREADY_EXISTS}
+                        {"message": SOCIAL_MEDIA_ALREADY_EXISTS},
                     )
-            else:
-                if media_ins.exists():
-                    raise serializers.ValidationError(
-                        {"message": SOCIAL_MEDIA_ALREADY_EXISTS}
-                    )
+            elif media_ins.exists():
+                raise serializers.ValidationError(
+                    {"message": SOCIAL_MEDIA_ALREADY_EXISTS},
+                )
 
         return attrs
 
@@ -217,6 +218,8 @@ class CampusKeyOfficialListSerializer(serializers.ModelSerializer):
         source="get_title_prefix_display",
         read_only=True,
     )
+    department = DepartmentSummarySerializer(read_only=True)
+    program = serializers.SerializerMethodField()
 
     class Meta:
         model = CampusKeyOfficial
@@ -233,7 +236,19 @@ class CampusKeyOfficialListSerializer(serializers.ModelSerializer):
             "phone_number",
             "is_key_official",
             "is_active",
+            "department",
+            "program",
+            "display_order",
         ]
+
+    def get_program(self, obj):
+        if obj.program:
+            return {
+                "id": obj.program.id,
+                "name": obj.program.name,
+                "short_name": obj.program.short_name,
+            }
+        return None
 
 
 class CampusKeyOfficialRetrieveSerializer(AbstractInfoRetrieveSerializer):
@@ -245,6 +260,8 @@ class CampusKeyOfficialRetrieveSerializer(AbstractInfoRetrieveSerializer):
         source="designation.title",
         read_only=True,
     )
+    department = DepartmentSummarySerializer(read_only=True)
+    program = serializers.SerializerMethodField()
 
     class Meta(AbstractInfoRetrieveSerializer.Meta):
         model = CampusKeyOfficial
@@ -259,18 +276,40 @@ class CampusKeyOfficialRetrieveSerializer(AbstractInfoRetrieveSerializer):
             "email",
             "phone_number",
             "is_key_official",
+            "department",
+            "program",
+            "display_order",
         ]
 
         fields += AbstractInfoRetrieveSerializer.Meta.fields
 
+    def get_program(self, obj):
+        if obj.program:
+            return {
+                "id": obj.program.id,
+                "name": obj.program.name,
+                "short_name": obj.program.short_name,
+            }
+        return None
+
 
 class CampusKeyOfficialCreateSerializer(serializers.ModelSerializer):
     photo = serializers.ImageField(
-        allow_null=True, validators=[validate_photo_thumbnail]
+        allow_null=True,
+        validators=[validate_photo_thumbnail],
     )
     designation = serializers.SlugRelatedField(
         slug_field="code",
         queryset=CampusStaffDesignation.objects.filter(is_active=True),
+    )
+    department = serializers.PrimaryKeyRelatedField(
+        queryset=Department.objects.filter(is_active=True),
+        allow_null=True,
+        required=False,
+    )
+    program = serializers.IntegerField(
+        allow_null=True,
+        required=False,
     )
 
     class Meta:
@@ -283,9 +322,33 @@ class CampusKeyOfficialCreateSerializer(serializers.ModelSerializer):
             "email",
             "message",
             "phone_number",
-             "is_key_official",
+            "is_key_official",
             "is_active",
+            "department",
+            "program",
+            "display_order",
         ]
+
+    def validate_program(self, value):
+        if value is not None:
+            from src.department.models import AcademicProgram
+
+            try:
+                return AcademicProgram.objects.get(id=value, is_active=True)
+            except AcademicProgram.DoesNotExist:
+                raise serializers.ValidationError("Invalid program ID.")
+        return None
+
+    def validate(self, attrs):
+        program = attrs.get("program")
+        department = attrs.get("department")
+
+        if program and department and program.department != department:
+            raise serializers.ValidationError(
+                {"program": "Program must belong to the selected department."},
+            )
+
+        return attrs
 
     def create(self, validated_data):
         created_by = get_user_by_context(self.context)
@@ -304,6 +367,15 @@ class CampusKeyOfficialPatchSerializer(serializers.ModelSerializer):
         queryset=CampusStaffDesignation.objects.all(),
         required=False,
     )
+    department = serializers.PrimaryKeyRelatedField(
+        queryset=Department.objects.filter(is_active=True),
+        allow_null=True,
+        required=False,
+    )
+    program = serializers.IntegerField(
+        allow_null=True,
+        required=False,
+    )
 
     class Meta:
         model = CampusKeyOfficial
@@ -317,11 +389,43 @@ class CampusKeyOfficialPatchSerializer(serializers.ModelSerializer):
             "phone_number",
             "is_key_official",
             "is_active",
+            "department",
+            "program",
+            "display_order",
         ]
+
+    def validate_program(self, value):
+        if value is not None:
+            from src.department.models import AcademicProgram
+
+            try:
+                return AcademicProgram.objects.get(id=value, is_active=True)
+            except AcademicProgram.DoesNotExist:
+                raise serializers.ValidationError("Invalid program ID.")
+        return None
+
+    def validate(self, attrs):
+        program = attrs.get("program")
+        department = attrs.get("department")
+
+        # If program is not provided in attrs, use existing value
+        if program is None and "program" not in attrs:
+            program = getattr(self.instance, "program", None)
+        if department is None and "department" not in attrs:
+            department = getattr(self.instance, "department", None)
+
+        if program and department and program.department != department:
+            raise serializers.ValidationError(
+                {"program": "Program must belong to the selected department."},
+            )
+
+        return attrs
 
     def update(self, instance: CampusKeyOfficial, validated_data):
         updated_by = get_user_by_context(self.context)
-        validated_data["full_name"] = validated_data.pop("full_name").title()
+
+        if "full_name" in validated_data:
+            validated_data["full_name"] = validated_data.pop("full_name").title()
 
         # Handle the photo
         if "photo" in validated_data:
@@ -594,8 +698,8 @@ class AcademicCalendarPatchSerializer(FileHandlingMixin, serializers.ModelSerial
         fields = ["program_type", "start_year", "end_year", "file", "is_active"]
 
     def validate(self, attrs):
-        start = attrs.get("start_year", getattr(self.instance, "start_year"))
-        end = attrs.get("end_year", getattr(self.instance, "end_year"))
+        start = attrs.get("start_year", self.instance.start_year)
+        end = attrs.get("end_year", self.instance.end_year)
 
         if start >= end:
             raise serializers.ValidationError({"end_year": YEAR_ORDER_ERROR})
@@ -627,15 +731,6 @@ class CampusUnionListForOtherSerializer(serializers.ModelSerializer):
         model = CampusUnion
         fields = ["id", "uuid", "name", "thumbnail"]
 
-
-
-
-
-
-
-
-
-
     def to_representation(self, instance) -> dict[str, str]:
         return {"message": CAMPUS_EVENT_UPDATED_SUCCESS}
 
@@ -655,7 +750,14 @@ class CampusUnionListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CampusUnion
-        fields = ["id", "name", "short_description", "thumbnail", "is_active", "department"]
+        fields = [
+            "id",
+            "name",
+            "short_description",
+            "thumbnail",
+            "is_active",
+            "department",
+        ]
 
 
 class CampusUnionRetrieveSerializer(AbstractInfoRetrieveSerializer):
@@ -708,7 +810,7 @@ class CampusUnionCreateSerializer(serializers.ModelSerializer):
             "members",
             "department",
         ]
-    
+
     def create(self, validated_data):
         current_user = get_user_by_context(self.context)
         members_data = validated_data.pop("members", [])
@@ -761,7 +863,7 @@ class CampusUnionPatchSerializer(FileHandlingMixin, serializers.ModelSerializer)
             "department",
             "is_active",
         ]
-    
+
     def update(self, instance, validated_data):
         current_user = get_user_by_context(self.context)
         union_members = validated_data.pop("members", [])
@@ -803,7 +905,9 @@ class CampusUnionPatchSerializer(FileHandlingMixin, serializers.ModelSerializer)
 
 class CampusSectionListSerializer(serializers.ModelSerializer):
     officials = CampusKeyOfficialListSerializer(
-        source="members", many=True, read_only=True
+        source="members",
+        many=True,
+        read_only=True,
     )
     department_head_detail = CampusKeyOfficialListSerializer(
         source="department_head",
@@ -829,7 +933,9 @@ class CampusSectionListSerializer(serializers.ModelSerializer):
 
 class CampusSectionRetrieveSerializer(AbstractInfoRetrieveSerializer):
     officials = CampusKeyOfficialListSerializer(
-        source="members", many=True, read_only=True
+        source="members",
+        many=True,
+        read_only=True,
     )
     department_head_detail = CampusKeyOfficialListSerializer(
         source="department_head",
@@ -869,17 +975,13 @@ class CampusSectionCreateSerializer(serializers.ModelSerializer):
         allow_empty=True,
     )
     members = serializers.PrimaryKeyRelatedField(
-        queryset=CampusKeyOfficial.objects.filter(
-            is_active=True, is_key_official=True
-        ),
+        queryset=CampusKeyOfficial.objects.filter(is_active=True, is_key_official=True),
         many=True,
         required=False,
         allow_empty=True,
     )
     department_head = serializers.PrimaryKeyRelatedField(
-        queryset=CampusKeyOfficial.objects.filter(
-            is_active=True, is_key_official=True
-        ),
+        queryset=CampusKeyOfficial.objects.filter(is_active=True, is_key_official=True),
         allow_null=True,
         required=False,
     )
@@ -960,7 +1062,9 @@ class CampusSectionCreateSerializer(serializers.ModelSerializer):
             else None
         )
         head_designation_code = (
-            head_designation.code if head_designation and head_designation.code else None
+            head_designation.code
+            if head_designation and head_designation.code
+            else None
         )
         if head_designation_code and head_designation_code not in designations:
             designations.append(head_designation_code)
@@ -982,17 +1086,13 @@ class CampusSectionPatchSerializer(FileHandlingMixin, serializers.ModelSerialize
         allow_empty=True,
     )
     members = serializers.PrimaryKeyRelatedField(
-        queryset=CampusKeyOfficial.objects.filter(
-            is_active=True, is_key_official=True
-        ),
+        queryset=CampusKeyOfficial.objects.filter(is_active=True, is_key_official=True),
         many=True,
         required=False,
         allow_empty=True,
     )
     department_head = serializers.PrimaryKeyRelatedField(
-        queryset=CampusKeyOfficial.objects.filter(
-            is_active=True, is_key_official=True
-        ),
+        queryset=CampusKeyOfficial.objects.filter(is_active=True, is_key_official=True),
         allow_null=True,
         required=False,
     )
@@ -1043,17 +1143,20 @@ class CampusSectionPatchSerializer(FileHandlingMixin, serializers.ModelSerialize
         if members is not None:
             members_list = list(members)
             department_head = validated_data.get(
-                "department_head", instance.department_head
+                "department_head",
+                instance.department_head,
             )
             if department_head and department_head not in members_list:
                 members_list.append(department_head)
             instance.members.set(members_list)
             CampusSectionCreateSerializer._sync_designations_from_members(
-                instance, members_list
+                instance,
+                members_list,
             )
         elif head_changed:
             CampusSectionCreateSerializer._sync_designations_from_members(
-                instance, list(instance.members.all())
+                instance,
+                list(instance.members.all()),
             )
 
         instance.updated_by = current_user
@@ -1071,7 +1174,9 @@ class CampusSectionPatchSerializer(FileHandlingMixin, serializers.ModelSerialize
 
 class CampusUnitListSerializer(serializers.ModelSerializer):
     officials = CampusKeyOfficialListSerializer(
-        source="members", many=True, read_only=True
+        source="members",
+        many=True,
+        read_only=True,
     )
     department_head_detail = CampusKeyOfficialListSerializer(
         source="department_head",
@@ -1097,7 +1202,9 @@ class CampusUnitListSerializer(serializers.ModelSerializer):
 
 class CampusUnitRetrieveSerializer(AbstractInfoRetrieveSerializer):
     officials = CampusKeyOfficialListSerializer(
-        source="members", many=True, read_only=True
+        source="members",
+        many=True,
+        read_only=True,
     )
     department_head_detail = CampusKeyOfficialListSerializer(
         source="department_head",
@@ -1137,17 +1244,13 @@ class CampusUnitCreateSerializer(serializers.ModelSerializer):
         allow_empty=True,
     )
     members = serializers.PrimaryKeyRelatedField(
-        queryset=CampusKeyOfficial.objects.filter(
-            is_active=True, is_key_official=True
-        ),
+        queryset=CampusKeyOfficial.objects.filter(is_active=True, is_key_official=True),
         many=True,
         required=False,
         allow_empty=True,
     )
     department_head = serializers.PrimaryKeyRelatedField(
-        queryset=CampusKeyOfficial.objects.filter(
-            is_active=True, is_key_official=True
-        ),
+        queryset=CampusKeyOfficial.objects.filter(is_active=True, is_key_official=True),
         allow_null=True,
         required=False,
     )
@@ -1228,7 +1331,9 @@ class CampusUnitCreateSerializer(serializers.ModelSerializer):
             else None
         )
         head_designation_code = (
-            head_designation.code if head_designation and head_designation.code else None
+            head_designation.code
+            if head_designation and head_designation.code
+            else None
         )
         if head_designation_code and head_designation_code not in designations:
             designations.append(head_designation_code)
@@ -1250,17 +1355,13 @@ class CampusUnitPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
         allow_empty=True,
     )
     members = serializers.PrimaryKeyRelatedField(
-        queryset=CampusKeyOfficial.objects.filter(
-            is_active=True, is_key_official=True
-        ),
+        queryset=CampusKeyOfficial.objects.filter(is_active=True, is_key_official=True),
         many=True,
         required=False,
         allow_empty=True,
     )
     department_head = serializers.PrimaryKeyRelatedField(
-        queryset=CampusKeyOfficial.objects.filter(
-            is_active=True, is_key_official=True
-        ),
+        queryset=CampusKeyOfficial.objects.filter(is_active=True, is_key_official=True),
         allow_null=True,
         required=False,
     )
@@ -1311,17 +1412,20 @@ class CampusUnitPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
         if members is not None:
             members_list = list(members)
             department_head = validated_data.get(
-                "department_head", instance.department_head
+                "department_head",
+                instance.department_head,
             )
             if department_head and department_head not in members_list:
                 members_list.append(department_head)
             instance.members.set(members_list)
             CampusUnitCreateSerializer._sync_designations_from_members(
-                instance, members_list
+                instance,
+                members_list,
             )
         elif head_changed:
             CampusUnitCreateSerializer._sync_designations_from_members(
-                instance, list(instance.members.all())
+                instance,
+                list(instance.members.all()),
             )
 
         instance.updated_by = current_user
@@ -1521,7 +1625,7 @@ class GlobalGalleryImageUploadSerializer(serializers.Serializer):
 
 
 class GlobalGalleryImageCreateSerializer(serializers.Serializer):
-   
+
     union = serializers.PrimaryKeyRelatedField(
         queryset=CampusUnion.objects.filter(is_active=True, is_archived=False),
         allow_null=True,
@@ -1563,8 +1667,6 @@ class GlobalGalleryImageCreateSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         relation_fields = {
-            
-            
             "union": attrs.get("union"),
             "club": attrs.get("club"),
             "department": attrs.get("department"),
@@ -1575,17 +1677,19 @@ class GlobalGalleryImageCreateSerializer(serializers.Serializer):
         populated = [name for name, value in relation_fields.items() if value]
         if len(populated) > 1:
             raise serializers.ValidationError(
-                "You can only associate one source relation per upload."
+                "You can only associate one source relation per upload.",
             )
 
         if not populated and not attrs.get("source_title"):
             raise serializers.ValidationError(
-                {"source_title": "Provide a source title when no relation is selected."}
+                {
+                    "source_title": "Provide a source title when no relation is selected.",
+                },
             )
 
         if not attrs.get("images"):
             raise serializers.ValidationError(
-                {"images": "Upload at least one gallery image."}
+                {"images": "Upload at least one gallery image."},
             )
 
         attrs["resolved_source_type"] = self._resolve_source_type(attrs, populated)
@@ -1602,7 +1706,7 @@ class GlobalGalleryImageCreateSerializer(serializers.Serializer):
                 return GlobalGalleryImage.SourceType.CAMPUS_EVENT
             if relation_name == "student_club_event":
                 return GlobalGalleryImage.SourceType.CLUB_EVENT
-            
+
             if relation_name == "global_event":
                 return GlobalGalleryImage.SourceType.GLOBAL_EVENT
             if relation_name == "union":
@@ -1626,7 +1730,6 @@ class GlobalGalleryImageCreateSerializer(serializers.Serializer):
         relation_payload = {
             field: validated_data.get(field)
             for field in [
-               
                 "union",
                 "club",
                 "department",
@@ -1652,13 +1755,14 @@ class GlobalGalleryImageCreateSerializer(serializers.Serializer):
             if resolved_relation:
                 image_kwargs[resolved_relation] = relation_payload[resolved_relation]
             image_kwargs["image"] = image_data["image"]
-            created_images.append(
-                GlobalGalleryImage.objects.create(**image_kwargs)
-            )
+            created_images.append(GlobalGalleryImage.objects.create(**image_kwargs))
         return created_images
 
 
-class GlobalGalleryImageUpdateSerializer(FileHandlingMixin, serializers.ModelSerializer):
+class GlobalGalleryImageUpdateSerializer(
+    FileHandlingMixin,
+    serializers.ModelSerializer,
+):
     class Meta:
         model = GlobalGalleryImage
         fields = [
@@ -1670,7 +1774,6 @@ class GlobalGalleryImageUpdateSerializer(FileHandlingMixin, serializers.ModelSer
             "source_context",
             # "campus_event",
             # "student_club_event",
-            
             "union",
             "club",
             "department",
@@ -1803,7 +1906,7 @@ class GlobalEventCreateSerializer(serializers.ModelSerializer):
         current_user = get_user_by_context(self.context)
 
         validated_data["title"] = validated_data["title"].strip().title()
-        if "description" in validated_data and validated_data["description"]:
+        if validated_data.get("description"):
             validated_data["description"] = validated_data["description"].strip()
         validated_data["created_by"] = current_user
 
@@ -1857,8 +1960,11 @@ class GlobalEventPatchSerializer(FileHandlingMixin, serializers.ModelSerializer)
         ]
 
     def validate(self, attrs):
-        start = attrs.get("event_start_date", getattr(self.instance, "event_start_date"))
-        end = attrs.get("event_end_date", getattr(self.instance, "event_end_date"))
+        start = attrs.get(
+            "event_start_date",
+            self.instance.event_start_date,
+        )
+        end = attrs.get("event_end_date", self.instance.event_end_date)
         if start and end and end < start:
             raise serializers.ValidationError({"event_end_date": EVENT_DATE_ERROR})
         return attrs
@@ -1888,6 +1994,7 @@ class GlobalEventPatchSerializer(FileHandlingMixin, serializers.ModelSerializer)
     def to_representation(self, instance) -> dict[str, str]:
         return {"message": GLOBAL_EVENT_UPDATED_SUCCESS}
 
+
 class StudentClubMemberListSerializer(serializers.ModelSerializer):
     class Meta:
         model = StudentClubMember
@@ -1899,7 +2006,15 @@ class StudentClubListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = StudentClub
-        fields = ["id", "name", "short_description", "thumbnail", "website_url", "is_active", "department"]
+        fields = [
+            "id",
+            "name",
+            "short_description",
+            "thumbnail",
+            "website_url",
+            "is_active",
+            "department",
+        ]
 
 
 class StudentClubRetrieveSerializer(AbstractInfoRetrieveSerializer):
@@ -2044,15 +2159,3 @@ class StudentClubPatchSerializer(FileHandlingMixin, serializers.ModelSerializer)
 
     def to_representation(self, instance):
         return {"message": CAMPUS_CLUB_UPDATED_SUCCESS}
-
-
-
-
-
-
-
-
-
-
-
-

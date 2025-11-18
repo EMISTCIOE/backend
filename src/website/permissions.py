@@ -1,7 +1,6 @@
-from rest_framework.permissions import BasePermission
+from rest_framework.permissions import SAFE_METHODS, BasePermission
 
-from src.libs.permissions import validate_permissions, get_user_permissions
-from rest_framework.permissions import SAFE_METHODS
+from src.libs.permissions import get_user_permissions, validate_permissions
 
 
 class CampusInfoPermission(BasePermission):

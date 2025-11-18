@@ -18,11 +18,6 @@ DEPARTMENT_EVENT_UPDATED_SUCCESS = _("Event updated successfully")
 DEPARTMENT_EVENT_NOT_FOUND = _("Event not found")
 DEPARTMENT_EVENT_DELETED_SUCCESS = _("Event delete successfully")
 
-STAFF_MEMBER_CREATED_SUCCESS = _("Staff member created successfully")
-STAFF_MEMBER_UPDATED_SUCCESS = _("Staff member updated successfully")
-STAFF_MEMBER_NOT_FOUND = _("Staff member not found")
-STAFF_MEMBER_DELETED_SUCCESS = _("Staff member deleted successfully")
-
 SOCIAL_LINK_DELETED_SUCCESS = _("Social media link deleted successfully")
 SOCIAL_LINK_NOT_FOUND = _("Social media link not found.")
 

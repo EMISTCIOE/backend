@@ -2,6 +2,6 @@ from django.apps import AppConfig
 
 
 class ProjectConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'src.project'
-    verbose_name = 'Project Management'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "src.project"
+    verbose_name = "Project Management"

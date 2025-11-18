@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 from django.contrib import admin
 
+from src.journal.models import Article
+from src.notice.models import Notice
+from src.project.models import Project
+from src.research.models import Research
+from src.website.models import GlobalEvent, GlobalGalleryImage, StudentClub
+
 from .models import (
     AcademicProgram,
     Department,
     DepartmentDownload,
     DepartmentPlanAndPolicy,
-    StaffMember,
 )
-from src.website.models import GlobalGalleryImage, GlobalEvent, StudentClub
-from src.notice.models import Notice
-from src.project.models import Project
-from src.research.models import Research
-from src.journal.models import Article
 
 
 @admin.register(AcademicProgram)
@@ -22,19 +22,19 @@ class AcademicProgramAdmin(admin.ModelAdmin):
     search_fields = ["name", "short_name", "description"]
     readonly_fields = ["slug", "created_at", "updated_at"]
     fieldsets = (
-        ("Program Information", {
-            "fields": ("name", "short_name", "slug", "description", "program_type")
-        }),
-        ("Department", {
-            "fields": ("department",)
-        }),
-        ("Media", {
-            "fields": ("thumbnail",)
-        }),
-        ("Audit Information", {
-            "fields": ("created_at", "updated_at", "created_by", "updated_by"),
-            "classes": ("collapse",)
-        }),
+        (
+            "Program Information",
+            {"fields": ("name", "short_name", "slug", "description", "program_type")},
+        ),
+        ("Department", {"fields": ("department",)}),
+        ("Media", {"fields": ("thumbnail",)}),
+        (
+            "Audit Information",
+            {
+                "fields": ("created_at", "updated_at", "created_by", "updated_by"),
+                "classes": ("collapse",),
+            },
+        ),
     )
 
 
@@ -99,7 +99,13 @@ class ResearchInline(admin.TabularInline):
     model = Research
     fk_name = "department"
     extra = 0
-    fields = ("title", "research_type", "status", "principal_investigator", "start_date")
+    fields = (
+        "title",
+        "research_type",
+        "status",
+        "principal_investigator",
+        "start_date",
+    )
     readonly_fields = ("created_at",)
     show_change_link = True
 
@@ -149,7 +155,7 @@ class DepartmentAdmin(admin.ModelAdmin):
                     "thumbnail",
                     "email",
                     "phone_no",
-                )
+                ),
             },
         ),
         (
@@ -160,14 +166,14 @@ class DepartmentAdmin(admin.ModelAdmin):
             },
         ),
     )
-    
+
     def save_model(self, request, obj, form, change):
         """Set created_by and updated_by for the Department object."""
         if not change:  # creating new object
             obj.created_by = request.user
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
-    
+
     def save_formset(self, request, form, formset, change):
         """Set created_by and updated_by for inline models."""
         instances = formset.save(commit=False)
@@ -177,12 +183,3 @@ class DepartmentAdmin(admin.ModelAdmin):
             obj.updated_by = request.user
             obj.save()
         formset.save_m2m()
-
-
-@admin.register(StaffMember)
-class StaffMemberAdmin(admin.ModelAdmin):
-    list_display = ("name", "designation", "department", "email")
-    search_fields = ("name", "designation", "department__name")
-
-# Duplicate admin class removed; `Department` is already registered above with
-# inlines and audit-aware save_formset.

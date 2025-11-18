@@ -72,7 +72,7 @@ wheels/
 *.spec
 staticfiles/
 
-# Installer logs
+# Installer logs (pip - deprecated, use uv)
 pip-log.txt
 pip-delete-this-directory.txt
 
@@ -92,7 +92,7 @@ coverage.xml
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# pyenv
+# pyenv - not needed with uv
 .python-version
 
 # celery
@@ -101,21 +101,51 @@ celerybeat-schedule.*
 # SageMath parsed files
 *.sage.py
 
-# Environments
+# Virtual Environments (use uv instead)
+# Only .venv is supported in this project
 .env
-.venv
+.venv/
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
-myenv
+myenv/
+pyvenv.cfg
+
+# UV Package Manager (primary)
+.uv/
+uv.lock
+# Pip protection backups (from uv setup)
+.venv/bin/pip.real
+.venv/bin/pip3.real
+.venv/bin/pip.disabled
+.venv/pyvenv.cfg
+
+# Legacy package managers (not used - uv only)
+# If you see these, you're using the wrong tool!
+poetry.lock
+Pipfile
+Pipfile.lock
+pdm.lock
+requirements-dev.txt
+requirements-test.txt
+setup.py
+setup.cfg
 
 # mkdocs documentation
 /site
 
 # mypy
 .mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
 
 # Sublime Text #
 *.tmlanguage.cache
@@ -142,4 +172,37 @@ GitHub.sublime-settings
 !.vscode/extensions.json
 .history
 
+# OS files
 nohup.out
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Migration scripts and data
+migrate_scripts/
+
+# Management commands for data migration and imports
+src/*/management/commands/import_*.py
+src/*/management/commands/migrate_*.py
+src/website/management/commands/import_staff.py
+src/website/management/commands/import_designations.py
+src/website/management/commands/migrate_staff_to_campus.py
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Pre-commit
+.pre-commit-cache/

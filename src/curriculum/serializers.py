@@ -14,11 +14,11 @@ class AcademicProgramLiteSerializer(serializers.ModelSerializer):
 class SubjectSerializer(serializers.ModelSerializer):
     academic_program = AcademicProgramLiteSerializer(read_only=True)
     academic_program_id = serializers.PrimaryKeyRelatedField(
-        source='academic_program',
+        source="academic_program",
         queryset=AcademicProgram.objects.filter(is_active=True),
         required=False,
         allow_null=True,
-        write_only=True
+        write_only=True,
     )
 
     class Meta:

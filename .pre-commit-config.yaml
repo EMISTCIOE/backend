@@ -32,6 +32,17 @@ repos:
       - id: ruff
         args: [--fix-only, --exit-non-zero-on-fix]
 
+  # Custom local hooks
+  - repo: local
+    hooks:
+      - id: check-no-pip-usage
+        name: Check for accidental pip usage
+        entry: bash scripts/check_no_pip.sh
+        language: system
+        files: \.(md|py|sh|txt|yaml|yml)$
+        exclude: ^(scripts/(pip-wrapper|post_venv_setup|check_no_pip|uv_setup)\.sh|docs/UV_PACKAGE_MANAGEMENT\.md|README\.md|UV_SETUP_COMPLETE\.md|\.github/workflows/)
+        pass_filenames: true
+
 
 # sets up .pre-commit-ci.yaml to ensure pre-commit dependencies stay up to date
 ci:

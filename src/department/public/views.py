@@ -1,24 +1,23 @@
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.permissions import AllowAny
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.generics import ListAPIView, RetrieveAPIView
-from django.shortcuts import get_object_or_404
+from rest_framework.permissions import AllowAny
 
 # Project Imports
 from src.department.models import (
     Department,
     DepartmentEventGallery,
 )
-
 from src.department.public.serializer import (
-    PublicDepartmentListSerializer,
     PublicDepartmentDetailSerializer,
-    PublicDepartmentStaffSerializer,
-    PublicDepartmentProgramSerializer,
     PublicDepartmentDownloadSerializer,
-    PublicDepartmentPlanSerializer,
-    PublicDepartmentEventSerializer,
     PublicDepartmentEventGallerySerializer,
+    PublicDepartmentEventSerializer,
+    PublicDepartmentListSerializer,
+    PublicDepartmentPlanSerializer,
+    PublicDepartmentProgramSerializer,
+    PublicDepartmentStaffSerializer,
 )
 
 
@@ -55,9 +54,11 @@ class PublicDepartmentStaffListAPIView(ListAPIView):
 
     def get_queryset(self):
         department = get_object_or_404(
-            Department, slug=self.kwargs["slug"], is_active=True
+            Department,
+            slug=self.kwargs["slug"],
+            is_active=True,
         )
-        return department.department_staffs.filter(is_active=True)
+        return department.staff_members.filter(is_active=True)
 
 
 class PublicDepartmentProgramListAPIView(ListAPIView):
@@ -72,7 +73,9 @@ class PublicDepartmentProgramListAPIView(ListAPIView):
 
     def get_queryset(self):
         department = get_object_or_404(
-            Department, slug=self.kwargs["slug"], is_active=True
+            Department,
+            slug=self.kwargs["slug"],
+            is_active=True,
         )
         return department.department_programs.filter(is_active=True)
 
@@ -86,7 +89,9 @@ class PublicDepartmentDownloadListAPIView(ListAPIView):
 
     def get_queryset(self):
         department = get_object_or_404(
-            Department, slug=self.kwargs["slug"], is_active=True
+            Department,
+            slug=self.kwargs["slug"],
+            is_active=True,
         )
         return department.downloads.filter(is_active=True)
 
@@ -104,7 +109,9 @@ class PublicDepartmentEventListAPIView(ListAPIView):
 
     def get_queryset(self):
         department = get_object_or_404(
-            Department, slug=self.kwargs["slug"], is_active=True
+            Department,
+            slug=self.kwargs["slug"],
+            is_active=True,
         )
         return department.events.filter(is_active=True)
 
@@ -117,7 +124,8 @@ class PublicDepartmentEventGalleryListAPIView(ListAPIView):
 
     def get_queryset(self):
         return DepartmentEventGallery.objects.filter(
-            uuid=self.kwargs["event_id"], is_active=True
+            uuid=self.kwargs["event_id"],
+            is_active=True,
         )
 
 
@@ -130,6 +138,8 @@ class PublicDepartmentPlanPolicyListAPIView(ListAPIView):
 
     def get_queryset(self):
         department = get_object_or_404(
-            Department, slug=self.kwargs["slug"], is_active=True
+            Department,
+            slug=self.kwargs["slug"],
+            is_active=True,
         )
         return department.plans_and_policies.filter(is_active=True)

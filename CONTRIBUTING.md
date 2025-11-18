@@ -2,11 +2,11 @@
 
 Please go through the documentation at least once before you start contributing as it will help you understand the project, and how we work better.
 
-## Commits 👮
+## Commits
 
 Try and make small commits, it will be easier for us to review and merge them and also it will be easier for you to fix any errors if there are any.
 
-#### Commit Message Format 🔐
+#### Commit Message Format
 
 The commit message should be in the format of `type(scope): subject` where the `scope` is optional `type` is one of the following:
 
@@ -18,7 +18,7 @@ The commit message should be in the format of `type(scope): subject` where the `
 - `test` : Use this when you are adding tests.
 - `chore` : Use this when you are changing the build process or auxiliary tools and libraries such as documentation generation.
 
-#### Ruff & Black ✨
+#### Ruff & Black
 
 We are using `pre-commit hooks` and `linting packages` to make sure that the code is in the correct format.
 
@@ -28,17 +28,17 @@ Some of them are automatically fixed, while some need manual fixing.
 
 ---
 
-## Pull requests 👮
+## Pull requests
 
-#### Creating a Pull Request 📝
+#### Creating a Pull Request
 
 - Do not raise a PR if you are not assigned to the issue. Do not try and make spam pull requests as you might be **banned** from the organization.
 - Whenever making a Pull request, make sure you fill up the fields properly.
 - We use `Lint PR title` workflow which makes sure that the PR titles are in the correct format. If you are not sure about the format, you can check the `Pull Request Title Format` section below.
 
-#### Pull Request Title Format 🔐
+#### Pull Request Title Format
 
-🔴🔴🔴 **All LowerCase**
+ **All LowerCase**
 
 The title of the pull request should be in the format of `type(scope): subject` where the `scope` is optional `type` is one of the following:
 
@@ -58,7 +58,7 @@ Available types:
 - `chore(refactor): remove unused dependencies`
 - `fix: updated broken link in the department list api`
 
-#### Reviewing a Pull Request 📌
+#### Reviewing a Pull Request
 
 We welcome you to review Pull Requests, it is a great way to learn and network.
 

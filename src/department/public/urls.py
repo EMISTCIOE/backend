@@ -3,14 +3,14 @@ from rest_framework.routers import DefaultRouter
 
 # Project Imports
 from src.department.public.views import (
+    PublicDepartmentDownloadListAPIView,
+    PublicDepartmentEventGalleryListAPIView,
+    PublicDepartmentEventListAPIView,
     PublicDepartmentListAPIView,
+    PublicDepartmentPlanPolicyListAPIView,
+    PublicDepartmentProgramListAPIView,
     PublicDepartmentRetrieveAPIView,
     PublicDepartmentStaffListAPIView,
-    PublicDepartmentProgramListAPIView,
-    PublicDepartmentDownloadListAPIView,
-    PublicDepartmentEventListAPIView,
-    PublicDepartmentEventGalleryListAPIView,
-    PublicDepartmentPlanPolicyListAPIView,
 )
 
 router = DefaultRouter()

@@ -1,0 +1,5 @@
+# UV Configuration
+# https://docs.astral.sh/uv/configuration/
+
+# Allow managed or system Python
+python-preference = "managed"

@@ -15,8 +15,6 @@ from src.department.messages import (
     DESRIPTION_OR_FILE_REQUIRED,
     EVENT_DATE_ERROR,
     PROGRAM_DEPARTMENT_MISMATCH,
-    STAFF_MEMBER_CREATED_SUCCESS,
-    STAFF_MEMBER_UPDATED_SUCCESS,
 )
 from src.department.validators import (
     validate_department_download_file,
@@ -33,7 +31,6 @@ from .models import (
     DepartmentEventGallery,
     DepartmentPlanAndPolicy,
     DepartmentSocialMedia,
-    StaffMember,
 )
 
 # Department Serializers
@@ -262,7 +259,14 @@ class AcademicProgramCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AcademicProgram
-        fields = ["name", "short_name", "description", "program_type", "department", "thumbnail"]
+        fields = [
+            "name",
+            "short_name",
+            "description",
+            "program_type",
+            "department",
+            "thumbnail",
+        ]
 
     def create(self, validated_data):
         current_user = get_user_by_context(self.context)
@@ -618,185 +622,6 @@ class DepartmentEventPatchSerializer(FileHandlingMixin, serializers.ModelSeriali
 
     def to_representation(self, instance) -> dict[str, str]:
         return {"message": DEPARTMENT_EVENT_UPDATED_SUCCESS}
-
-
-# Department Staff Member Serializers
-# ------------------------------------------------------------------------------------------------------
-
-
-class StaffMemberListSerializer(serializers.ModelSerializer):
-    department = DepartmentListForOtherSerializer()
-    program = AcademicProgramListForOtherSerializer()
-
-    class Meta:
-        model = StaffMember
-        fields = [
-            "id",
-            "title",
-            "name",
-            "designation",
-            "display_order",
-            "photo",
-            "phone_number",
-            "email",
-            "department",
-            "program",
-            "is_active",
-        ]
-
-
-class StaffMemberRetrieveSerializer(AbstractInfoRetrieveSerializer):
-    department = DepartmentListForOtherSerializer()
-    program = AcademicProgramListForOtherSerializer()
-
-    class Meta(AbstractInfoRetrieveSerializer.Meta):
-        model = StaffMember
-        fields = [
-            "id",
-            "title",
-            "name",
-            "designation",
-            "display_order",
-            "photo",
-            "phone_number",
-            "email",
-            "message",
-            "department",
-            "program",
-        ]
-
-        fields += AbstractInfoRetrieveSerializer.Meta.fields
-
-
-class StaffMemberCreateSerializer(serializers.ModelSerializer):
-    department = serializers.PrimaryKeyRelatedField(
-        queryset=Department.objects.filter(is_active=True),
-    )
-    program = serializers.PrimaryKeyRelatedField(
-        queryset=AcademicProgram.objects.filter(is_active=True),
-        allow_null=True,
-    )
-    photo = serializers.ImageField(
-        validators=[validate_photo_thumbnail],
-        allow_null=True,
-    )
-
-    class Meta:
-        model = StaffMember
-        fields = [
-            "title",
-            "name",
-            "designation",
-            "display_order",
-            "photo",
-            "phone_number",
-            "email",
-            "message",
-            "department",
-            "program",
-        ]
-
-    def validate(self, attrs):
-        program = attrs.get("program")
-        department = attrs.get("department")
-
-        if program and department and program.department != department:
-            raise serializers.ValidationError({"program": PROGRAM_DEPARTMENT_MISMATCH})
-
-        return attrs
-
-    def create(self, validated_data):
-        current_user = get_user_by_context(self.context)
-
-        # Sanitize fields
-        validated_data["name"] = validated_data["name"].strip()
-        if validated_data.get("phone_number"):
-            validated_data["phone_number"] = validated_data["phone_number"].strip()
-        if validated_data.get("email"):
-            validated_data["email"] = validated_data["email"].strip()
-
-        validated_data["created_by"] = current_user
-
-        return StaffMember.objects.create(**validated_data)
-
-    def to_representation(self, instance):
-        return {"message": STAFF_MEMBER_CREATED_SUCCESS}
-
-
-class StaffMemberPatchSerializer(FileHandlingMixin, serializers.ModelSerializer):
-    department = serializers.PrimaryKeyRelatedField(
-        queryset=Department.objects.filter(is_active=True),
-        required=False,
-    )
-    program = serializers.PrimaryKeyRelatedField(
-        queryset=AcademicProgram.objects.filter(is_active=True),
-        allow_null=True,
-        required=False,
-    )
-    photo = serializers.ImageField(
-        validators=[validate_photo_thumbnail],
-        allow_null=True,
-        required=False,
-    )
-
-    class Meta:
-        model = StaffMember
-        fields = [
-            "title",
-            "name",
-            "designation",
-            "display_order",
-            "photo",
-            "phone_number",
-            "email",
-            "message",
-            "department",
-            "program",
-            "is_active",
-        ]
-
-    def validate(self, attrs):
-        program = attrs.get("program")
-        department = attrs.get("department")
-
-        if program is None:
-            program = getattr(self.instance, "program", None)
-        if department is None:
-            department = getattr(self.instance, "department", None)
-
-        if program and department and program.department != department:
-            raise serializers.ValidationError({"program": PROGRAM_DEPARTMENT_MISMATCH})
-
-        return attrs
-
-    def update(self, instance, validated_data):
-        current_user = get_user_by_context(self.context)
-
-        self.handle_file_update(instance, validated_data, "photo")
-
-        # Sanitize fields if present
-        name = validated_data.pop("name", None)
-        if name is not None:
-            validated_data["name"] = name.strip()
-
-        phone = validated_data.pop("phone_number", None)
-        if phone is not None:
-            validated_data["phone_number"] = phone.strip()
-
-        email = validated_data.pop("email", None)
-        if email is not None:
-            validated_data["email"] = email.strip()
-
-        for key, val in validated_data.items():
-            setattr(instance, key, val)
-
-        instance.updated_by = current_user
-        instance.save()
-
-        return instance
-
-    def to_representation(self, instance):
-        return {"message": STAFF_MEMBER_UPDATED_SUCCESS}
 
 
 # Department Plans and Policies Serializers

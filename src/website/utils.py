@@ -113,9 +113,12 @@ def build_global_gallery_items():
         return resolve_gallery_image_source(collection)
 
     for gallery in collection_gallery_qs:
-        source_type, source_identifier, source_name, source_context = _resolve_collection_context(
-            gallery
-        )
+        (
+            source_type,
+            source_identifier,
+            source_name,
+            source_context,
+        ) = _resolve_collection_context(gallery)
         items.append(
             {
                 "uuid": str(gallery.uuid),
@@ -126,7 +129,7 @@ def build_global_gallery_items():
                 "source_name": source_name,
                 "source_context": source_context,
                 "created_at": gallery.created_at,
-            }
+            },
         )
 
     return items

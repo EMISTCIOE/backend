@@ -6,14 +6,13 @@ from drf_spectacular.utils import extend_schema
 from rest_framework import generics, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ReadOnlyModelViewSet
-from rest_framework.pagination import LimitOffsetPagination
 
 # Project Imports
 from src.libs.utils import set_binary_files_null_if_empty
-from src.website.utils import build_global_gallery_items
 from src.website.messages import (
     ACADEMIC_CALENDER_DELETED_SUCCESS,
     ACADEMIC_CALENDER_NOT_FOUND,
@@ -27,23 +26,24 @@ from src.website.messages import (
     CAMPUS_REPORT_NOT_FOUND,
     CAMPUS_SECTION_DELETED_SUCCESS,
     CAMPUS_SECTION_NOT_FOUND,
-    CAMPUS_UNIT_DELETED_SUCCESS,
-    CAMPUS_UNIT_NOT_FOUND,
-    RESEARCH_FACILITY_DELETED_SUCCESS,
-    RESEARCH_FACILITY_NOT_FOUND,
     CAMPUS_UNION_DELETED_SUCCESS,
     CAMPUS_UNION_NOT_FOUND,
+    CAMPUS_UNIT_DELETED_SUCCESS,
+    CAMPUS_UNIT_NOT_FOUND,
+    GLOBAL_EVENT_CREATED_SUCCESS,
+    GLOBAL_EVENT_DELETED_SUCCESS,
+    GLOBAL_EVENT_UPDATED_SUCCESS,
+    GLOBAL_GALLERY_IMAGE_CREATED_SUCCESS,
+    GLOBAL_GALLERY_IMAGE_DELETED_SUCCESS,
+    GLOBAL_GALLERY_IMAGE_UPDATED_SUCCESS,
     MEMBER_DELETED_SUCCESS,
     MEMBER_NOT_FOUND,
+    RESEARCH_FACILITY_DELETED_SUCCESS,
+    RESEARCH_FACILITY_NOT_FOUND,
     SOCIAL_MEDIA_DELETED_SUCCESS,
     SOCIAL_MEDIA_NOT_FOUND,
-    GLOBAL_GALLERY_IMAGE_CREATED_SUCCESS,
-    GLOBAL_GALLERY_IMAGE_UPDATED_SUCCESS,
-    GLOBAL_GALLERY_IMAGE_DELETED_SUCCESS,
-    GLOBAL_EVENT_CREATED_SUCCESS,
-    GLOBAL_EVENT_UPDATED_SUCCESS,
-    GLOBAL_EVENT_DELETED_SUCCESS,
 )
+from src.website.utils import build_global_gallery_items
 
 from .models import (
     AcademicCalendar,
@@ -51,18 +51,18 @@ from .models import (
     CampusFeedback,
     CampusInfo,
     CampusKeyOfficial,
+    CampusReport,
     CampusSection,
     CampusStaffDesignation,
-    CampusUnit,
-    CampusReport,
     CampusUnion,
-    ResearchFacility,
     CampusUnionMember,
+    CampusUnit,
+    GlobalEvent,
+    GlobalGalleryImage,
+    ResearchFacility,
     SocialMediaLink,
     StudentClub,
     StudentClubMember,
-    GlobalGalleryImage,
-    GlobalEvent,
 )
 from .permissions import (
     AcademicCalendarPermission,
@@ -72,13 +72,13 @@ from .permissions import (
     CampusKeyOfficialPermission,
     CampusReportPermission,
     CampusSectionPermission,
-    CampusUnitPermission,
-    ResearchFacilityPermission,
     CampusUnionPermission,
-    StudentClubPermission,
-    GlobalGalleryPermission,
-    GlobalGalleryImagePermission,
+    CampusUnitPermission,
     GlobalEventPermission,
+    GlobalGalleryImagePermission,
+    GlobalGalleryPermission,
+    ResearchFacilityPermission,
+    StudentClubPermission,
 )
 from .serializers import (
     AcademicCalendarCreateSerializer,
@@ -89,7 +89,6 @@ from .serializers import (
     CampusDownloadListSerializer,
     CampusDownloadPatchSerializer,
     CampusDownloadRetrieveSerializer,
-
     CampusFeedbackListSerializer,
     CampusFeedbackResolveSerializer,
     CampusInfoPatchSerializer,
@@ -107,26 +106,26 @@ from .serializers import (
     CampusSectionPatchSerializer,
     CampusSectionRetrieveSerializer,
     CampusStaffDesignationSerializer,
-    CampusUnitCreateSerializer,
-    CampusUnitListSerializer,
-    CampusUnitPatchSerializer,
-    CampusUnitRetrieveSerializer,
     CampusUnionCreateSerializer,
     CampusUnionListSerializer,
     CampusUnionPatchSerializer,
     CampusUnionRetrieveSerializer,
-    ResearchFacilityCreateSerializer,
-    ResearchFacilityListSerializer,
-    ResearchFacilityPatchSerializer,
-    ResearchFacilityRetrieveSerializer,
-    GlobalGallerySerializer,
-    GlobalGalleryImageSerializer,
-    GlobalGalleryImageCreateSerializer,
-    GlobalGalleryImageUpdateSerializer,
+    CampusUnitCreateSerializer,
+    CampusUnitListSerializer,
+    CampusUnitPatchSerializer,
+    CampusUnitRetrieveSerializer,
     GlobalEventCreateSerializer,
     GlobalEventListSerializer,
     GlobalEventPatchSerializer,
     GlobalEventRetrieveSerializer,
+    GlobalGalleryImageCreateSerializer,
+    GlobalGalleryImageSerializer,
+    GlobalGalleryImageUpdateSerializer,
+    GlobalGallerySerializer,
+    ResearchFacilityCreateSerializer,
+    ResearchFacilityListSerializer,
+    ResearchFacilityPatchSerializer,
+    ResearchFacilityRetrieveSerializer,
     StudentClubCreateSerializer,
     StudentClubListSerializer,
     StudentClubPatchSerializer,
@@ -197,7 +196,8 @@ class SocialMediaLinkDeleteAPIView(APIView):
 
 class CampusKeyOfficialFilterSet(FilterSet):
     designation = django_filters.CharFilter(
-        field_name="designation__code", lookup_expr="iexact"
+        field_name="designation__code",
+        lookup_expr="iexact",
     )
     is_key_official = django_filters.BooleanFilter()
     is_active = django_filters.BooleanFilter()
@@ -212,7 +212,7 @@ class CampusKeyOfficialViewSet(viewsets.ModelViewSet):
 
     permission_classes = [CampusKeyOfficialPermission]
     queryset = CampusKeyOfficial.objects.filter(is_archived=False).select_related(
-        "designation"
+        "designation",
     )
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
     search_fields = ["full_name", "designation__title", "designation__code", "email"]
@@ -462,9 +462,6 @@ class AcademicCalendarViewSet(viewsets.ModelViewSet):
         )
 
 
-
-
-
 class CampusUnionViewSet(viewsets.ModelViewSet):
     permission_classes = [CampusUnionPermission]
     queryset = CampusUnion.objects.filter(is_archived=False)
@@ -617,6 +614,7 @@ class CampusSectionViewSet(viewsets.ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
+
 class FilterForCampusUnitViewSet(FilterSet):
     class Meta:
         model = CampusUnit
@@ -736,6 +734,7 @@ class ResearchFacilityViewSet(viewsets.ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
+
 class StudentClubViewSet(viewsets.ModelViewSet):
     permission_classes = [StudentClubPermission]
     queryset = StudentClub.objects.filter(is_archived=False)
@@ -825,9 +824,6 @@ class StudentClubViewSet(viewsets.ModelViewSet):
         )
 
 
-
-
-
 class GlobalGalleryImageViewSet(viewsets.ModelViewSet):
     permission_classes = [GlobalGalleryImagePermission]
     queryset = (
@@ -854,7 +850,10 @@ class GlobalGalleryImageViewSet(viewsets.ModelViewSet):
         return GlobalGalleryImageUpdateSerializer
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data, context={"request": request})
+        serializer = self.get_serializer(
+            data=request.data,
+            context={"request": request},
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(
@@ -924,7 +923,10 @@ class GlobalEventViewSet(viewsets.ModelViewSet):
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         set_binary_files_null_if_empty(["thumbnail"], request.data)
-        serializer = self.get_serializer(data=request.data, context={"request": request})
+        serializer = self.get_serializer(
+            data=request.data,
+            context={"request": request},
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(

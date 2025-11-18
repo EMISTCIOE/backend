@@ -16,22 +16,20 @@ from src.department.models import Department
 from src.website.constants import (
     ACADEMIC_CALENDER_FILE_PATH,
     CAMPUS_DOWNLOADS_FILE_PATH,
-
     CAMPUS_FILE_PATH,
     CAMPUS_KEY_OFFICIAL_FILE_PATH,
     CAMPUS_REPORT_FILE_PATH,
+    CAMPUS_SECTION_FILE_PATH,
     CAMPUS_UNION_FILE_PATH,
     CAMPUS_UNION_MEMBER_FILE_PATH,
-    CAMPUS_SECTION_FILE_PATH,
     CAMPUS_UNIT_FILE_PATH,
     GLOBAL_EVENT_FILE_PATH,
+    GLOBAL_GALLERY_FILE_PATH,
     RESEARCH_FACILITY_FILE_PATH,
-
     STUDENT_CLUB_FILE_PATH,
     STUDENT_CLUB_MEMBER_FILE_PATH,
     CampusEventTypes,
     ReportTypes,
-    GLOBAL_GALLERY_FILE_PATH,
 )
 from src.website.messages import ONLY_ONE_CAMPUS_INFO_ALLOWED
 from src.website.utils import nepali_year_choices
@@ -105,7 +103,7 @@ class CampusStaffDesignation(AuditInfoModel):
         max_length=150,
         unique=True,
         help_text=_(
-            "System identifier generated from the title (used in APIs and references)."
+            "System identifier generated from the title (used in APIs and references).",
         ),
     )
     description = models.TextField(
@@ -151,6 +149,7 @@ class CampusStaffDesignation(AuditInfoModel):
 class CampusKeyOfficial(AuditInfoModel):
     """
     Campus staff members (includes officials and supporting team).
+    Consolidated model for both campus-level and department-level staff.
     """
 
     title_prefix = models.CharField(
@@ -171,6 +170,24 @@ class CampusKeyOfficial(AuditInfoModel):
         help_text=_("Select the role for this staff member."),
         limit_choices_to={"is_active": True},
     )
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.CASCADE,
+        related_name="staff_members",
+        verbose_name=_("Department"),
+        null=True,
+        blank=True,
+        help_text=_("Department the staff member is associated with (if applicable)."),
+    )
+    program = models.ForeignKey(
+        "department.AcademicProgram",
+        on_delete=models.SET_NULL,
+        related_name="staff_members",
+        verbose_name=_("Academic Program"),
+        null=True,
+        blank=True,
+        help_text=_("Academic program the staff member is part of (if applicable)."),
+    )
     display_order = models.PositiveSmallIntegerField(
         _("Display Order"),
         default=1,
@@ -180,7 +197,7 @@ class CampusKeyOfficial(AuditInfoModel):
         _("Is Key Official"),
         default=True,
         help_text=_(
-            "Mark true if this staff member should appear in key official listings."
+            "Mark true if this staff member should appear in key official listings.",
         ),
     )
     message = models.TextField(_("Message"), blank=True)
@@ -203,14 +220,16 @@ class CampusKeyOfficial(AuditInfoModel):
     )
 
     class Meta:
-        verbose_name = _("Campus Key Staffs")
-        verbose_name_plural = _("Campus Staffs")
+        verbose_name = _("Campus Staff")
+        verbose_name_plural = _("Campus Staff")
+        ordering = ["display_order", "full_name"]
 
     def __str__(self):
         designation_title = (
             self.designation.title if getattr(self, "designation", None) else ""
         )
-        return f"{self.title_prefix} {self.full_name} ({designation_title})"
+        dept_info = f" - {self.department.short_name}" if self.department else ""
+        return f"{self.title_prefix} {self.full_name} ({designation_title}){dept_info}"
 
 
 class SocialMediaLink(AuditInfoModel):
@@ -328,8 +347,6 @@ class CampusDownload(AuditInfoModel):
 
     def __str__(self) -> str:
         return self.title
-
-
 
 
 class CampusUnion(AuditInfoModel):
@@ -498,7 +515,7 @@ class CampusSection(AuditInfoModel):
         default=list,
         blank=True,
         help_text=_(
-            "Staff designations responsible for this section (uses campus staff records)."
+            "Staff designations responsible for this section (uses campus staff records).",
         ),
     )
     department_head = models.ForeignKey(
@@ -587,7 +604,7 @@ class CampusUnit(AuditInfoModel):
         default=list,
         blank=True,
         help_text=_(
-            "Staff designations responsible for this unit (uses campus staff records)."
+            "Staff designations responsible for this unit (uses campus staff records).",
         ),
     )
     department_head = models.ForeignKey(
@@ -760,7 +777,6 @@ class StudentClubMember(AuditInfoModel):
 
     def __str__(self):
         return f"{self.full_name} ({self.designation})"
-
 
 
 class GlobalEvent(AuditInfoModel):
