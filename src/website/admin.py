@@ -187,6 +187,7 @@ class CampusKeyOfficialAdmin(admin.ModelAdmin):
         "full_name",
         "designation",
         "department",
+        "program",
         "unit",
         "email",
         "phone_number",
@@ -199,9 +200,17 @@ class CampusKeyOfficialAdmin(admin.ModelAdmin):
         "designation__code",
         "email",
         "department__name",
+        "program__name",
         "unit__name",
     )
-    list_filter = ("designation", "is_key_official", "is_active", "department", "unit")
+    list_filter = (
+        "designation",
+        "is_key_official",
+        "is_active",
+        "department",
+        "program",
+        "unit",
+    )
     readonly_fields = ("created_at", "updated_at", "created_by", "updated_by")
     fieldsets = (
         (
