@@ -21,22 +21,27 @@ SECRET_KEY = env(
     "DJANGO_SECRET_KEY",
     default="sydPDD94R0UBhmbBTsXrQ4QDskUY3cPo6cmaa9YorUYNsbzgJqDgnEONnuGpxQ4x",
 )
-ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["*"])
+ALLOWED_HOSTS = ["*"]
 
-CORS_ALLOW_ALL_ORIGINS = env.bool("CORS_ALLOW_ALL_ORIGINS")
-CORS_ALLOWED_ORGINS = env.list("CORS_ALLOWED_ORIGINS")
+# Allow all CORS origins
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = []
 
 
 CSRF_TRUSTED_ORIGINS =[
         "https://tcioe.edu.np",
         "http://tcioe.edu.np",
         "https://*.tcioe.edu.np",
-        "http://*.tcioe.edu.np",]
+        "http://*.tcioe.edu.np",
+        "http://localhost:3000",
+        "http://localhost:3001"]
 
 
 CSP_FRAME_ANCESTORS = [
     "'self'",
     "http://localhost:3000",
+    "http://localhost:3001",
+    "https://app.tcioe.edu.np"
     "https://tcioe-cms.vercel.app",
     "https://tcioe.edu.np",
     "http://tcioe.edu.np",
