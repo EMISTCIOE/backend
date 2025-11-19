@@ -1,7 +1,7 @@
 from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 from src.libs.permissions import get_user_permissions, validate_permissions
-from src.user.constants import UNION_ROLE, CLUB_ROLE, DEPARTMENT_ADMIN_ROLE
+from src.user.constants import UNION_ROLE, CLUB_ROLE, DEPARTMENT_ADMIN_ROLE, ADMIN_ROLE, EMIS_STAFF_ROLE
 
 
 class CampusInfoPermission(BasePermission):
@@ -74,6 +74,12 @@ class AcademicCalendarPermission(BasePermission):
 
 class CampusEventPermission(BasePermission):
     def has_permission(self, request, view):
+        # Union users can create, view and edit events for their union
+        if getattr(request.user, 'role', None) == UNION_ROLE:
+            if request.method in SAFE_METHODS or request.method in {'POST', 'PATCH', 'DELETE'}:
+                return True
+            return False
+        
         user_permissions_dict = {
             "SAFE_METHODS": "view_campus_event",
             "POST": "add_campus_event",
@@ -81,6 +87,24 @@ class CampusEventPermission(BasePermission):
             "DELETE": "delete_campus_event",
         }
         return validate_permissions(request, user_permissions_dict)
+    
+    def has_object_permission(self, request, view, obj):
+        # Union users can only access events for their own union
+        if getattr(request.user, 'role', None) == UNION_ROLE:
+            union_id = getattr(request.user, 'union_id', None)
+            if not union_id:
+                return False
+            
+            # Check if the event is associated with the user's union
+            if hasattr(obj, 'unions') and obj.unions.filter(id=union_id).exists():
+                return True
+            # For older event models that might have a direct union field
+            if hasattr(obj, 'union_id') and str(obj.union_id) == str(union_id):
+                return True
+            return False
+        
+        # Other roles already validated at the permission level
+        return True
 
 
 class CampusUnionPermission(BasePermission):
@@ -177,6 +201,12 @@ class GlobalGalleryPermission(BasePermission):
         if request.user and request.user.is_superuser:
             return True
 
+        # Allow union users to view the global gallery
+        if getattr(request.user, "role", None) == UNION_ROLE:
+            if request.method in SAFE_METHODS:
+                return True
+            return False
+
         if request.method not in SAFE_METHODS:
             return False
 
@@ -219,7 +249,31 @@ class GlobalGalleryImagePermission(BasePermission):
 
 
 class GlobalEventPermission(BasePermission):
+    def _is_approval_only_update(self, request):
+        """Check if the request is only updating approval fields"""
+        if request.method != 'PATCH':
+            return False
+        
+        data_keys = set(request.data.keys())
+        approval_fields = {'is_approved_by_department', 'is_approved_by_campus'}
+        
+        # If only approval fields are being updated
+        return data_keys.issubset(approval_fields) and len(data_keys) > 0
+    
+    def _can_change_approval_status(self, user):
+        """Check if user can change approval status (admin and EMIS staff)"""
+        return (
+            user.is_superuser or 
+            getattr(user, 'role', None) == ADMIN_ROLE or 
+            getattr(user, 'role', None) == EMIS_STAFF_ROLE
+        )
+    
     def has_permission(self, request, view):
+        # Special case: Admin and EMIS staff can always change approval status
+        if request.method == 'PATCH' and self._can_change_approval_status(request.user):
+            if self._is_approval_only_update(request):
+                return True
+        
         # Union users can create and edit global events (for their union)
         if hasattr(request.user, 'role') and request.user.role == UNION_ROLE:
             if request.method in SAFE_METHODS or request.method in ['POST', 'PATCH']:
@@ -251,6 +305,11 @@ class GlobalEventPermission(BasePermission):
         return validate_permissions(request, user_permissions_dict)
     
     def has_object_permission(self, request, view, obj):
+        # Special case: Admin and EMIS staff can always change approval status for any event
+        if request.method == 'PATCH' and self._can_change_approval_status(request.user):
+            if self._is_approval_only_update(request):
+                return True
+        
         # Union users can only access events linked to their union
         if hasattr(request.user, 'role') and request.user.role == UNION_ROLE:
             union_id = getattr(request.user, 'union_id', None)

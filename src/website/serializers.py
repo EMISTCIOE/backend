@@ -2262,6 +2262,8 @@ class GlobalEventPatchSerializer(FileHandlingMixin, serializers.ModelSerializer)
             "registration_link",
             "thumbnail",
             "is_active",
+            "is_approved_by_department",
+            "is_approved_by_campus",
             "unions",
             "clubs",
             "departments",
