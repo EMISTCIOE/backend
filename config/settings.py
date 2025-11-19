@@ -342,6 +342,10 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 WEBSITE_MEDIA_MAX_UPLOAD_SIZE = int(env("WEBSITE_MEDIA_MAX_UPLOAD_SIZE"))
 AUTH_LINK_EXP_TIME = int(env("AUTH_LINK_EXP_TIME"))
 
+# Email Reset Webhook Configuration
+# ------------------------------------------------------------------------------
+EMAIL_RESET_WEBHOOK_URL = env("EMAIL_RESET_WEBHOOK_URL", default="")
+
 
 # Django Jazzmin
 # ------------------------------------------------------------------------------

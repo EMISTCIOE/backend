@@ -2279,7 +2279,9 @@ class GlobalEventPatchSerializer(FileHandlingMixin, serializers.ModelSerializer)
             raise serializers.ValidationError({"event_end_date": EVENT_DATE_ERROR})
 
         current_user = get_user_by_context(self.context)
-        if getattr(current_user, "is_union_member", None) and current_user.is_union_member():
+        
+        # Handle union users - fixed to match create serializer logic
+        if hasattr(current_user, 'role') and current_user.role == UNION_ROLE:
             union = getattr(current_user, "union", None)
             if union is None:
                 raise serializers.ValidationError({"unions": "Union account is not linked to a union."})
@@ -2288,8 +2290,51 @@ class GlobalEventPatchSerializer(FileHandlingMixin, serializers.ModelSerializer)
             if submitted_unions is not None and any(union.pk != item.pk for item in submitted_unions):
                 raise serializers.ValidationError({"unions": "Union accounts can only assign their own union."})
 
-            # Preserve association with the logged-in union
+            # Always ensure the event is associated with the user's union
             attrs["unions"] = [union]
+            
+            # Clear departments and clubs for union users since they can't assign them
+            if "departments" in attrs:
+                attrs["departments"] = []
+            if "clubs" in attrs:
+                attrs["clubs"] = []
+                
+        # Handle club users 
+        elif hasattr(current_user, 'role') and current_user.role == CLUB_ROLE:
+            club = getattr(current_user, "club", None)
+            if club is None:
+                raise serializers.ValidationError({"clubs": "Club account is not linked to a club."})
+
+            submitted_clubs = attrs.get("clubs")
+            if submitted_clubs is not None and any(club.pk != item.pk for item in submitted_clubs):
+                raise serializers.ValidationError({"clubs": "Club accounts can only assign their own club."})
+
+            # Always ensure the event is associated with the user's club
+            attrs["clubs"] = [club]
+            
+            # Clear departments and unions for club users since they can't assign them
+            if "departments" in attrs:
+                attrs["departments"] = []
+            if "unions" in attrs:
+                attrs["unions"] = []
+                
+        # Handle department users
+        elif hasattr(current_user, 'role') and current_user.role == DEPARTMENT_ADMIN_ROLE:
+            department = getattr(current_user, "department", None)
+            if department is None:
+                raise serializers.ValidationError({"departments": "Department account is not linked to a department."})
+
+            submitted_departments = attrs.get("departments")
+            if submitted_departments is not None and any(department.pk != item.pk for item in submitted_departments):
+                raise serializers.ValidationError({"departments": "Department accounts can only assign their own department."})
+
+            # Always ensure the event is associated with the user's department
+            attrs["departments"] = [department]
+            
+            # Department users can assign clubs but not unions
+            # Clear unions for department users since they can't assign them
+            if "unions" in attrs:
+                attrs["unions"] = []
 
         return attrs
 
@@ -2301,9 +2346,11 @@ class GlobalEventPatchSerializer(FileHandlingMixin, serializers.ModelSerializer)
 
         self.handle_file_update(instance, validated_data, "thumbnail")
 
+        # Update basic fields
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
 
+        # Update relationships - always set them even if None to clear relationships when needed
         if unions is not None:
             instance.unions.set(unions)
         if clubs is not None:
