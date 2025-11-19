@@ -108,6 +108,7 @@ class NoticeCreateSerializer(serializers.ModelSerializer):
     """Serializer for Notice model, supporting media uploads."""
 
     medias = NoticeMediaForNoticeCreateSerializer(many=True, required=False)
+    thumbnail = serializers.ImageField(allow_null=True, required=False)
     department = serializers.PrimaryKeyRelatedField(
         queryset=Department.objects.filter(is_active=True),
         allow_null=True,
@@ -199,6 +200,7 @@ class NoticeMediaForNoticePatchSerializer(serializers.ModelSerializer):
 
 class NoticePatchSerializer(serializers.ModelSerializer):
     medias = NoticeMediaForNoticePatchSerializer(many=True, required=False)
+    thumbnail = serializers.ImageField(allow_null=True, required=False)
     department = serializers.PrimaryKeyRelatedField(
         queryset=Department.objects.filter(is_active=True),
         required=False,

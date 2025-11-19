@@ -2,6 +2,7 @@ from ckeditor.fields import RichTextField
 from django.db import models
 from django.utils import timezone
 from django.utils.text import slugify as django_slugify
+import re
 from django.utils.translation import gettext_lazy as _
 
 # Project Imports
@@ -45,6 +46,7 @@ class Notice(AuditInfoModel):
     thumbnail = models.ImageField(
         upload_to=NOTICE_THUMBNAIL_PATH,
         null=True,
+        blank=True,
         verbose_name=_("Thumbnail"),
         help_text=_("Optional image representing the notice."),
     )
@@ -111,12 +113,36 @@ class Notice(AuditInfoModel):
         return self.title
 
     def slugify(self) -> str:
-        base_slug = django_slugify(self.title)
+        # Replace problematic characters that should become hyphens in slugs
+        # e.g. replace '/' and '.' with '-'. Collapse multiple hyphens.
+        if not self.title:
+            base = "notice"
+        else:
+            cleaned = re.sub(r"[/.]+", "-", self.title)
+            # Collapse multiple hyphens and strip hyphens from ends
+            cleaned = re.sub(r"-+", "-", cleaned).strip("-")
+            base = cleaned
+
+        base_slug = django_slugify(base) or "notice"
         return f"{base_slug}-{self.uuid}"
 
     def save(self, *args, **kwargs):
+        # Regenerate slug when creating or when title has changed.
+        regenerate = False
         if not self.slug:
+            regenerate = True
+        elif self.pk:
+            try:
+                old = Notice.objects.only("title").get(pk=self.pk)
+            except Notice.DoesNotExist:
+                old = None
+
+            if old and old.title != self.title:
+                regenerate = True
+
+        if regenerate:
             self.slug = self.slugify()
+
         super().save(*args, **kwargs)
 
     class Meta:
