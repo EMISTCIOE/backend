@@ -174,10 +174,10 @@ class UserLoginSerializer(serializers.ModelSerializer):
 
     def get_user(self, persona: str) -> User:
         try:
-        if "@" in persona:
-            user = User.objects.get(email=persona)
-        else:
-            user = User.objects.get(username=persona)
+            if "@" in persona:
+                user = User.objects.get(email=persona)
+            else:
+                user = User.objects.get(username=persona)
         except User.DoesNotExist as err:
             raise serializers.ValidationError({"persona": INVALID_CREDENTIALS}) from err
         return user
