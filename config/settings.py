@@ -27,15 +27,11 @@ CORS_ALLOW_ALL_ORIGINS = env.bool("CORS_ALLOW_ALL_ORIGINS")
 CORS_ALLOWED_ORGINS = env.list("CORS_ALLOWED_ORIGINS")
 
 
-CSRF_TRUSTED_ORIGINS = env.list(
-    "CSRF_TRUSTED_ORIGINS",
-    default=[
+CSRF_TRUSTED_ORIGINS =[
         "https://tcioe.edu.np",
         "http://tcioe.edu.np",
         "https://*.tcioe.edu.np",
-        "http://*.tcioe.edu.np",
-    ],
-)
+        "http://*.tcioe.edu.np",]
 
 
 CSP_FRAME_ANCESTORS = [
