@@ -84,6 +84,13 @@ class CampusEventPermission(BasePermission):
 
 class CampusUnionPermission(BasePermission):
     def has_permission(self, request, view):
+        # Union users can view and edit their own union
+        if hasattr(request.user, 'role_type') and request.user.role_type == 'UNION':
+            if request.method in SAFE_METHODS or request.method == 'PATCH':
+                return True
+            # Union users cannot create or delete unions
+            return False
+        
         user_permissions_dict = {
             "SAFE_METHODS": "view_campus_union",
             "POST": "add_campus_union",
@@ -91,6 +98,16 @@ class CampusUnionPermission(BasePermission):
             "DELETE": "delete_campus_union",
         }
         return validate_permissions(request, user_permissions_dict)
+    
+    def has_object_permission(self, request, view, obj):
+        # Union users can only access their own union
+        if hasattr(request.user, 'role_type') and request.user.role_type == 'UNION':
+            if hasattr(request.user, 'union_id'):
+                return str(obj.id) == str(request.user.union_id)
+            return False
+        
+        # Other roles already validated at the permission level
+        return True
 
 
 class CampusSectionPermission(BasePermission):
@@ -181,6 +198,13 @@ class GlobalGalleryImagePermission(BasePermission):
 
 class GlobalEventPermission(BasePermission):
     def has_permission(self, request, view):
+        # Union users can create and edit global events (for their union)
+        if hasattr(request.user, 'role') and request.user.role == 'UNION':
+            if request.method in SAFE_METHODS or request.method in ['POST', 'PATCH']:
+                return True
+            # Union users cannot delete global events
+            return False
+        
         user_permissions_dict = {
             "SAFE_METHODS": "view_globalevent",
             "POST": "add_globalevent",
@@ -188,4 +212,21 @@ class GlobalEventPermission(BasePermission):
             "DELETE": "delete_globalevent",
         }
 
+        return validate_permissions(request, user_permissions_dict)
+    
+    def has_object_permission(self, request, view, obj):
+        # Union users can only access events linked to their union
+        if hasattr(request.user, 'role') and request.user.role == 'UNION':
+            if hasattr(request.user, 'union') and request.user.union:
+                # Check if the event is linked to the user's union
+                return obj.unions.filter(id=request.user.union.id).exists()
+            return False
+        
+        # Other roles: check standard permissions
+        user_permissions_dict = {
+            "SAFE_METHODS": "view_globalevent",
+            "POST": "add_globalevent",
+            "PATCH": "change_globalevent",
+            "DELETE": "delete_globalevent",
+        }
         return validate_permissions(request, user_permissions_dict)

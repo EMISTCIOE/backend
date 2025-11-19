@@ -481,6 +481,16 @@ class CampusUnionViewSet(viewsets.ModelViewSet):
     ordering_fields = ["-created_at", "name"]
     http_method_names = ["get", "head", "options", "post", "patch", "delete"]
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        user = self.request.user
+        if getattr(user, "role_type", None) == "UNION":
+            union_id = getattr(user, "union_id", None)
+            if union_id:
+                return queryset.filter(pk=union_id)
+            return queryset.none()
+        return queryset
+
     def get_serializer_class(self):
         if self.request.method == "GET":
             return (
