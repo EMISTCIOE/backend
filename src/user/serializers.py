@@ -19,6 +19,7 @@ from .messages import (
 )
 from .models import Permission, Role, User
 from .utils import send_user_welcome_email
+from .utils.generators import generate_strong_password
 from .utils.generators import generate_role_codename, generate_unique_user_username
 from .validators import validate_user_image
 
@@ -250,7 +251,9 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         many=True,
     )
     username = serializers.CharField(allow_blank=True)
-    password = serializers.CharField(validators=[validate_password])
+    # Password is optional when creating users from CMS; backend will generate a strong
+    # password if not provided by frontend and will include it in the welcome email.
+    password = serializers.CharField(validators=[validate_password], required=False, write_only=True)
 
     role = serializers.ChoiceField(
         choices=User.RoleType.choices,
@@ -298,7 +301,8 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
-        if attrs["username"]:
+        # Username may be omitted from frontend; when present ensure uniqueness
+        if attrs.get("username"):
             if User.objects.filter(username=attrs["username"]).exists():
                 raise serializers.ValidationError(
                     {"username": USER_ERRORS["USERNAME_EXISTS"]},
@@ -307,7 +311,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         if User.objects.filter(email=attrs["email"]).exists():
             raise serializers.ValidationError({"email": USER_ERRORS["EMAIL_EXISTS"]})
 
-        if attrs["phone_no"]:
+        if attrs.get("phone_no"):
             if User.objects.filter(phone_no=attrs["phone_no"]).exists():
                 raise serializers.ValidationError(
                     {"phone_no": USER_ERRORS["PHONE_EXISTS"]},
@@ -335,7 +339,8 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         email = validated_data["email"]
         photo = validated_data.get("photo")
-        password = validated_data["password"]
+        # Generate a secure password if frontend didn't provide one
+        password = validated_data.get("password") or generate_strong_password()
 
         username = validated_data.get("username")
         roles = validated_data.pop("roles", [])
@@ -351,7 +356,7 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         user_instance = User.objects.create_system_user(
             first_name=validated_data["first_name"].title().strip(),
             last_name=validated_data["last_name"].title().strip(),
-            phone_no=validated_data["phone_no"],
+            phone_no=validated_data.get("phone_no"),
             password=password,
             email=email,
             username=username,

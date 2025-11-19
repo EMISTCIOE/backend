@@ -100,10 +100,27 @@ class FilterForUserViewSet(FilterSet):
 
     username = django_filters.CharFilter(lookup_expr="iexact")
     date = django_filters.DateFromToRangeFilter(field_name="date_joined")
+    role = django_filters.CharFilter(field_name="role", lookup_expr="exact")
+    designation = django_filters.NumberFilter(field_name="designation_id", lookup_expr="exact")
+    department = django_filters.NumberFilter(field_name="department_id", lookup_expr="exact")
+    club = django_filters.NumberFilter(field_name="club_id", lookup_expr="exact")
+    union = django_filters.NumberFilter(field_name="union_id", lookup_expr="exact")
 
     class Meta:
         model = User
-        fields = ["id", "username", "email", "phone_no", "roles", "date"]
+        fields = [
+            "id",
+            "username",
+            "email",
+            "phone_no",
+            "roles",
+            "date",
+            "role",
+            "designation",
+            "department",
+            "club",
+            "union",
+        ]
 
 
 class UserViewSet(ModelViewSet):
@@ -123,6 +140,7 @@ class UserViewSet(ModelViewSet):
             User.RoleType.EMIS_STAFF,
             User.RoleType.ADMIN,
             User.RoleType.DEPARTMENT_ADMIN,
+            User.RoleType.CLUB,
             User.RoleType.UNION,
         ]
         return User.objects.filter(
@@ -175,6 +193,7 @@ class UserArchiveView(generics.DestroyAPIView):
             User.RoleType.EMIS_STAFF,
             User.RoleType.ADMIN,
             User.RoleType.DEPARTMENT_ADMIN,
+            User.RoleType.CLUB,
             User.RoleType.UNION,
         ]
         return User.objects.filter(

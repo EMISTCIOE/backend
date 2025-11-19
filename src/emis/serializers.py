@@ -167,6 +167,30 @@ class EmailResetRequestSerializer(serializers.ModelSerializer):
     createdAt = serializers.DateTimeField(source='created_at', read_only=True)
     updatedAt = serializers.DateTimeField(source='updated_at', read_only=True)
 
+    def to_internal_value(self, data):
+        """
+        Convert camelCase input to snake_case for model fields
+        """
+        # Create a mapping of camelCase to snake_case
+        field_mapping = {
+            'fullName': 'full_name',
+            'rollNumber': 'roll_number', 
+            'birthDate': 'birth_date',
+            'primaryEmail': 'primary_email',
+            'secondaryEmail': 'secondary_email',
+            'phoneNumber': 'phone_number',
+        }
+        
+        # Convert the data
+        converted_data = {}
+        for key, value in data.items():
+            if key in field_mapping:
+                converted_data[field_mapping[key]] = value
+            else:
+                converted_data[key] = value
+                
+        return super().to_internal_value(converted_data)
+
     class Meta:
         model = EmailResetRequest
         fields = [
@@ -192,6 +216,8 @@ class EmailResetRequestSerializer(serializers.ModelSerializer):
             "requestSequence",
             "requestsRemaining",
             "processedByName",
+            "processedAt",
+            "processedBy",
             "createdAt",
             "updatedAt",
         ]
@@ -201,7 +227,7 @@ class EmailResetRequestSerializer(serializers.ModelSerializer):
             return f"{obj.processed_by.first_name} {obj.processed_by.last_name}".strip()
         return None
 
-    def validate_rollNumber(self, value):
+    def validate_roll_number(self, value):
         normalized = value.strip().upper()
         if not re.match(ROLL_NUMBER_PATTERN, normalized):
             raise serializers.ValidationError(
@@ -209,7 +235,7 @@ class EmailResetRequestSerializer(serializers.ModelSerializer):
             )
         return normalized
 
-    def validate_primaryEmail(self, value):
+    def validate_primary_email(self, value):
         normalized = value.strip().lower()
         if not normalized.endswith(PRIMARY_EMAIL_DOMAIN):
             raise serializers.ValidationError(
@@ -217,7 +243,7 @@ class EmailResetRequestSerializer(serializers.ModelSerializer):
             )
         return normalized
 
-    def validate_secondaryEmail(self, value):
+    def validate_secondary_email(self, value):
         return value.strip().lower()
 
     def create(self, validated_data):
