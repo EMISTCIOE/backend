@@ -255,11 +255,15 @@ class CampusKeyOfficialListSerializer(serializers.ModelSerializer):
                 "type": "department",
             }
         elif obj.unit:
+            # CampusUnit does not have `short_name` field. Use attribute safely and
+            # fall back to slug or None if not present. This prevents AttributeError
+            # when an official is associated with a CampusUnit.
+            short_name = getattr(obj.unit, "short_name", None) or getattr(obj.unit, "slug", None)
             return {
                 "id": obj.unit.id,
                 "uuid": str(obj.unit.uuid),
                 "name": obj.unit.name,
-                "short_name": obj.unit.short_name,
+                "short_name": short_name,
                 "type": "unit",
             }
         return None
@@ -276,11 +280,12 @@ class CampusKeyOfficialListSerializer(serializers.ModelSerializer):
     def get_unit(self, obj):
         """Return unit info separately for clarity."""
         if obj.unit:
+            short_name = getattr(obj.unit, "short_name", None) or getattr(obj.unit, "slug", None)
             return {
                 "id": obj.unit.id,
                 "uuid": str(obj.unit.uuid),
                 "name": obj.unit.name,
-                "short_name": obj.unit.short_name,
+                "short_name": short_name,
             }
         return None
 
@@ -330,12 +335,14 @@ class CampusKeyOfficialRetrieveSerializer(AbstractInfoRetrieveSerializer):
                 "type": "department",
             }
         elif obj.unit:
+            short_name = getattr(obj.unit, "short_name", None) or getattr(obj.unit, "slug", None)
+            email = getattr(obj.unit, "email", None) or getattr(obj.unit, "contact_email", None)
             return {
                 "id": obj.unit.id,
                 "uuid": str(obj.unit.uuid),
                 "name": obj.unit.name,
-                "short_name": obj.unit.short_name,
-                "email": obj.unit.email,
+                "short_name": short_name,
+                "email": email,
                 "type": "unit",
             }
         return None
@@ -343,12 +350,14 @@ class CampusKeyOfficialRetrieveSerializer(AbstractInfoRetrieveSerializer):
     def get_unit(self, obj):
         """Return unit info separately."""
         if obj.unit:
+            short_name = getattr(obj.unit, "short_name", None) or getattr(obj.unit, "slug", None)
+            email = getattr(obj.unit, "email", None) or getattr(obj.unit, "contact_email", None)
             return {
                 "id": obj.unit.id,
                 "uuid": str(obj.unit.uuid),
                 "name": obj.unit.name,
-                "short_name": obj.unit.short_name,
-                "email": obj.unit.email,
+                "short_name": short_name,
+                "email": email,
             }
         return None
 
