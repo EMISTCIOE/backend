@@ -64,7 +64,7 @@ class PublicDepartmentStaffSerializer(serializers.ModelSerializer):
             "name",
             "designation",
             "photo",
-            "phone_number",
+            # phone_number intentionally omitted for public endpoints
             "email",
             "message",
             "display_order",

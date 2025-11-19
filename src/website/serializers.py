@@ -288,6 +288,36 @@ class CampusKeyOfficialListSerializer(serializers.ModelSerializer):
                 "short_name": short_name,
             }
         return None
+    
+    def get_fields(self):
+        """Conditionally remove phone_number for public/non-CMS requests.
+
+        Phone numbers are sensitive for public consumption. Include them only when:
+        - request.user is staff or superuser, OR
+        - request has query param `module=cms`, OR
+        - serializer context contains `include_phone` True (allows callers to opt-in)
+        """
+        fields = super().get_fields()
+        request = self.context.get("request")
+
+        include_phone = False
+        if self.context.get("include_phone"):
+            include_phone = True
+        elif request is not None:
+            try:
+                user = getattr(request, "user", None)
+                if user and (getattr(user, "is_staff", False) or getattr(user, "is_superuser", False)):
+                    include_phone = True
+                elif request.query_params.get("module") == "cms" or request.query_params.get("source") == "cms":
+                    include_phone = True
+            except Exception:
+                # be conservative and do not include phone if any error occurs
+                include_phone = False
+
+        if not include_phone:
+            fields.pop("phone_number", None)
+
+        return fields
 
 
 class CampusKeyOfficialRetrieveSerializer(AbstractInfoRetrieveSerializer):
@@ -369,6 +399,29 @@ class CampusKeyOfficialRetrieveSerializer(AbstractInfoRetrieveSerializer):
                 "short_name": obj.program.short_name,
             }
         return None
+
+    def get_fields(self):
+        """Apply same conditional phone hiding for retrieve serializer."""
+        fields = super().get_fields()
+        request = self.context.get("request")
+
+        include_phone = False
+        if self.context.get("include_phone"):
+            include_phone = True
+        elif request is not None:
+            try:
+                user = getattr(request, "user", None)
+                if user and (getattr(user, "is_staff", False) or getattr(user, "is_superuser", False)):
+                    include_phone = True
+                elif request.query_params.get("module") == "cms" or request.query_params.get("source") == "cms":
+                    include_phone = True
+            except Exception:
+                include_phone = False
+
+        if not include_phone:
+            fields.pop("phone_number", None)
+
+        return fields
 
 
 class CampusKeyOfficialCreateSerializer(serializers.ModelSerializer):
@@ -575,8 +628,10 @@ class CampusStaffDesignationSerializer(serializers.ModelSerializer):
             "is_active",
         ]
 
-    def to_representation(self, instance):
-        return {"message": CAMPUS_KEY_OFFICIAL_UPDATE_SUCCESS}
+    # Use default representation so the viewset returns the actual designation
+    # objects (id, code, title, description, is_active). Previously this
+    # incorrectly returned a success message which prevented the frontend
+    # from receiving selectable designation items.
 
 
 
