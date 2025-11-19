@@ -563,7 +563,6 @@ class CampusStaffDesignationSerializer(serializers.ModelSerializer):
             "code",
             "title",
             "description",
-            "display_order",
             "is_active",
         ]
 

@@ -175,7 +175,7 @@ class SocialMediaLinkAdmin(admin.ModelAdmin):
 
 @admin.register(CampusStaffDesignation)
 class CampusStaffDesignationAdmin(admin.ModelAdmin):
-    list_display = ("title", "code", "display_order", "is_active")
+    list_display = ("title", "code", "is_active")
     search_fields = ("title", "code")
     list_filter = ("is_active",)
 

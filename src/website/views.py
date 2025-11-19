@@ -262,8 +262,8 @@ class CampusStaffDesignationViewSet(ReadOnlyModelViewSet):
     queryset = CampusStaffDesignation.objects.filter(is_archived=False)
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
     search_fields = ["title", "code"]
-    ordering = ["display_order", "title"]
-    ordering_fields = ["display_order", "title", "code"]
+    ordering = ["title"]
+    ordering_fields = ["title", "code"]
     filterset_fields = ["is_active"]
     http_method_names = ["get", "head", "options"]
 

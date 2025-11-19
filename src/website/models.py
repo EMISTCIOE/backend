@@ -111,11 +111,6 @@ class CampusStaffDesignation(AuditInfoModel):
         blank=True,
         help_text=_("Optional notes about the responsibilities of this designation."),
     )
-    display_order = models.PositiveSmallIntegerField(
-        _("Display Order"),
-        default=1,
-        help_text=_("Ordering weight when listing designations."),
-    )
     is_active = models.BooleanField(
         _("Is Active"),
         default=True,
@@ -125,7 +120,7 @@ class CampusStaffDesignation(AuditInfoModel):
     class Meta:
         verbose_name = _("Campus Designation")
         verbose_name_plural = _("Campus Designations")
-        ordering = ["display_order", "title"]
+        ordering = ["title"]
 
     def __str__(self) -> str:
         return self.title

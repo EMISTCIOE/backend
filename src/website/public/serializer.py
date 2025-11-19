@@ -100,6 +100,7 @@ class PublicCampusKeyOfficialSerializer(serializers.ModelSerializer):
             "email",
             "phone_number",
             "is_key_official",
+            "display_order",
         ]
 
 
