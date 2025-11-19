@@ -72,8 +72,9 @@ class DashboardStatsView(APIView):
         if not force_refresh and DashboardStats.is_cache_valid(max_age_minutes=30):
             stats = DashboardStats.get_latest()
             serializer = DashboardStatsSerializer(stats)
+            data = self._append_union_stats(request.user, serializer.data)
             return Response(
-                {"status": "success", "cached": True, "data": serializer.data},
+                {"status": "success", "cached": True, "data": data},
             )
 
         # Calculate fresh statistics
@@ -85,8 +86,9 @@ class DashboardStatsView(APIView):
 
             # Serialize and return
             serializer = DashboardStatsSerializer(stats_instance)
+            data = self._append_union_stats(request.user, serializer.data)
             return Response(
-                {"status": "success", "cached": False, "data": serializer.data},
+                {"status": "success", "cached": False, "data": data},
             )
 
         except Exception as e:
@@ -299,6 +301,64 @@ class DashboardStatsView(APIView):
             "research_publications_trend": research_publications_trend,
             "events_trend": events_trend,
             "projects_trend": projects_trend,
+        }
+
+    def _append_union_stats(self, user, data):
+        """Augment serialized dashboard stats with union-specific counts when applicable."""
+        role = getattr(user, "role", "")
+        union_id = getattr(user, "union_id", None)
+
+        if role != "UNION" or not union_id:
+            return data
+
+        union_counts = self._get_union_stats(union_id)
+
+        pending_items = dict(data.get("pending_items", {}))
+        pending_items.update(union_counts)
+
+        data["pending_items"] = pending_items
+        data["union_overview"] = union_counts
+
+        return data
+
+    def _get_union_stats(self, union_id):
+        """Return counts for the authenticated union."""
+        from src.website.models import CampusUnionMember, GlobalEvent, GlobalGalleryImage
+
+        member_count = (
+            CampusUnionMember.objects.filter(
+                union_id=union_id,
+                is_archived=False,
+                is_active=True,
+            ).count()
+        )
+
+        event_count = (
+            GlobalEvent.objects.filter(
+                unions__id=union_id,
+                is_archived=False,
+                is_active=True,
+            )
+            .distinct()
+            .count()
+        )
+
+        gallery_count = (
+            GlobalGalleryImage.objects.filter(
+                union_id=union_id,
+                is_archived=False,
+                is_active=True,
+                source_type__in=[
+                    GlobalGalleryImage.SourceType.UNION_GALLERY,
+                    GlobalGalleryImage.SourceType.UNION_EVENT,
+                ],
+            ).count()
+        )
+
+        return {
+            "events": event_count,
+            "members": member_count,
+            "gallery": gallery_count,
         }
 
     def _get_monthly_trend(self, queryset_or_model, months=6):
