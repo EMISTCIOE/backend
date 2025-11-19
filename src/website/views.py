@@ -1,5 +1,6 @@
 import django_filters
 from django.db import transaction
+from django.db.models import Q
 from django_filters.filterset import FilterSet
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema
@@ -861,6 +862,19 @@ class GlobalGalleryImageViewSet(viewsets.ModelViewSet):
     search_fields = ["caption", "source_title", "source_context"]
     ordering_fields = ["created_at", "display_order"]
     http_method_names = ["get", "post", "patch", "delete"]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        user = self.request.user
+        if getattr(user, "role", None) == "UNION":
+            union_id = getattr(user, "union_id", None)
+            if not union_id:
+                return queryset.none()
+            return queryset.filter(
+                Q(union_id=union_id)
+                | Q(global_event__unions__id=union_id),
+            ).distinct()
+        return queryset
 
     def get_serializer_class(self):
         if self.action in ["list", "retrieve"]:

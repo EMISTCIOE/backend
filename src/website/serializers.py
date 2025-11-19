@@ -1869,6 +1869,40 @@ class GlobalGalleryImageCreateSerializer(serializers.Serializer):
                 {"images": "Upload at least one gallery image."},
             )
 
+        current_user = get_user_by_context(self.context)
+        is_union_user = getattr(current_user, "is_union_member", None)
+        if is_union_user and current_user.is_union_member():
+            union = getattr(current_user, "union", None)
+            if union is None:
+                raise serializers.ValidationError(
+                    {"union": "Union account is not linked to a union."},
+                )
+
+            if not populated:
+                attrs["union"] = union
+                populated = ["union"]
+            else:
+                relation_name = populated[0]
+                if relation_name == "union":
+                    submitted_union = attrs.get("union")
+                    if submitted_union and submitted_union.pk != union.pk:
+                        raise serializers.ValidationError(
+                            {"union": "Union accounts can only select their own union."},
+                        )
+                    attrs["union"] = union
+                elif relation_name == "global_event":
+                    event = attrs.get("global_event")
+                    if event and not event.unions.filter(pk=union.pk).exists():
+                        raise serializers.ValidationError(
+                            {"global_event": "Selected event is not associated with your union."},
+                        )
+                else:
+                    raise serializers.ValidationError(
+                        {
+                            relation_name: "Union accounts cannot associate gallery items with this relation.",
+                        },
+                    )
+
         attrs["resolved_source_type"] = self._resolve_source_type(attrs, populated)
         attrs["resolved_relation"] = populated[0] if populated else None
         return attrs
@@ -1931,6 +1965,10 @@ class GlobalGalleryImageCreateSerializer(serializers.Serializer):
             }
             if resolved_relation:
                 image_kwargs[resolved_relation] = relation_payload[resolved_relation]
+            if getattr(current_user, "is_union_member", None) and current_user.is_union_member():
+                union = getattr(current_user, "union", None)
+                if union:
+                    image_kwargs["union"] = union
             image_kwargs["image"] = image_data["image"]
             created_images.append(GlobalGalleryImage.objects.create(**image_kwargs))
         return created_images
@@ -1958,6 +1996,44 @@ class GlobalGalleryImageUpdateSerializer(
             "section",
             "global_event",
         ]
+
+    def validate(self, attrs):
+        current_user = get_user_by_context(self.context)
+        is_union_user = getattr(current_user, "is_union_member", None)
+        if is_union_user and current_user.is_union_member():
+            union = getattr(current_user, "union", None)
+            if union is None:
+                raise serializers.ValidationError(
+                    {"union": "Union account is not linked to a union."},
+                )
+
+            if "union" in attrs:
+                submitted_union = attrs.get("union")
+                if submitted_union and submitted_union.pk != union.pk:
+                    raise serializers.ValidationError(
+                        {"union": "Union accounts can only select their own union."},
+                    )
+                attrs["union"] = union
+            else:
+                attrs["union"] = union
+
+            restricted_fields = ["club", "department", "unit", "section"]
+            for field in restricted_fields:
+                if field in attrs:
+                    raise serializers.ValidationError(
+                        {
+                            field: "Union accounts cannot associate gallery items with this relation.",
+                        },
+                    )
+
+            if "global_event" in attrs:
+                event = attrs.get("global_event")
+                if event and not event.unions.filter(pk=union.pk).exists():
+                    raise serializers.ValidationError(
+                        {"global_event": "Selected event is not associated with your union."},
+                    )
+
+        return attrs
 
     def update(self, instance, validated_data):
         current_user = get_user_by_context(self.context)
@@ -2076,6 +2152,8 @@ class GlobalEventCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"event_end_date": EVENT_DATE_ERROR})
 
         current_user = get_user_by_context(self.context)
+        
+        # Handle union users
         if getattr(current_user, "is_union_member", None) and current_user.is_union_member():
             union = getattr(current_user, "union", None)
             if union is None:
@@ -2087,6 +2165,45 @@ class GlobalEventCreateSerializer(serializers.ModelSerializer):
 
             # Always ensure the event is associated with the user's union
             attrs["unions"] = [union]
+            
+            # Clear departments and clubs for union users since they can't assign them
+            attrs["departments"] = []
+            attrs["clubs"] = []
+            
+        # Handle club users 
+        elif hasattr(current_user, 'role') and current_user.role == 'CLUB':
+            club = getattr(current_user, "club", None)
+            if club is None:
+                raise serializers.ValidationError({"clubs": "Club account is not linked to a club."})
+
+            submitted_clubs = attrs.get("clubs") or []
+            if submitted_clubs and any(club.pk != item.pk for item in submitted_clubs):
+                raise serializers.ValidationError({"clubs": "Club accounts can only assign their own club."})
+
+            # Always ensure the event is associated with the user's club
+            attrs["clubs"] = [club]
+            attrs["departments"] = [department]
+            
+            # Clear departments and unions for club users since they can't assign them
+           
+            attrs["unions"] = []
+            
+        # Handle department users
+        elif hasattr(current_user, 'role') and current_user.role == 'DEPARTMENT':
+            department = getattr(current_user, "department", None)
+            if department is None:
+                raise serializers.ValidationError({"departments": "Department account is not linked to a department."})
+
+            submitted_departments = attrs.get("departments") or []
+            if submitted_departments and any(department.pk != item.pk for item in submitted_departments):
+                raise serializers.ValidationError({"departments": "Department accounts can only assign their own department."})
+
+            # Always ensure the event is associated with the user's department
+            attrs["departments"] = [department]
+            
+            # Department users can assign clubs but not unions
+            # Clear unions for department users since they can't assign them
+            attrs["unions"] = []
 
         return attrs
 

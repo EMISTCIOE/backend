@@ -186,6 +186,11 @@ class GlobalGalleryPermission(BasePermission):
 
 class GlobalGalleryImagePermission(BasePermission):
     def has_permission(self, request, view):
+        if getattr(request.user, "role", None) == "UNION":
+            if request.method in SAFE_METHODS or request.method in {"POST", "PATCH", "DELETE"}:
+                return True
+            return False
+
         user_permissions_dict = {
             "SAFE_METHODS": "view_globalgalleryimage",
             "POST": "add_globalgalleryimage",
@@ -195,6 +200,22 @@ class GlobalGalleryImagePermission(BasePermission):
 
         return validate_permissions(request, user_permissions_dict)
 
+    def has_object_permission(self, request, view, obj):
+        if getattr(request.user, "role", None) == "UNION":
+            union_id = getattr(request.user, "union_id", None)
+            if not union_id:
+                return False
+
+            if obj.union_id:
+                return str(obj.union_id) == str(union_id)
+
+            if obj.global_event_id:
+                return obj.global_event.unions.filter(id=union_id).exists()
+
+            return False
+
+        return True
+
 
 class GlobalEventPermission(BasePermission):
     def has_permission(self, request, view):
@@ -203,6 +224,20 @@ class GlobalEventPermission(BasePermission):
             if request.method in SAFE_METHODS or request.method in ['POST', 'PATCH']:
                 return True
             # Union users cannot delete global events
+            return False
+        
+        # Department users can create and edit global events (for their department and clubs)
+        if hasattr(request.user, 'role') and request.user.role == 'DEPARTMENT':
+            if request.method in SAFE_METHODS or request.method in ['POST', 'PATCH']:
+                return True
+            # Department users cannot delete global events
+            return False
+        
+        # Club users can create and edit global events (for their club)
+        if hasattr(request.user, 'role') and request.user.role == 'CLUB':
+            if request.method in SAFE_METHODS or request.method in ['POST', 'PATCH']:
+                return True
+            # Club users cannot delete global events
             return False
         
         user_permissions_dict = {
@@ -220,6 +255,23 @@ class GlobalEventPermission(BasePermission):
             if hasattr(request.user, 'union') and request.user.union:
                 # Check if the event is linked to the user's union
                 return obj.unions.filter(id=request.user.union.id).exists()
+            return False
+        
+        # Department users can access events linked to their department or their department's clubs
+        if hasattr(request.user, 'role') and request.user.role == 'DEPARTMENT':
+            if hasattr(request.user, 'department') and request.user.department:
+                # Check if the event is linked to the user's department or department's clubs
+                department_linked = obj.departments.filter(id=request.user.department.id).exists()
+                # Check if the event is linked to any club under this department
+                department_clubs_linked = obj.clubs.filter(department=request.user.department).exists()
+                return department_linked or department_clubs_linked
+            return False
+        
+        # Club users can only access events linked to their club
+        if hasattr(request.user, 'role') and request.user.role == 'CLUB':
+            if hasattr(request.user, 'club') and request.user.club:
+                # Check if the event is linked to the user's club
+                return obj.clubs.filter(id=request.user.club.id).exists()
             return False
         
         # Other roles: check standard permissions
