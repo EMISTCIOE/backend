@@ -570,6 +570,7 @@ class CampusStaffDesignationSerializer(serializers.ModelSerializer):
         return {"message": CAMPUS_KEY_OFFICIAL_UPDATE_SUCCESS}
 
 
+
 # Campus Feedback Serializers
 # ------------------------------------------------------------------------------------------------
 
