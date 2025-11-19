@@ -1,135 +1,137 @@
 """
-EMIS Models
-VPS Configuration with encrypted password and OTP viewing
+EMIS Management data models
 """
 
-from django.conf import settings
+from django.core.validators import RegexValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from src.base.models import AuditInfoModel
 
 
-class VPSConfiguration(AuditInfoModel):
+ROLL_NUMBER_PATTERN = r"^[A-Z]{3}\d{3}[A-Z]{3}\d{3}$"
+PRIMARY_EMAIL_DOMAIN = "@tcio.edu.np"
+
+
+class HardwareType(models.TextChoices):
+    ROUTER = "router", _("Router")
+    SWITCH = "switch", _("Switch")
+    SERVER = "server", _("Server")
+    FIREWALL = "firewall", _("Firewall")
+    ENDPOINT = "endpoint", _("Endpoint")
+    OTHER = "other", _("Other")
+
+
+class EMISVPSInfo(AuditInfoModel):
     """
-    VPS Configuration Model
-    - Only accessible by EMIS Staff
-    - Stores VPS details with encrypted passwords
-    - OTP required to view passwords
+    Single VPS entry used by SMIA to describe EMIS services.
     """
 
-    label = models.CharField(
-        _("label"),
+    vps_label = models.CharField(
+        _("VPS label"),
         max_length=255,
         unique=True,
-        help_text="Descriptive name for this VPS",
+        help_text=_("Friendly name for this VPS"),
     )
     ip_address = models.GenericIPAddressField(_("IP address"))
-    port = models.PositiveIntegerField(
-        _("port"),
-        default=22,
-    )
-    services = models.JSONField(
-        _("services"),
+    description = models.TextField(_("description"), blank=True)
+    notes = models.TextField(_("notes"), blank=True)
+    affiliated_ports = models.JSONField(
+        _("affiliated ports"),
         default=list,
         blank=True,
-        help_text="List of services running on this VPS with ports",
+        help_text=_(
+            "List of ports with service metadata, e.g. "
+            "[{'port': 22, 'service': 'SSH', 'label': 'Remote Admin'}]",
+        ),
     )
-    
-    # Credentials (encrypted)
-    username = models.CharField(_("username"), max_length=255)
-    encrypted_password = models.CharField(
-        _("encrypted password"),
-        max_length=500,
-        help_text="Password encrypted with Fernet",
-    )
-    
-    # Access tracking
-    last_accessed_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="accessed_vps",
-    )
-    last_accessed_at = models.DateTimeField(
-        _("last accessed at"),
-        null=True,
-        blank=True,
-    )
-    access_count = models.PositiveIntegerField(
-        _("access count"),
-        default=0,
-    )
-    
-    # Additional info
-    description = models.TextField(_("description"), blank=True)
-    notes = models.TextField(
-        _("notes"),
-        blank=True,
-        help_text="Internal notes about this VPS",
-    )
-    
+
     class Meta:
-        verbose_name = _("VPS configuration")
-        verbose_name_plural = _("VPS configurations")
-        ordering = ["label"]
+        verbose_name = _("EMIS VPS information")
+        verbose_name_plural = _("EMIS VPS information")
+        ordering = ["vps_label"]
 
     def __str__(self):
-        return f"{self.label} ({self.ip_address}:{self.port})"
+        return self.vps_label
 
-    def get_services_display(self):
-        """Get formatted services list"""
-        if not self.services:
-            return []
-        return self.services
+    def get_affiliated_ports(self):
+        return self.affiliated_ports or []
 
 
-class OTPVerification(AuditInfoModel):
+class EMISHardware(AuditInfoModel):
     """
-    OTP Verification for viewing VPS passwords
-    - Generate OTP for EMIS staff
-    - Verify OTP before showing password
-    - Track OTP usage
+    Hardware inventory (routers, servers, endpoints) for EMIS.
     """
 
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="vps_otps",
+    name = models.CharField(_("name"), max_length=255)
+    hardware_type = models.CharField(
+        _("hardware type"),
+        max_length=32,
+        choices=HardwareType.choices,
+        default=HardwareType.SERVER,
     )
-    vps_config = models.ForeignKey(
-        VPSConfiguration,
-        on_delete=models.CASCADE,
-        related_name="otp_verifications",
-    )
-    otp_code = models.CharField(
-        _("OTP code"),
-        max_length=6,
-    )
-    is_used = models.BooleanField(
-        _("is used"),
-        default=False,
-    )
-    used_at = models.DateTimeField(
-        _("used at"),
-        null=True,
+    ip_address = models.GenericIPAddressField(_("IP address"), null=True, blank=True)
+    location = models.CharField(_("location"), max_length=255, blank=True)
+    endpoints = models.JSONField(
+        _("endpoints"),
+        default=list,
         blank=True,
+        help_text=_("List of URLs, ports or services this device exposes."),
     )
-    expires_at = models.DateTimeField(
-        _("expires at"),
-        help_text="OTP expires after 5 minutes",
-    )
-    
+    description = models.TextField(_("description"), blank=True)
+
     class Meta:
-        verbose_name = _("OTP verification")
-        verbose_name_plural = _("OTP verifications")
+        verbose_name = _("EMIS hardware")
+        verbose_name_plural = _("EMIS hardware")
+        ordering = ["name"]
+
+    def __str__(self):
+        return f"{self.name} ({self.hardware_type})"
+
+
+class EmailResetRequest(AuditInfoModel):
+    """
+    Tracks user-submitted email reset requests with roll validation and limits.
+    """
+
+    full_name = models.CharField(_("full name"), max_length=255)
+    roll_number = models.CharField(
+        _("roll number"),
+        max_length=12,
+        validators=[
+            RegexValidator(
+                regex=ROLL_NUMBER_PATTERN,
+                message=_("Roll number must follow pattern THA080BCT002."),
+            ),
+        ],
+        help_text=_("Format example: THA080BCT002"),
+    )
+    birth_date = models.DateField(_("birth date"))
+    primary_email = models.EmailField(_("primary email"))
+    secondary_email = models.EmailField(_("secondary email"))
+    request_sequence = models.PositiveSmallIntegerField(
+        _("request sequence"),
+        default=1,
+        editable=False,
+        help_text=_("The number of reset attempts already recorded for this roll."),
+    )
+
+    class Meta:
+        verbose_name = _("email reset request")
+        verbose_name_plural = _("email reset requests")
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"OTP for {self.user.email} - {self.vps_config.label}"
+        return f"{self.roll_number} · {self.full_name}"
 
-    def is_valid(self):
-        """Check if OTP is still valid"""
-        from django.utils import timezone
-        return not self.is_used and timezone.now() < self.expires_at
+    def save(self, *args, **kwargs):
+        if not self.request_sequence:
+            existing = EmailResetRequest.objects.filter(
+                roll_number__iexact=self.roll_number,
+            ).count()
+            self.request_sequence = existing + 1
+        super().save(*args, **kwargs)
+
+    @property
+    def requests_remaining(self):
+        return max(0, 10 - self.request_sequence)

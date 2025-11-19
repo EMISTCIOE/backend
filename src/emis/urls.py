@@ -1,12 +1,22 @@
 """
-EMIS URLs
+EMIS API router configuration.
 """
 
 from rest_framework.routers import DefaultRouter
 
-from .views import VPSConfigurationViewSet
+from .views import (
+    EmailResetRequestViewSet,
+    EMISHardwareViewSet,
+    EMISVPSInfoViewSet,
+)
 
 router = DefaultRouter(trailing_slash=False)
-router.register("vps-config", VPSConfigurationViewSet, basename="vps-config")
+router.register("vps-info", EMISVPSInfoViewSet, basename="emis-vps-info")
+router.register("hardware", EMISHardwareViewSet, basename="emis-hardware")
+router.register(
+    "email-reset",
+    EmailResetRequestViewSet,
+    basename="emis-email-reset",
+)
 
 urlpatterns = router.urls

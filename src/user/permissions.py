@@ -1,6 +1,7 @@
 from rest_framework.permissions import BasePermission
 
 from src.libs.permissions import validate_permissions
+from src.user.constants import EMIS_STAFF_ROLE
 
 
 class UserSetupPermission(BasePermission):
@@ -25,3 +26,19 @@ class RoleSetupPermission(BasePermission):
         }
 
         return validate_permissions(request, user_permissions_dict)
+
+
+def _user_has_role(user, allowed_roles: set[str]) -> bool:
+    if not user or user.is_anonymous:
+        return False
+    if user.is_superuser:
+        return True
+    user_roles = set(
+        user.roles.filter(is_active=True).values_list("codename", flat=True),
+    )
+    return bool(user_roles & allowed_roles)
+
+
+class IsEMISStaff(BasePermission):
+    def has_permission(self, request, view):
+        return _user_has_role(request.user, {EMIS_STAFF_ROLE})

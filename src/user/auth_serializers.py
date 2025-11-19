@@ -9,7 +9,14 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from src.libs.get_context import get_user_by_context
 from src.libs.messages import UNKNOWN_ERROR
-from src.user.constants import SYSTEM_USER_ROLE
+from src.user.constants import (
+    ADMIN_ROLE,
+    CLUB_ROLE,
+    DEPARTMENT_ADMIN_ROLE,
+    EMIS_STAFF_ROLE,
+    SYSTEM_USER_ROLE,
+    UNION_ROLE,
+)
 from src.user.utils.verification import send_user_forget_password_email
 from src.user.validators import validate_user_image
 
@@ -34,6 +41,45 @@ from .models import (
     UserForgetPasswordRequest,
 )
 from .utils.generators import generate_secure_token
+
+
+class LoginContext:
+    BACKEND = "BACKEND"
+    CMS = "CMS"
+    DEPARTMENT = "DEPARTMENT"
+    CLUB = "CLUB"
+    UNION = "UNION"
+    DEFAULT = CMS
+    VALUES = {BACKEND, CMS, DEPARTMENT, CLUB, UNION}
+
+    @classmethod
+    def normalize(cls, value: str | None) -> str:
+        if not value:
+            return cls.DEFAULT
+        candidate = value.strip().upper()
+        return candidate if candidate in cls.VALUES else cls.DEFAULT
+
+
+APP_CONTEXT_ROLE_MAP = {
+    LoginContext.BACKEND: {ADMIN_ROLE, EMIS_STAFF_ROLE},
+    LoginContext.CMS: {ADMIN_ROLE, EMIS_STAFF_ROLE, UNION_ROLE},
+    LoginContext.DEPARTMENT: {DEPARTMENT_ADMIN_ROLE, CLUB_ROLE},
+    LoginContext.CLUB: {CLUB_ROLE},
+    LoginContext.UNION: {UNION_ROLE},
+}
+
+
+def _get_active_role_codenames(user: User) -> set[str]:
+    return set(
+        user.roles.filter(is_active=True).values_list("codename", flat=True),
+    )
+
+
+def _user_has_allowed_context_role(user: User, allowed_roles: set[str]) -> bool:
+    if user.is_superuser:
+        return True
+    user_roles = _get_active_role_codenames(user)
+    return bool(user_roles & allowed_roles)
 
 
 class UserPermissionsSerializer(serializers.ModelSerializer):
@@ -73,13 +119,15 @@ class UserLoginSerializer(serializers.ModelSerializer):
         help_text="An identifier for the user, such as username or email.",
     )
     password = serializers.CharField(required=True, write_only=True)
+    app_context = serializers.CharField(required=False, allow_blank=True, write_only=True)
 
     class Meta:
         model = User
-        fields = ["password", "persona"]
+        fields = ["password", "persona", "app_context"]
 
     def validate(self, attrs):
         persona = attrs.get("persona")
+        app_context_value = attrs.pop("app_context", None)
         password = attrs.pop("password")
 
         user = self.get_user(persona)
@@ -88,6 +136,7 @@ class UserLoginSerializer(serializers.ModelSerializer):
         self.check_password(user, password)
         self.check_user_status(user)
         self.check_system_user(user)
+        self.check_app_context(user, app_context_value)
 
         roles = UserRoleSerializer(user.roles.filter(is_active=True), many=True).data
         permissions = UserPermissionsSerializer(
@@ -125,10 +174,10 @@ class UserLoginSerializer(serializers.ModelSerializer):
 
     def get_user(self, persona: str) -> User:
         try:
-            if "@" in persona:
-                user = User.objects.get(email=persona)
-            else:
-                user = User.objects.get(username=persona)
+        if "@" in persona:
+            user = User.objects.get(email=persona)
+        else:
+            user = User.objects.get(username=persona)
         except User.DoesNotExist as err:
             raise serializers.ValidationError({"persona": INVALID_CREDENTIALS}) from err
         return user
@@ -149,6 +198,17 @@ class UserLoginSerializer(serializers.ModelSerializer):
 
             if system_user_role.id not in user_roles:
                 raise serializers.ValidationError({"persona": INVALID_CREDENTIALS})
+
+    def check_app_context(self, user: User, context_value: str | None) -> None:
+        login_context = LoginContext.normalize(context_value)
+        allowed_roles = APP_CONTEXT_ROLE_MAP.get(
+            login_context,
+            APP_CONTEXT_ROLE_MAP[LoginContext.DEFAULT],
+        )
+        if not allowed_roles:
+            allowed_roles = APP_CONTEXT_ROLE_MAP[LoginContext.DEFAULT]
+        if not _user_has_allowed_context_role(user, allowed_roles):
+            raise serializers.ValidationError({"persona": INVALID_CREDENTIALS})
 
     def check_user_status(self, user: User) -> None:
         if not user.is_active or user.is_archived:
