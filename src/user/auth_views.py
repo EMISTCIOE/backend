@@ -10,8 +10,6 @@ from rest_framework_simplejwt.exceptions import InvalidToken
 from rest_framework_simplejwt.views import TokenRefreshView
 
 from src.user.throttling import ForgetPasswordThrottle, LoginThrottle
-from src.user.utils.generators import generate_secure_token
-from src.user.utils.verification import send_user_account_verification_email
 
 from .auth_serializers import (
     UserChangePasswordSerializer,
@@ -29,9 +27,8 @@ from .messages import (
     PASSWORD_CHANGED,
     PASSWORD_RESET_LINK_SENT,
     PROFILE_UPDATED,
-    VERIFICATION_EMAIL_SENT,
 )
-from .models import User, UserAccountVerification
+from .models import User
 from .schemas import UserLoginResponseSerializer
 
 
@@ -57,39 +54,6 @@ class UserLoginView(APIView):
     serializer_class = UserLoginSerializer
     throttle_classes = [LoginThrottle]
 
-    def handle_verification(self, data, request) -> bool:
-        """Function to handle the user verification"""
-
-        if not data["is_email_verified"] and not data["is_superuser"]:
-            user_id = data["id"]
-
-            verification_request = UserAccountVerification.objects.filter(
-                user_id=user_id,
-                is_archived=False,
-            )
-            # Archiving previous verification requests if exists
-            if verification_request:
-                verification_request.update(is_archived=True)
-
-            user = User.objects.get(id=user_id)
-            token = generate_secure_token()
-            UserAccountVerification.objects.create(
-                user=user,
-                token=token,
-                created_at=timezone.now(),
-            )
-
-            # send Link to the user's email
-            send_user_account_verification_email(
-                recipient_email=data["email"],
-                token=token,
-                request=request,
-            )
-
-            return False
-
-        return True
-
     @extend_schema(
         request=UserLoginSerializer,
         responses={200: UserLoginResponseSerializer},
@@ -101,12 +65,6 @@ class UserLoginView(APIView):
         )
         if serializer.is_valid(raise_exception=True):
             data = serializer.validated_data
-            if not self.handle_verification(data, request):
-                response_message = VERIFICATION_EMAIL_SENT.format(email=data["email"])
-                return Response(
-                    {"status": "verify_email", "message": response_message},
-                    status=status.HTTP_200_OK,
-                )
             return Response(data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

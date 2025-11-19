@@ -14,7 +14,6 @@ from src.user.constants import (
     CLUB_ROLE,
     DEPARTMENT_ADMIN_ROLE,
     EMIS_STAFF_ROLE,
-    SYSTEM_USER_ROLE,
     UNION_ROLE,
 )
 from src.user.utils.verification import send_user_forget_password_email
@@ -61,7 +60,7 @@ class LoginContext:
 
 
 APP_CONTEXT_ROLE_MAP = {
-    LoginContext.BACKEND: {ADMIN_ROLE, EMIS_STAFF_ROLE},
+    LoginContext.BACKEND: {EMIS_STAFF_ROLE, ADMIN_ROLE, UNION_ROLE},
     LoginContext.CMS: {ADMIN_ROLE, EMIS_STAFF_ROLE, UNION_ROLE},
     LoginContext.DEPARTMENT: {DEPARTMENT_ADMIN_ROLE, CLUB_ROLE},
     LoginContext.CLUB: {CLUB_ROLE},
@@ -70,9 +69,13 @@ APP_CONTEXT_ROLE_MAP = {
 
 
 def _get_active_role_codenames(user: User) -> set[str]:
-    return set(
+    active_role_codenames = set(
         user.roles.filter(is_active=True).values_list("codename", flat=True),
     )
+    current_role = getattr(user, "role", None)
+    if current_role:
+        active_role_codenames.add(current_role)
+    return active_role_codenames
 
 
 def _user_has_allowed_context_role(user: User, allowed_roles: set[str]) -> bool:
@@ -162,6 +165,16 @@ class UserLoginSerializer(serializers.ModelSerializer):
             "full_name": user.get_full_name(),
             "roles": roles,
             "permissions": permissions,
+            "roleType": user.role,
+            "roleDisplay": user.get_role_display(),
+            "designationTitle": user.designation.title if user.designation else "",
+            "designationId": user.designation.id if user.designation else None,
+            "departmentName": user.department.name if user.department else None,
+            "departmentId": user.department.id if user.department else None,
+            "clubName": user.club.name if user.club else None,
+            "clubId": user.club.id if user.club else None,
+            "unionName": user.union.name if user.union else None,
+            "unionId": user.union.id if user.union else None,
         }
 
     def get_photo(self, user: User) -> str | None:
@@ -187,17 +200,12 @@ class UserLoginSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"password": INVALID_PASSWORD})
 
     def check_system_user(self, user: User) -> None:
-        if not user.is_superuser:
-            try:
-                system_user_role = Role.objects.get(codename=SYSTEM_USER_ROLE)
-            except Role.DoesNotExist as err:
-                raise serializers.ValidationError({"error": UNKNOWN_ERROR}) from err
+        if user.is_superuser:
+            return
 
-            # Fetch all roles associated with the user
-            user_roles = user.roles.filter(is_active=True).values_list("id", flat=True)
-
-            if system_user_role.id not in user_roles:
-                raise serializers.ValidationError({"persona": INVALID_CREDENTIALS})
+        allowed_roles = {EMIS_STAFF_ROLE, ADMIN_ROLE, UNION_ROLE}
+        if user.role not in allowed_roles:
+            raise serializers.ValidationError({"persona": INVALID_CREDENTIALS})
 
     def check_app_context(self, user: User, context_value: str | None) -> None:
         login_context = LoginContext.normalize(context_value)
@@ -251,6 +259,27 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     full_name = serializers.SerializerMethodField()
     roles = serializers.SerializerMethodField()
+    role_display = serializers.CharField(source="get_role_display", read_only=True)
+    designation = serializers.CharField(
+        source="designation.title",
+        read_only=True,
+        default="",
+    )
+    department = serializers.CharField(
+        source="department.name",
+        read_only=True,
+        default="",
+    )
+    club = serializers.CharField(
+        source="club.name",
+        read_only=True,
+        default="",
+    )
+    union = serializers.CharField(
+        source="union.name",
+        read_only=True,
+        default="",
+    )
 
     class Meta:
         model = User
@@ -267,6 +296,11 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "last_login",
             "is_email_verified",
             "roles",
+            "role_display",
+            "designation",
+            "department",
+            "club",
+            "union",
         ]
 
     def get_full_name(self, obj) -> str:
@@ -412,6 +446,7 @@ class UserForgetPasswordRequestSerializer(serializers.Serializer):
             # Send the email to the user
             send_user_forget_password_email(
                 recipient_email=validated_data["email"],
+                user=user,
                 token=token,
                 request=self.context["request"],
             )

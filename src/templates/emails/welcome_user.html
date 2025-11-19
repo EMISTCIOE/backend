@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Welcome to TCIOE EMIS</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+        background-color: #f3f6ff;
+        color: #1a2235;
+      }
+      .container {
+        max-width: 640px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 20px 45px rgba(15, 23, 42, 0.15);
+      }
+      .header {
+        background: linear-gradient(135deg, #0f172a 0%, #1f7a96 65%, #10b981 100%);
+        color: white;
+        text-align: center;
+        padding: 32px 25px;
+      }
+      .header h2 {
+        margin: 0;
+        font-size: 26px;
+        letter-spacing: 1px;
+      }
+      .header p {
+        margin: 8px 0 0;
+        font-size: 13px;
+        opacity: 0.85;
+      }
+      .logo {
+        width: 72px;
+        height: 72px;
+        margin: 0 auto 12px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+      }
+      .logo img {
+        width: 40px;
+        height: 40px;
+      }
+      .content {
+        padding: 32px 38px 40px;
+      }
+      h1 {
+        font-size: 26px;
+        color: #0f172a;
+        margin-bottom: 12px;
+      }
+      p {
+        line-height: 1.7;
+        margin: 0 0 15px;
+        color: #313946;
+      }
+      .credentials {
+        background: #111828;
+        border-radius: 12px;
+        padding: 22px;
+        color: white;
+        margin: 20px 0;
+        box-shadow: 0 18px 30px rgba(15, 23, 42, 0.35);
+      }
+      .credentials h3 {
+        margin: 0 0 12px;
+        font-size: 18px;
+        font-weight: 500;
+      }
+      .credential-item {
+        display: flex;
+        justify-content: space-between;
+        margin: 8px 0;
+      }
+      .credential-label {
+        opacity: 0.8;
+      }
+      .credential-value {
+        font-family: 'Courier New', Courier, monospace;
+        font-weight: 600;
+      }
+      .btn {
+        display: inline-block;
+        background: linear-gradient(135deg, #1d4ed8 0%, #0ea5e9 100%);
+        color: white !important;
+        padding: 14px 34px;
+        border-radius: 999px;
+        text-decoration: none;
+        font-weight: 600;
+        letter-spacing: 0.4px;
+        margin: 18px 0;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 12px 26px rgba(14, 165, 233, 0.35);
+      }
+      .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 18px 36px rgba(14, 165, 233, 0.5);
+      }
+      .summary {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 18px 20px;
+        margin: 20px 0;
+        font-size: 14px;
+      }
+      .summary ul {
+        margin: 0;
+        padding-left: 18px;
+        color: #1f2933;
+        line-height: 1.6;
+      }
+      .footer {
+        background: #0f172a;
+        color: rgba(226, 232, 240, 0.85);
+        padding: 26px 30px;
+        text-align: center;
+        font-size: 12px;
+      }
+      .footer a {
+        color: #38bdf8;
+        text-decoration: none;
+      }
+      .meta {
+        margin-top: 12px;
+        font-size: 11px;
+        color: rgba(226, 232, 240, 0.6);
+      }
+      @media (max-width: 640px) {
+        .content {
+          padding: 26px;
+        }
+        .credential-item {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div class="logo">
+          {% if logo %}
+          <img src="{{ logo }}" alt="TCIOE EMIS" />
+          {% else %}
+          <span style="font-size: 18px; letter-spacing: 1px;">EMIS</span>
+          {% endif %}
+        </div>
+        <h2>TCIOE EMIS</h2>
+        <p>Internal Management System · Thapathali Campus</p>
+      </div>
+      <div class="content">
+        <h1>Welcome aboard, {{ user_name }}!</h1>
+        <p>
+          Your TCIOE EMIS account has been created. You can now access the backend to
+          oversee departmental workflows, review enquiries, and coordinate campus events.
+        </p>
+        <div class="credentials">
+          <h3>Login Details</h3>
+          <div class="credential-item">
+            <span class="credential-label">Username</span>
+            <span class="credential-value">{{ username }}</span>
+          </div>
+          <div class="credential-item">
+            <span class="credential-label">Email</span>
+            <span class="credential-value">{{ user_email }}</span>
+          </div>
+          <div class="credential-item">
+            <span class="credential-label">Password</span>
+            <span class="credential-value">{{ password }}</span>
+          </div>
+        </div>
+        <a href="{{ login_url }}" class="btn">Go to TCIOE EMIS</a>
+        <div class="summary">
+          <p><strong>Your role:</strong> {{ user_role }}</p>
+          {% if contact_number %}
+          <p><strong>Contact:</strong> {{ contact_number }}</p>
+          {% endif %}
+          {% if privileges %}
+          <p><strong>Privileges</strong></p>
+          <ul>
+            {% for item in privileges %}
+            <li>{{ item }}</li>
+            {% endfor %}
+          </ul>
+          {% endif %}
+          <p style="margin-top: 12px;">Please reset the provided password after your first login for best security.</p>
+        </div>
+      </div>
+      <div class="footer">
+        <div>TCIOE EMIS · Thapathali Campus</div>
+        <div class="meta">© {{ current_year }} TCIOE EMIS. Sent {{ sent_time }}.</div>
+      </div>
+    </div>
+  </body>
+</html>

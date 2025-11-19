@@ -44,4 +44,80 @@
       "updated_at": "2024-05-19T05:07:22.123456Z"
     }
   }
+,
+  {
+    "model": "user.Role",
+    "pk": 4,
+    "fields": {
+      "name": "EMIS Staff",
+      "codename": "EMIS-STAFF",
+      "permissions": [],
+      "created_by": 1,
+      "is_system_managed": false,
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z"
+    }
+  },
+  {
+    "model": "user.Role",
+    "pk": 5,
+    "fields": {
+      "name": "Admin",
+      "codename": "ADMIN",
+      "permissions": [],
+      "created_by": 1,
+      "is_system_managed": false,
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z"
+    }
+  },
+  {
+    "model": "user.Role",
+    "pk": 6,
+    "fields": {
+      "name": "Department Admin",
+      "codename": "DEPARTMENT-ADMIN",
+      "permissions": [],
+      "created_by": 1,
+      "is_system_managed": false,
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z"
+    }
+  },
+  {
+    "model": "user.Role",
+    "pk": 7,
+    "fields": {
+      "name": "Student Club",
+      "codename": "CLUB",
+      "permissions": [],
+      "created_by": 1,
+      "is_system_managed": false,
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z"
+    }
+  },
+  {
+    "model": "user.Role",
+    "pk": 8,
+    "fields": {
+      "name": "Union",
+      "codename": "UNION",
+      "permissions": [],
+      "created_by": 1,
+      "is_system_managed": false,
+      "is_active": true,
+      "is_archived": false,
+      "created_at": "2024-05-19T05:07:22.123456Z",
+      "updated_at": "2024-05-19T05:07:22.123456Z"
+    }
+  }
 ]

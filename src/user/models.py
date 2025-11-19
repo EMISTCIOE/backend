@@ -12,8 +12,18 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 # Project Imports
 from src.base.models import AuditInfoModel
+from src.department.models import Department
+from src.website.models import CampusStaffDesignation, StudentClub, CampusUnion
 
-from .constants import PUBLIC_USER_ROLE, SYSTEM_USER_ROLE
+from .constants import (
+    ADMIN_ROLE,
+    CLUB_ROLE,
+    DEPARTMENT_ADMIN_ROLE,
+    EMIS_STAFF_ROLE,
+    PUBLIC_USER_ROLE,
+    SYSTEM_USER_ROLE,
+    UNION_ROLE,
+)
 from .exceptions import RoleNotFound
 from .validators import validate_user_image
 
@@ -125,6 +135,9 @@ class UserManager(BaseUserManager):
         if email:
             email = self.normalize_email(email)
 
+        if "role" not in extra_fields:
+            extra_fields["role"] = EMIS_STAFF_ROLE
+
         user = self.model(username=username, email=email, **extra_fields)
         user.password = make_password(password)
         user.save(using=self._db)
@@ -153,9 +166,11 @@ class UserManager(BaseUserManager):
         username,
         email,
         password,
+        role=EMIS_STAFF_ROLE,
         context=None,
         **extra_fields,
     ):
+        extra_fields.setdefault("role", role)
         user: User = self.create_user(username, email, password, **extra_fields)
 
         try:
@@ -195,6 +210,13 @@ class User(AbstractUser):
     extending the abstract user functionality provided by Django's
     """
 
+    class RoleType(models.TextChoices):
+        EMIS_STAFF = EMIS_STAFF_ROLE, _("EMIS Staff")
+        ADMIN = ADMIN_ROLE, _("Admin")
+        DEPARTMENT_ADMIN = DEPARTMENT_ADMIN_ROLE, _("Department Admin")
+        CLUB = CLUB_ROLE, _("Student Club")
+        UNION = UNION_ROLE, _("Union")
+
     uuid = models.UUIDField(default=uuid4, unique=True, editable=False)
 
     phone_no = models.CharField(_("phone number"), max_length=15, blank=True)
@@ -203,6 +225,44 @@ class User(AbstractUser):
         blank=True,
         null=True,
         default="",
+    )
+    role = models.CharField(
+        _("role"),
+        max_length=32,
+        choices=RoleType.choices,
+        default=RoleType.EMIS_STAFF,
+    )
+    designation = models.ForeignKey(
+        CampusStaffDesignation,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name=_("designation"),
+        related_name="users",
+    )
+    department = models.ForeignKey(
+        Department,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name=_("department"),
+        related_name="users",
+    )
+    club = models.ForeignKey(
+        StudentClub,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name=_("student club"),
+        related_name="user_clubs",
+    )
+    union = models.ForeignKey(
+        CampusUnion,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name=_("union"),
+        related_name="user_unions",
     )
     is_archived = models.BooleanField(
         _("archived"),
@@ -289,6 +349,18 @@ class User(AbstractUser):
         combined_permissions = set(list(role_permissions) + list(user_permissions))
 
         return list(combined_permissions)
+
+    def is_emis_staff(self) -> bool:
+        return self.role == self.RoleType.EMIS_STAFF or self.is_superuser
+
+    def is_campus_admin(self) -> bool:
+        return (
+            self.role in {self.RoleType.ADMIN, self.RoleType.DEPARTMENT_ADMIN}
+            or self.is_superuser
+        )
+
+    def is_union_member(self) -> bool:
+        return self.role == self.RoleType.UNION
 
 
 class UserForgetPasswordRequest(models.Model):

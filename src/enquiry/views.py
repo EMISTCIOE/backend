@@ -114,10 +114,16 @@ class MeetingEnquiryViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["get"], url_path="available-admins")
     def available_admins(self, request):
         """Public endpoint to get list of available admins"""
-        # Get all users with admin profiles
+        allowed_roles = {
+            User.RoleType.ADMIN,
+            User.RoleType.DEPARTMENT_ADMIN,
+            User.RoleType.EMIS_STAFF,
+        }
         admins = User.objects.filter(
-            admin_profiles__is_active=True,
-        ).distinct().select_related("admin_profiles")
+            is_active=True,
+            is_archived=False,
+            role__in=allowed_roles,
+        ).order_by("first_name")
 
         serializer = self.get_serializer(admins, many=True)
         return Response(serializer.data)

@@ -4,8 +4,10 @@ from rest_framework import serializers
 
 # Project Imports
 from src.base.serializers import AbstractInfoRetrieveSerializer
+from src.department.models import Department
 from src.libs.get_context import get_user_by_context
 from src.user.constants import SYSTEM_USER_ROLE
+from src.website.models import CampusStaffDesignation, CampusUnion, StudentClub
 
 from .messages import (
     USER_CREATED,
@@ -16,6 +18,7 @@ from .messages import (
     USER_UPDATED,
 )
 from .models import Permission, Role, User
+from .utils import send_user_welcome_email
 from .utils.generators import generate_role_codename, generate_unique_user_username
 from .validators import validate_user_image
 
@@ -149,6 +152,26 @@ class GetUserRolesForUserListSerializer(serializers.ModelSerializer):
 
 class UserListSerializer(serializers.ModelSerializer):
     created_by_username = serializers.CharField(source="created_by.username")
+    designation_title = serializers.CharField(
+        source="designation.title",
+        read_only=True,
+    )
+    department_name = serializers.CharField(
+        source="department.name",
+        read_only=True,
+    )
+    club_name = serializers.CharField(
+        source="club.name",
+        read_only=True,
+    )
+    union_name = serializers.CharField(
+        source="union.name",
+        read_only=True,
+    )
+    role_display = serializers.CharField(
+        source="get_role_display",
+        read_only=True,
+    )
 
     class Meta:
         model = User
@@ -168,6 +191,26 @@ class UserListSerializer(serializers.ModelSerializer):
 class UserRetrieveSerializer(serializers.ModelSerializer):
     roles = serializers.SerializerMethodField()
     created_by_username = serializers.CharField(source="created_by.username")
+    designation_title = serializers.CharField(
+        source="designation.title",
+        read_only=True,
+    )
+    department_name = serializers.CharField(
+        source="department.name",
+        read_only=True,
+    )
+    club_name = serializers.CharField(
+        source="club.name",
+        read_only=True,
+    )
+    union_name = serializers.CharField(
+        source="union.name",
+        read_only=True,
+    )
+    role_display = serializers.CharField(
+        source="get_role_display",
+        read_only=True,
+    )
 
     class Meta:
         model = User
@@ -209,6 +252,32 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     username = serializers.CharField(allow_blank=True)
     password = serializers.CharField(validators=[validate_password])
 
+    role = serializers.ChoiceField(
+        choices=User.RoleType.choices,
+        default=User.RoleType.EMIS_STAFF,
+        write_only=True,
+    )
+    designation = serializers.PrimaryKeyRelatedField(
+        queryset=CampusStaffDesignation.objects.filter(is_active=True),
+        required=False,
+        allow_null=True,
+    )
+    department = serializers.PrimaryKeyRelatedField(
+        queryset=Department.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    club = serializers.PrimaryKeyRelatedField(
+        queryset=StudentClub.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    union = serializers.PrimaryKeyRelatedField(
+        queryset=CampusUnion.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+
     class Meta:
         model = User
         fields = [
@@ -220,6 +289,11 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             "photo",
             "phone_no",
             "roles",
+            "role",
+            "designation",
+            "department",
+            "club",
+            "union",
             "is_active",
         ]
 
@@ -242,11 +316,26 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         if attrs["roles"] is None or attrs["roles"] == "":
             raise serializers.ValidationError({"roles": USER_ERRORS["MISSING_ROLES"]})
 
+        role = attrs.get("role")
+        if role == User.RoleType.CLUB and not attrs.get("club"):
+            raise serializers.ValidationError(
+                {"club": "Student club account must be linked to a club."},
+            )
+        if role == User.RoleType.UNION and not attrs.get("union"):
+            raise serializers.ValidationError(
+                {"union": "Union account must be linked to a union."},
+            )
+        if role == User.RoleType.DEPARTMENT_ADMIN and not attrs.get("department"):
+            raise serializers.ValidationError(
+                {"department": "Department admin must be assigned to a department."},
+            )
+
         return attrs
 
     def create(self, validated_data):
         email = validated_data["email"]
         photo = validated_data.get("photo")
+        password = validated_data["password"]
 
         username = validated_data.get("username")
         roles = validated_data.pop("roles", [])
@@ -263,11 +352,12 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             first_name=validated_data["first_name"].title().strip(),
             last_name=validated_data["last_name"].title().strip(),
             phone_no=validated_data["phone_no"],
-            password=validated_data["password"],
+            password=password,
             email=email,
             username=username,
             created_by=created_by,
             context=self.context,
+            role=validated_data.get("role", User.RoleType.EMIS_STAFF),
         )
 
         if photo is not None:
@@ -277,9 +367,18 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             )
             user_instance.photo.save(upload_path, photo)
 
+        user_instance.designation = validated_data.get("designation")
+        user_instance.department = validated_data.get("department")
+        user_instance.club = validated_data.get("club")
+        user_instance.union = validated_data.get("union")
+
         user_instance.roles.add(*roles)  # Set the roles
 
         user_instance.save()
+
+        request = self.context.get("request")
+        if request:
+            send_user_welcome_email(user_instance, password, request)
 
         return user_instance
 
@@ -302,6 +401,30 @@ class UserPatchSerializer(serializers.ModelSerializer):
         queryset=Role.objects.filter(is_active=True, is_system_managed=False),
         many=True,
     )
+    role = serializers.ChoiceField(
+        choices=User.RoleType.choices,
+        required=False,
+    )
+    designation = serializers.PrimaryKeyRelatedField(
+        queryset=CampusStaffDesignation.objects.filter(is_active=True),
+        required=False,
+        allow_null=True,
+    )
+    department = serializers.PrimaryKeyRelatedField(
+        queryset=Department.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    club = serializers.PrimaryKeyRelatedField(
+        queryset=StudentClub.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    union = serializers.PrimaryKeyRelatedField(
+        queryset=CampusUnion.objects.all(),
+        required=False,
+        allow_null=True,
+    )
 
     class Meta:
         model = User
@@ -312,10 +435,15 @@ class UserPatchSerializer(serializers.ModelSerializer):
             "photo",
             "phone_no",
             "is_active",
+            "role",
+            "designation",
+            "department",
+            "club",
+            "union",
         ]
 
     def validate(self, attrs):
-        if attrs["phone_no"]:
+        if attrs.get("phone_no"):
             if (
                 User.objects.filter(phone_no=attrs["phone_no"])
                 .exclude(pk=self.instance.pk)
@@ -331,11 +459,17 @@ class UserPatchSerializer(serializers.ModelSerializer):
         current_user = get_user_by_context(self.context)
         photo = validated_data.get("photo")
 
-        instance.first_name = validated_data.get("first_name").title()
-        instance.last_name = validated_data.get("last_name").title()
-        instance.is_active = validated_data.get("is_active")
+        first_name = validated_data.get("first_name")
+        if first_name:
+            instance.first_name = first_name.title()
+        last_name = validated_data.get("last_name")
+        if last_name:
+            instance.last_name = last_name.title()
+        if "is_active" in validated_data:
+            instance.is_active = validated_data.get("is_active")
 
-        instance.phone_no = validated_data.get("phone_no")
+        if "phone_no" in validated_data:
+            instance.phone_no = validated_data.get("phone_no")
         instance.updated_by = current_user
 
         if "photo" in validated_data:
@@ -351,11 +485,23 @@ class UserPatchSerializer(serializers.ModelSerializer):
                     save=True,
                 )  # Delete the existing photo if photo is None
 
+        if "role" in validated_data:
+            instance.role = validated_data.get("role")
+
         if "roles" in validated_data:
             system_roles = list(instance.roles.filter(is_system_managed=True))
-            roles = validated_data.get("roles")
-            instance.roles.set(roles)
+            roles_val = validated_data.get("roles")
+            instance.roles.set(roles_val)
             instance.roles.add(*system_roles)
+
+        if "designation" in validated_data:
+            instance.designation = validated_data.get("designation")
+        if "department" in validated_data:
+            instance.department = validated_data.get("department")
+        if "club" in validated_data:
+            instance.club = validated_data.get("club")
+        if "union" in validated_data:
+            instance.union = validated_data.get("union")
 
         instance.save()
         return instance

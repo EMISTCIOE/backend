@@ -12,7 +12,7 @@ from rest_framework.viewsets import ModelViewSet
 
 # Project Imports
 from src.libs.utils import set_binary_files_null_if_empty
-from src.user.constants import SYSTEM_USER_ROLE
+from src.user.constants import EMIS_STAFF_ROLE
 
 from .messages import USER_ARCHIVED, USER_ROLE_ARCHIVED
 from .models import Role, User
@@ -119,12 +119,16 @@ class UserViewSet(ModelViewSet):
     http_method_names = ["options", "head", "get", "patch", "post"]
 
     def get_queryset(self):
-
-        system_user_role = get_object_or_404(Role, codename=SYSTEM_USER_ROLE)
+        allowed_roles = [
+            User.RoleType.EMIS_STAFF,
+            User.RoleType.ADMIN,
+            User.RoleType.DEPARTMENT_ADMIN,
+            User.RoleType.UNION,
+        ]
         return User.objects.filter(
             is_superuser=False,
             is_staff=False,
-            roles__id=system_user_role.id,
+            role__in=allowed_roles,
             is_archived=False,
         )
 
@@ -167,11 +171,16 @@ class UserArchiveView(generics.DestroyAPIView):
     lookup_field = "id"
 
     def get_queryset(self):
-        system_user_role = get_object_or_404(Role, codename=SYSTEM_USER_ROLE)
+        allowed_roles = [
+            User.RoleType.EMIS_STAFF,
+            User.RoleType.ADMIN,
+            User.RoleType.DEPARTMENT_ADMIN,
+            User.RoleType.UNION,
+        ]
         return User.objects.filter(
             is_superuser=False,
             is_staff=False,
-            roles__id=system_user_role.id,
+            role__in=allowed_roles,
             is_archived=False,
         )
 

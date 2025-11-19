@@ -131,10 +131,10 @@ class MeetingEnquiry(AuditInfoModel):
 
     def get_admin_role(self):
         """Get the role of the requested admin"""
-        if hasattr(self.requested_admin, 'admin_profiles'):
-            profile = self.requested_admin.admin_profiles.filter(
-                is_active=True,
-            ).first()
-            if profile:
-                return profile.get_role_type_display()
-        return "Admin"
+        if not self.requested_admin:
+            return "Admin"
+
+        if self.requested_admin.designation:
+            return self.requested_admin.designation.title
+
+        return self.requested_admin.get_role_display() or "Admin"

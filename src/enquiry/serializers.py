@@ -108,9 +108,12 @@ class MeetingEnquiryCreateSerializer(serializers.ModelSerializer):
 
     def validate_requested_admin(self, value):
         """Ensure requested admin has an admin profile"""
-        if not hasattr(value, 'admin_profiles') or not value.admin_profiles.filter(
-            is_active=True,
-        ).exists():
+        allowed_roles = {
+            User.RoleType.ADMIN,
+            User.RoleType.DEPARTMENT_ADMIN,
+            User.RoleType.EMIS_STAFF,
+        }
+        if value.role not in allowed_roles:
             raise serializers.ValidationError(
                 "Selected user is not an admin. Please select a valid admin.",
             )
@@ -199,8 +202,6 @@ class AdminListSerializer(serializers.ModelSerializer):
         fields = ["id", "first_name", "last_name", "email", "role"]
 
     def get_role(self, obj):
-        if hasattr(obj, 'admin_profiles'):
-            profile = obj.admin_profiles.filter(is_active=True).first()
-            if profile:
-                return profile.get_role_type_display()
-        return None
+        if obj.designation:
+            return obj.designation.title
+        return obj.get_role_display()

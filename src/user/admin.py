@@ -30,6 +30,18 @@ class UserAdmin(DjangoUserAdmin):
             },
         ),
         (
+            _("Classification"),
+            {
+                "fields": (
+                    "role",
+                    "designation",
+                    "department",
+                    "club",
+                    "union",
+                )
+            },
+        ),
+        (
             _("Roles & Permissions"),
             {
                 "fields": ("roles", "permissions"),
@@ -67,12 +79,13 @@ class UserAdmin(DjangoUserAdmin):
                     "first_name",
                     "last_name",
                     "is_active",
+                    "role",
                 ),
             },
         ),
     )
-    list_display = ("username", "email", "full_name", "is_active", "is_archived")
-    list_filter = ("is_active", "is_archived", "roles")
+    list_display = ("username", "email", "full_name", "role", "is_active", "is_archived")
+    list_filter = ("is_active", "is_archived", "roles", "role")
     search_fields = ("username", "email", "first_name", "last_name")
     readonly_fields = ("last_login", "date_joined")
     filter_horizontal = ("roles", "permissions")
