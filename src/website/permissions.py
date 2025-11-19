@@ -85,7 +85,7 @@ class CampusEventPermission(BasePermission):
 class CampusUnionPermission(BasePermission):
     def has_permission(self, request, view):
         # Union users can view and edit their own union
-        if hasattr(request.user, 'role_type') and request.user.role_type == 'UNION':
+        if getattr(request.user, 'role', None) == 'UNION':
             if request.method in SAFE_METHODS or request.method == 'PATCH':
                 return True
             # Union users cannot create or delete unions
@@ -101,8 +101,8 @@ class CampusUnionPermission(BasePermission):
     
     def has_object_permission(self, request, view, obj):
         # Union users can only access their own union
-        if hasattr(request.user, 'role_type') and request.user.role_type == 'UNION':
-            if hasattr(request.user, 'union_id'):
+        if getattr(request.user, 'role', None) == 'UNION':
+            if getattr(request.user, 'union_id', None):
                 return str(obj.id) == str(request.user.union_id)
             return False
         

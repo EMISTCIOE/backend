@@ -484,7 +484,7 @@ class CampusUnionViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = super().get_queryset()
         user = self.request.user
-        if getattr(user, "role_type", None) == "UNION":
+        if getattr(user, "role", None) == "UNION":
             union_id = getattr(user, "union_id", None)
             if union_id:
                 return queryset.filter(pk=union_id)
@@ -928,6 +928,16 @@ class GlobalEventViewSet(viewsets.ModelViewSet):
     filterset_class = FilterForGlobalEventViewSet
     ordering_fields = ["event_start_date", "-created_at", "title"]
     http_method_names = ["get", "post", "patch", "delete"]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        user = self.request.user
+        if getattr(user, "role", None) == "UNION":
+            union_id = getattr(user, "union_id", None)
+            if union_id:
+                return queryset.filter(unions__id=union_id).distinct()
+            return queryset.none()
+        return queryset
 
     def get_serializer_class(self):
         if self.action in ["list", "retrieve"]:

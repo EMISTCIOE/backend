@@ -2074,6 +2074,20 @@ class GlobalEventCreateSerializer(serializers.ModelSerializer):
         end = attrs.get("event_end_date")
         if start and end and end < start:
             raise serializers.ValidationError({"event_end_date": EVENT_DATE_ERROR})
+
+        current_user = get_user_by_context(self.context)
+        if getattr(current_user, "is_union_member", None) and current_user.is_union_member():
+            union = getattr(current_user, "union", None)
+            if union is None:
+                raise serializers.ValidationError({"unions": "Union account is not linked to a union."})
+
+            submitted_unions = attrs.get("unions") or []
+            if submitted_unions and any(union.pk != item.pk for item in submitted_unions):
+                raise serializers.ValidationError({"unions": "Union accounts can only assign their own union."})
+
+            # Always ensure the event is associated with the user's union
+            attrs["unions"] = [union]
+
         return attrs
 
     def create(self, validated_data):
@@ -2144,6 +2158,20 @@ class GlobalEventPatchSerializer(FileHandlingMixin, serializers.ModelSerializer)
         end = attrs.get("event_end_date", self.instance.event_end_date)
         if start and end and end < start:
             raise serializers.ValidationError({"event_end_date": EVENT_DATE_ERROR})
+
+        current_user = get_user_by_context(self.context)
+        if getattr(current_user, "is_union_member", None) and current_user.is_union_member():
+            union = getattr(current_user, "union", None)
+            if union is None:
+                raise serializers.ValidationError({"unions": "Union account is not linked to a union."})
+
+            submitted_unions = attrs.get("unions")
+            if submitted_unions is not None and any(union.pk != item.pk for item in submitted_unions):
+                raise serializers.ValidationError({"unions": "Union accounts can only assign their own union."})
+
+            # Preserve association with the logged-in union
+            attrs["unions"] = [union]
+
         return attrs
 
     def update(self, instance, validated_data):
