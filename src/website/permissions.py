@@ -1,6 +1,7 @@
 from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 from src.libs.permissions import get_user_permissions, validate_permissions
+from src.user.constants import UNION_ROLE, CLUB_ROLE, DEPARTMENT_ADMIN_ROLE
 
 
 class CampusInfoPermission(BasePermission):
@@ -85,7 +86,7 @@ class CampusEventPermission(BasePermission):
 class CampusUnionPermission(BasePermission):
     def has_permission(self, request, view):
         # Union users can view and edit their own union
-        if getattr(request.user, 'role', None) == 'UNION':
+        if getattr(request.user, 'role', None) == UNION_ROLE:
             if request.method in SAFE_METHODS or request.method == 'PATCH':
                 return True
             # Union users cannot create or delete unions
@@ -101,7 +102,7 @@ class CampusUnionPermission(BasePermission):
     
     def has_object_permission(self, request, view, obj):
         # Union users can only access their own union
-        if getattr(request.user, 'role', None) == 'UNION':
+        if getattr(request.user, 'role', None) == UNION_ROLE:
             if getattr(request.user, 'union_id', None):
                 return str(obj.id) == str(request.user.union_id)
             return False
@@ -186,7 +187,7 @@ class GlobalGalleryPermission(BasePermission):
 
 class GlobalGalleryImagePermission(BasePermission):
     def has_permission(self, request, view):
-        if getattr(request.user, "role", None) == "UNION":
+        if getattr(request.user, "role", None) == UNION_ROLE:
             if request.method in SAFE_METHODS or request.method in {"POST", "PATCH", "DELETE"}:
                 return True
             return False
@@ -201,7 +202,7 @@ class GlobalGalleryImagePermission(BasePermission):
         return validate_permissions(request, user_permissions_dict)
 
     def has_object_permission(self, request, view, obj):
-        if getattr(request.user, "role", None) == "UNION":
+        if getattr(request.user, "role", None) == UNION_ROLE:
             union_id = getattr(request.user, "union_id", None)
             if not union_id:
                 return False
@@ -220,21 +221,21 @@ class GlobalGalleryImagePermission(BasePermission):
 class GlobalEventPermission(BasePermission):
     def has_permission(self, request, view):
         # Union users can create and edit global events (for their union)
-        if hasattr(request.user, 'role') and request.user.role == 'UNION':
+        if hasattr(request.user, 'role') and request.user.role == UNION_ROLE:
             if request.method in SAFE_METHODS or request.method in ['POST', 'PATCH']:
                 return True
             # Union users cannot delete global events
             return False
         
         # Department users can create and edit global events (for their department and clubs)
-        if hasattr(request.user, 'role') and request.user.role == 'DEPARTMENT':
+        if hasattr(request.user, 'role') and request.user.role == DEPARTMENT_ADMIN_ROLE:
             if request.method in SAFE_METHODS or request.method in ['POST', 'PATCH']:
                 return True
             # Department users cannot delete global events
             return False
         
         # Club users can create and edit global events (for their club)
-        if hasattr(request.user, 'role') and request.user.role == 'CLUB':
+        if hasattr(request.user, 'role') and request.user.role == CLUB_ROLE:
             if request.method in SAFE_METHODS or request.method in ['POST', 'PATCH']:
                 return True
             # Club users cannot delete global events
@@ -251,27 +252,30 @@ class GlobalEventPermission(BasePermission):
     
     def has_object_permission(self, request, view, obj):
         # Union users can only access events linked to their union
-        if hasattr(request.user, 'role') and request.user.role == 'UNION':
-            if hasattr(request.user, 'union') and request.user.union:
+        if hasattr(request.user, 'role') and request.user.role == UNION_ROLE:
+            union_id = getattr(request.user, 'union_id', None)
+            if union_id:
                 # Check if the event is linked to the user's union
-                return obj.unions.filter(id=request.user.union.id).exists()
+                return obj.unions.filter(id=union_id).exists()
             return False
         
         # Department users can access events linked to their department or their department's clubs
-        if hasattr(request.user, 'role') and request.user.role == 'DEPARTMENT':
-            if hasattr(request.user, 'department') and request.user.department:
+        if hasattr(request.user, 'role') and request.user.role == DEPARTMENT_ADMIN_ROLE:
+            department_id = getattr(request.user, 'department_id', None)
+            if department_id:
                 # Check if the event is linked to the user's department or department's clubs
-                department_linked = obj.departments.filter(id=request.user.department.id).exists()
+                department_linked = obj.departments.filter(id=department_id).exists()
                 # Check if the event is linked to any club under this department
-                department_clubs_linked = obj.clubs.filter(department=request.user.department).exists()
+                department_clubs_linked = obj.clubs.filter(department_id=department_id).exists()
                 return department_linked or department_clubs_linked
             return False
         
         # Club users can only access events linked to their club
-        if hasattr(request.user, 'role') and request.user.role == 'CLUB':
-            if hasattr(request.user, 'club') and request.user.club:
+        if hasattr(request.user, 'role') and request.user.role == CLUB_ROLE:
+            club_id = getattr(request.user, 'club_id', None)
+            if club_id:
                 # Check if the event is linked to the user's club
-                return obj.clubs.filter(id=request.user.club.id).exists()
+                return obj.clubs.filter(id=club_id).exists()
             return False
         
         # Other roles: check standard permissions

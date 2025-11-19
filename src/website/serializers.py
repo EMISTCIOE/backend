@@ -9,6 +9,7 @@ from src.base.serializers import AbstractInfoRetrieveSerializer
 from src.core.models import FiscalSessionBS
 from src.department.models import Department
 from src.libs.get_context import get_user_by_context
+from src.user.constants import UNION_ROLE, CLUB_ROLE, DEPARTMENT_ADMIN_ROLE
 from src.libs.mixins import FileHandlingMixin
 from src.website.validators import (
     validate_campus_download_file,
@@ -2154,7 +2155,7 @@ class GlobalEventCreateSerializer(serializers.ModelSerializer):
         current_user = get_user_by_context(self.context)
         
         # Handle union users
-        if getattr(current_user, "is_union_member", None) and current_user.is_union_member():
+        if hasattr(current_user, 'role') and current_user.role == UNION_ROLE:
             union = getattr(current_user, "union", None)
             if union is None:
                 raise serializers.ValidationError({"unions": "Union account is not linked to a union."})
@@ -2171,7 +2172,7 @@ class GlobalEventCreateSerializer(serializers.ModelSerializer):
             attrs["clubs"] = []
             
         # Handle club users 
-        elif hasattr(current_user, 'role') and current_user.role == 'CLUB':
+        elif hasattr(current_user, 'role') and current_user.role == CLUB_ROLE:
             club = getattr(current_user, "club", None)
             if club is None:
                 raise serializers.ValidationError({"clubs": "Club account is not linked to a club."})
@@ -2182,14 +2183,13 @@ class GlobalEventCreateSerializer(serializers.ModelSerializer):
 
             # Always ensure the event is associated with the user's club
             attrs["clubs"] = [club]
-            attrs["departments"] = [department]
             
             # Clear departments and unions for club users since they can't assign them
-           
+            attrs["departments"] = []
             attrs["unions"] = []
             
         # Handle department users
-        elif hasattr(current_user, 'role') and current_user.role == 'DEPARTMENT':
+        elif hasattr(current_user, 'role') and current_user.role == DEPARTMENT_ADMIN_ROLE:
             department = getattr(current_user, "department", None)
             if department is None:
                 raise serializers.ValidationError({"departments": "Department account is not linked to a department."})
