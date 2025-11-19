@@ -7,6 +7,7 @@ from django.utils import timezone
 from rest_framework import mixins, viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
 
 from src.user.permissions import IsEMISStaff
 
@@ -45,7 +46,18 @@ class EMISHardwareViewSet(viewsets.ModelViewSet):
 class EmailResetRequestViewSet(viewsets.ModelViewSet):
     queryset = EmailResetRequest.objects.filter(is_active=True).order_by("-created_at")
     serializer_class = EmailResetRequestSerializer
-    permission_classes = [IsEMISStaff]
+    
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        - Create (POST): Allow public access for students to submit requests
+        - All other actions: Require EMIS staff authentication
+        """
+        if self.action == 'create':
+            permission_classes = [AllowAny]
+        else:
+            permission_classes = [IsEMISStaff]
+        return [permission() for permission in permission_classes]
 
     @action(detail=True, methods=["post"])
     def approve(self, request, pk=None):
