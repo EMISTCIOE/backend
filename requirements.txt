@@ -37,6 +37,7 @@ html-tag-names==0.1.2
 html-void-elements==0.1.0
 identify==2.6.15
 idna==3.11
+pytz==2024.2
 inflection==0.5.1
 jsbeautifier==1.15.4
 json5==0.9.28
