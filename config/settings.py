@@ -86,6 +86,9 @@ LOCAL_APPS = [
     "src.contact",
     "src.project",
     "src.research",
+    "src.enquiry",
+    "src.emis",
+    "src.application",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -155,23 +158,14 @@ if not LOCAL:
         },
     }
 else:
-    # DATABASES = {
-    #     "default": {
-    #         "ENGINE": "django.db.backends.sqlite3",
-    #         "NAME": BASE_DIR / "db.sqlite3",
-    #     },
-    # }
-
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": env("DB_NAME"),
-            "USER": env("DB_USER"),
-            "PASSWORD": env("DB_PASSWORD"),
-            "HOST": env("DB_HOST"),
-            "PORT": env("DB_PORT"),
-        },
+     DATABASES = {
+         "default": {
+             "ENGINE": "django.db.backends.sqlite3",
+             "NAME": BASE_DIR / "db.sqlite3",
+         },
     }
+
+    
 
 DATABASES["default"]["ATOMIC_REQUESTS"] = True
 
