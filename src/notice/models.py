@@ -134,11 +134,32 @@ class Notice(AuditInfoModel):
         """
         base_slug = self.slugify()
         # If no other notice uses this slug, return it.
-        exists = Notice.objects.filter(slug=base_slug).exclude(pk=self.pk).exists()
-        if not exists:
+        if not Notice.objects.filter(slug=base_slug).exclude(pk=self.pk).exists():
             return base_slug
-        # Otherwise append uuid to guarantee uniqueness.
-        return f"{base_slug}-{self.uuid}"
+
+        # Prefer appending year to avoid UUIDs. Use published_at year if set,
+        # otherwise fallback to current year.
+        try:
+            year = self.published_at.year if getattr(self, "published_at", None) else None
+        except Exception:
+            year = None
+
+        if not year:
+            from django.utils import timezone
+
+            year = timezone.now().year
+
+        candidate = f"{base_slug}-{year}"
+        if not Notice.objects.filter(slug=candidate).exclude(pk=self.pk).exists():
+            return candidate
+
+        # As a last resort (very rare), append a numeric suffix to ensure uniqueness
+        idx = 2
+        while True:
+            cand = f"{candidate}-{idx}"
+            if not Notice.objects.filter(slug=cand).exclude(pk=self.pk).exists():
+                return cand
+            idx += 1
 
     def save(self, *args, **kwargs):
         # Regenerate slug from title on every save (so current records
