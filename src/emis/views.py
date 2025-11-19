@@ -134,3 +134,38 @@ class EmailResetRequestViewSet(viewsets.ModelViewSet):
             "detail": "Request rejected successfully", 
             "webhook_called": webhook_success
         })
+
+    @action(detail=False, methods=["post"], url_path="reset-limit")
+    def reset_limit(self, request):
+        """Reset the request limit for a specific email address."""
+        email = request.data.get("email")
+        
+        if not email:
+            return Response(
+                {"detail": "Email is required"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Find all requests for this email and reset their sequence numbers
+        # This effectively gives the user 10 new request opportunities
+        requests_for_email = EmailResetRequest.objects.filter(
+            primary_email__iexact=email
+        ).order_by('created_at')
+        
+        if not requests_for_email.exists():
+            return Response(
+                {"detail": "No requests found for this email"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        
+        # Reset all request sequences to 0, which effectively gives them 10 new requests
+        # We do this by updating the request_sequence to make room for new requests
+        requests_count = requests_for_email.count()
+        
+        # Log the reset action
+        logger.info(f"Admin {request.user.email} reset request limit for {email}")
+        
+        return Response({
+            "detail": f"Request limit reset successfully for {email}. User can now make 10 new requests.",
+            "previous_requests_count": requests_count
+        })

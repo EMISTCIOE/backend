@@ -10,7 +10,7 @@ from src.base.models import AuditInfoModel
 
 
 ROLL_NUMBER_PATTERN = r"^[A-Z]{3}\d{3}[A-Z]{3}\d{3}$"
-PRIMARY_EMAIL_DOMAIN = "@tcio.edu.np"
+PRIMARY_EMAIL_DOMAIN = "@tcioe.edu.np"
 
 
 class HardwareType(models.TextChoices):

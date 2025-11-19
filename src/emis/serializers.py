@@ -153,45 +153,55 @@ class EMISHardwareSerializer(serializers.ModelSerializer):
 
 
 class EmailResetRequestSerializer(serializers.ModelSerializer):
-    request_sequence = serializers.IntegerField(read_only=True)
-    requests_remaining = serializers.SerializerMethodField()
-    processed_by_name = serializers.SerializerMethodField()
+    requestSequence = serializers.IntegerField(source='request_sequence', read_only=True)
+    requestsRemaining = serializers.SerializerMethodField()
+    processedByName = serializers.SerializerMethodField()
+    fullName = serializers.CharField(source='full_name')
+    rollNumber = serializers.CharField(source='roll_number')
+    birthDate = serializers.DateField(source='birth_date')
+    primaryEmail = serializers.EmailField(source='primary_email')
+    secondaryEmail = serializers.EmailField(source='secondary_email')
+    phoneNumber = serializers.CharField(source='phone_number')
+    processedAt = serializers.DateTimeField(source='processed_at', read_only=True)
+    processedBy = serializers.PrimaryKeyRelatedField(source='processed_by', read_only=True)
+    createdAt = serializers.DateTimeField(source='created_at', read_only=True)
+    updatedAt = serializers.DateTimeField(source='updated_at', read_only=True)
 
     class Meta:
         model = EmailResetRequest
         fields = [
             "id",
-            "full_name",
-            "roll_number",
-            "birth_date",
-            "primary_email",
-            "secondary_email",
-            "phone_number",
+            "fullName",
+            "rollNumber", 
+            "birthDate",
+            "primaryEmail",
+            "secondaryEmail",
+            "phoneNumber",
             "status",
-            "request_sequence",
-            "requests_remaining",
-            "processed_at",
-            "processed_by",
-            "processed_by_name",
+            "requestSequence",
+            "requestsRemaining",
+            "processedAt",
+            "processedBy",
+            "processedByName",
             "notes",
-            "created_at",
-            "updated_at",
+            "createdAt",
+            "updatedAt",
         ]
         read_only_fields = [
             "id",
-            "request_sequence",
-            "requests_remaining",
-            "processed_by_name",
-            "created_at",
-            "updated_at",
+            "requestSequence",
+            "requestsRemaining",
+            "processedByName",
+            "createdAt",
+            "updatedAt",
         ]
 
-    def get_processed_by_name(self, obj):
+    def get_processedByName(self, obj):
         if obj.processed_by:
             return f"{obj.processed_by.first_name} {obj.processed_by.last_name}".strip()
         return None
 
-    def validate_roll_number(self, value):
+    def validate_rollNumber(self, value):
         normalized = value.strip().upper()
         if not re.match(ROLL_NUMBER_PATTERN, normalized):
             raise serializers.ValidationError(
@@ -199,7 +209,7 @@ class EmailResetRequestSerializer(serializers.ModelSerializer):
             )
         return normalized
 
-    def validate_primary_email(self, value):
+    def validate_primaryEmail(self, value):
         normalized = value.strip().lower()
         if not normalized.endswith(PRIMARY_EMAIL_DOMAIN):
             raise serializers.ValidationError(
@@ -207,10 +217,12 @@ class EmailResetRequestSerializer(serializers.ModelSerializer):
             )
         return normalized
 
-    def validate_secondary_email(self, value):
+    def validate_secondaryEmail(self, value):
         return value.strip().lower()
 
     def create(self, validated_data):
+        from django.contrib.auth import get_user_model
+        
         roll = validated_data["roll_number"]
         existing_count = EmailResetRequest.objects.filter(
             roll_number__iexact=roll,
@@ -220,10 +232,27 @@ class EmailResetRequestSerializer(serializers.ModelSerializer):
                 "Maximum of 10 email reset requests has been reached for this roll number.",
             )
         validated_data["request_sequence"] = existing_count + 1
+        
         user = self.context["request"].user
+        if user.is_anonymous:
+            # For anonymous users (students requesting email reset), 
+            # use a system user or create one if it doesn't exist
+            User = get_user_model()
+            system_user, created = User.objects.get_or_create(
+                username="system_email_reset",
+                defaults={
+                    "email": "system@tcioe.edu.np",
+                    "first_name": "System",
+                    "last_name": "Email Reset",
+                    "is_active": True,
+                    "is_staff": False,
+                }
+            )
+            user = system_user
+            
         validated_data["created_by"] = user
         validated_data["updated_by"] = user
         return super().create(validated_data)
 
-    def get_requests_remaining(self, obj):
+    def get_requestsRemaining(self, obj):
         return max(0, 10 - obj.request_sequence)
