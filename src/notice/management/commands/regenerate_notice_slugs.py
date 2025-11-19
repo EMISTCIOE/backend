@@ -53,7 +53,7 @@ class Command(BaseCommand):
 
         for notice in qs:
             processed += 1
-            new_slug = notice.slugify()
+            new_slug = notice.generate_unique_slug()
             old_slug = notice.slug or ""
 
             if new_slug == old_slug and not force:

@@ -113,8 +113,8 @@ class Notice(AuditInfoModel):
         return self.title
 
     def slugify(self) -> str:
-        # Replace problematic characters that should become hyphens in slugs
-        # e.g. replace '/' and '.' with '-'. Collapse multiple hyphens.
+        # Create a slugified base from the title (do NOT append UUID here).
+        # We keep the slug simple (no UUID) and handle uniqueness elsewhere.
         if not self.title:
             base = "notice"
         else:
@@ -122,26 +122,30 @@ class Notice(AuditInfoModel):
             # Collapse multiple hyphens and strip hyphens from ends
             cleaned = re.sub(r"-+", "-", cleaned).strip("-")
             base = cleaned
+        # Keep unicode characters (Nepali) in the slug so titles remain readable.
+        base_slug = django_slugify(base, allow_unicode=True) or "notice"
+        return base_slug
 
-        base_slug = django_slugify(base) or "notice"
+    def generate_unique_slug(self) -> str:
+        """Return a slug unique across Notice table.
+
+        This uses the base slug from `slugify()` and only appends the UUID
+        when a conflict is detected (another object already uses the base).
+        """
+        base_slug = self.slugify()
+        # If no other notice uses this slug, return it.
+        exists = Notice.objects.filter(slug=base_slug).exclude(pk=self.pk).exists()
+        if not exists:
+            return base_slug
+        # Otherwise append uuid to guarantee uniqueness.
         return f"{base_slug}-{self.uuid}"
 
     def save(self, *args, **kwargs):
-        # Regenerate slug when creating or when title has changed.
-        regenerate = False
-        if not self.slug:
-            regenerate = True
-        elif self.pk:
-            try:
-                old = Notice.objects.only("title").get(pk=self.pk)
-            except Notice.DoesNotExist:
-                old = None
-
-            if old and old.title != self.title:
-                regenerate = True
-
-        if regenerate:
-            self.slug = self.slugify()
+        # Regenerate slug from title on every save (so current records
+        # are always normalized from the title). If title is empty, keep
+        # existing slug.
+        if self.title:
+            self.slug = self.generate_unique_slug()
 
         super().save(*args, **kwargs)
 
