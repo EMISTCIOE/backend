@@ -1920,6 +1920,65 @@ class GlobalGalleryImageCreateSerializer(serializers.Serializer):
                             relation_name: "Union accounts cannot associate gallery items with this relation.",
                         },
                     )
+        # Campus unit scoped user enforcement
+        if getattr(current_user, "role", None) == current_user.RoleType.CAMPUS_UNIT:
+            unit = getattr(current_user, "campus_unit", None)
+            if unit is None:
+                raise serializers.ValidationError(
+                    {"unit": "Campus unit account is not linked to a unit."},
+                )
+            if not populated:
+                attrs["unit"] = unit
+                populated = ["unit"]
+            else:
+                relation_name = populated[0]
+                if relation_name == "unit":
+                    submitted_unit = attrs.get("unit")
+                    if submitted_unit and submitted_unit.pk != unit.pk:
+                        raise serializers.ValidationError(
+                            {"unit": "You can only select your own campus unit."},
+                        )
+                    attrs["unit"] = unit
+                elif relation_name == "global_event":
+                    event = attrs.get("global_event")
+                    if event and hasattr(event, "units") and not event.units.filter(pk=unit.pk).exists():
+                        raise serializers.ValidationError(
+                            {"global_event": "Selected event is not associated with your campus unit."},
+                        )
+                else:
+                    raise serializers.ValidationError(
+                        {relation_name: "Campus unit accounts cannot associate gallery items with this relation."},
+                    )
+
+        # Campus section scoped user enforcement
+        if getattr(current_user, "role", None) == current_user.RoleType.CAMPUS_SECTION:
+            section = getattr(current_user, "campus_section", None)
+            if section is None:
+                raise serializers.ValidationError(
+                    {"section": "Campus section account is not linked to a section."},
+                )
+            if not populated:
+                attrs["section"] = section
+                populated = ["section"]
+            else:
+                relation_name = populated[0]
+                if relation_name == "section":
+                    submitted_section = attrs.get("section")
+                    if submitted_section and submitted_section.pk != section.pk:
+                        raise serializers.ValidationError(
+                            {"section": "You can only select your own campus section."},
+                        )
+                    attrs["section"] = section
+                elif relation_name == "global_event":
+                    event = attrs.get("global_event")
+                    if event and hasattr(event, "sections") and not event.sections.filter(pk=section.pk).exists():
+                        raise serializers.ValidationError(
+                            {"global_event": "Selected event is not associated with your campus section."},
+                        )
+                else:
+                    raise serializers.ValidationError(
+                        {relation_name: "Campus section accounts cannot associate gallery items with this relation."},
+                    )
 
         attrs["resolved_source_type"] = self._resolve_source_type(attrs, populated)
         attrs["resolved_relation"] = populated[0] if populated else None
@@ -1987,6 +2046,10 @@ class GlobalGalleryImageCreateSerializer(serializers.Serializer):
                 union = getattr(current_user, "union", None)
                 if union:
                     image_kwargs["union"] = union
+            if getattr(current_user, "role", None) == current_user.RoleType.CAMPUS_UNIT and getattr(current_user, "campus_unit", None):
+                image_kwargs["unit"] = current_user.campus_unit
+            if getattr(current_user, "role", None) == current_user.RoleType.CAMPUS_SECTION and getattr(current_user, "campus_section", None):
+                image_kwargs["section"] = current_user.campus_section
             image_kwargs["image"] = image_data["image"]
             created_images.append(GlobalGalleryImage.objects.create(**image_kwargs))
         return created_images
