@@ -24,6 +24,25 @@ def _timestamp_info():
     )
 
 
+def _user_identity_snapshot(user: User):
+    """Return primary role and designation metadata for emails."""
+
+    primary_role_label = getattr(user, "get_role_display", None)
+    primary_role_label = primary_role_label() if callable(primary_role_label) else None
+    if not primary_role_label:
+        primary_role_label = getattr(user, "role", "")
+
+    designation_obj = getattr(user, "designation", None)
+    designation_title = getattr(designation_obj, "title", None)
+
+    role_names = list(
+        user.roles.filter(is_active=True).values_list("name", flat=True),
+    )
+    secondary_roles = ", ".join(role_names)
+
+    return primary_role_label, designation_title, secondary_roles
+
+
 def send_user_forget_password_email(
     recipient_email: str,
     user: User,
@@ -41,8 +60,11 @@ def send_user_forget_password_email(
         logo_url = request.build_absolute_uri(static("images/logo.png"))
         sent_time, current_year = _timestamp_info()
         user_name = user.get_full_name() or user.username
-        role_names = user.roles.filter(is_active=True).values_list("name", flat=True)
-        user_role = ", ".join(role_names) if role_names else ""  # noqa: E501
+        (
+            primary_role_label,
+            designation_title,
+            user_role,
+        ) = _user_identity_snapshot(user)
 
         email_context = {
             "user": user,
@@ -50,6 +72,8 @@ def send_user_forget_password_email(
             "username": user.username,
             "user_email": user.email,
             "user_role": user_role,
+            "primary_role_label": primary_role_label,
+            "designation_title": designation_title,
             "reset_link": reset_link,
             "logo": logo_url,
             "current_year": current_year,
@@ -115,8 +139,11 @@ def send_user_welcome_email(
         logo_url = request.build_absolute_uri(static("images/logo.png"))
         sent_time, current_year = _timestamp_info()
         user_name = user.get_full_name() or user.username
-        role_names = user.roles.filter(is_active=True).values_list("name", flat=True)
-        user_role = ", ".join(role_names) if role_names else ""
+        (
+            primary_role_label,
+            designation_title,
+            user_role,
+        ) = _user_identity_snapshot(user)
         contact_number = getattr(user, "phone_no", None)
         resolved_login_url = login_url or f"{origin_url}/login"
         default_privileges = [
@@ -133,6 +160,8 @@ def send_user_welcome_email(
             "user_email": user.email,
             "password": password,
             "user_role": user_role,
+            "primary_role_label": primary_role_label,
+            "designation_title": designation_title,
             "contact_number": contact_number,
             "login_url": resolved_login_url,
             "logo": logo_url,

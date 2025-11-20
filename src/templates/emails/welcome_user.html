@@ -8,7 +8,7 @@
       body {
         margin: 0;
         padding: 20px;
-        font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+        font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
         background-color: #f3f6ff;
         color: #1a2235;
       }
@@ -22,7 +22,12 @@
         box-shadow: 0 20px 45px rgba(15, 23, 42, 0.15);
       }
       .header {
-        background: linear-gradient(135deg, #0f172a 0%, #1f7a96 65%, #10b981 100%);
+        background: linear-gradient(
+          135deg,
+          #0f172a 0%,
+          #1f7a96 65%,
+          #10b981 100%
+        );
         color: white;
         text-align: center;
         padding: 32px 25px;
@@ -87,7 +92,7 @@
         opacity: 0.8;
       }
       .credential-value {
-        font-family: 'Courier New', Courier, monospace;
+        font-family: "Courier New", Courier, monospace;
         font-weight: 600;
       }
       .btn {
@@ -155,7 +160,7 @@
           {% if logo %}
           <img src="{{ logo }}" alt="TCIOE EMIS" />
           {% else %}
-          <span style="font-size: 18px; letter-spacing: 1px;">EMIS</span>
+          <span style="font-size: 18px; letter-spacing: 1px">EMIS</span>
           {% endif %}
         </div>
         <h2>TCIOE EMIS</h2>
@@ -164,8 +169,9 @@
       <div class="content">
         <h1>Welcome aboard, {{ user_name }}!</h1>
         <p>
-          Your TCIOE EMIS account has been created. You can now access the backend to
-          oversee departmental workflows, review enquiries, and coordinate campus events.
+          Your TCIOE EMIS account has been created. You can now access the
+          backend to oversee departmental workflows, review enquiries, and
+          coordinate campus events.
         </p>
         <div class="credentials">
           <h3>Login Details</h3>
@@ -184,11 +190,14 @@
         </div>
         <a href="{{ login_url }}" class="btn">Go to TCIOE EMIS</a>
         <div class="summary">
-          <p><strong>Your role:</strong> {{ user_role }}</p>
-          {% if contact_number %}
+          <p><strong>Primary Role:</strong> {{ primary_role_label }}</p>
+          {% if designation_title %}
+          <p><strong>Designation:</strong> {{ designation_title }}</p>
+          {% endif %} {% if user_role %}
+          <p><strong>Additional Roles:</strong> {{ user_role }}</p>
+          {% endif %} {% if contact_number %}
           <p><strong>Contact:</strong> {{ contact_number }}</p>
-          {% endif %}
-          {% if privileges %}
+          {% endif %} {% if privileges %}
           <p><strong>Privileges</strong></p>
           <ul>
             {% for item in privileges %}
@@ -196,12 +205,17 @@
             {% endfor %}
           </ul>
           {% endif %}
-          <p style="margin-top: 12px;">Please reset the provided password after your first login for best security.</p>
+          <p style="margin-top: 12px">
+            Please reset the provided password after your first login for best
+            security.
+          </p>
         </div>
       </div>
       <div class="footer">
         <div>TCIOE EMIS · Thapathali Campus</div>
-        <div class="meta">© {{ current_year }} TCIOE EMIS. Sent {{ sent_time }}.</div>
+        <div class="meta">
+          © {{ current_year }} TCIOE EMIS. Sent {{ sent_time }}.
+        </div>
       </div>
     </div>
   </body>
