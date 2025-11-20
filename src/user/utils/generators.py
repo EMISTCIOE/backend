@@ -10,6 +10,45 @@ def generate_role_codename(user_group_name):
     return user_group_name.upper().replace(" ", "-")
 
 
+def generate_username_from_name(first_name: str, last_name: str) -> str:
+    """
+    Generate a unique username from first name and last name.
+    If the username already exists, append a number to make it unique.
+    """
+    # Clean and combine names
+    first_clean = first_name.strip().lower().replace(" ", "")
+    last_clean = last_name.strip().lower().replace(" ", "") 
+    
+    # Create base username from first + last name
+    base_username = first_clean + last_clean
+    
+    # Remove any non-alphanumeric characters except underscores
+    import re
+    base_username = re.sub(r'[^a-zA-Z0-9_]', '', base_username)
+    
+    # Ensure username is not too long (max 150 chars for Django User model)
+    base_username = base_username[:20]  # Keep it reasonably short
+    
+    # Check if base username exists
+    if not User.objects.filter(username=base_username).exists():
+        return base_username
+    
+    # If exists, try with numbers
+    counter = 1
+    while True:
+        new_username = f"{base_username}{counter}"
+        if not User.objects.filter(username=new_username).exists():
+            return new_username
+        counter += 1
+        
+        # Safety check to prevent infinite loop
+        if counter > 9999:
+            # Fallback to original method with random numbers
+            import secrets
+            random_suffix = "".join(secrets.choice(string.digits) for _ in range(4))
+            return f"{base_username[:15]}{random_suffix}"
+
+
 def generate_unique_user_username(user_type: str, email: str | None) -> str:
     """
     Generate a unique username for a user based on the user type.

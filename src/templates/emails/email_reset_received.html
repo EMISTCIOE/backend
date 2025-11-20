@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Password Reset Request - TCIOE EMIS</title>
+    <title>Email Reset Request Received - TCIOE EMIS</title>
     <style>
       body {
         margin: 0;
@@ -48,70 +48,79 @@
         background: #f8f9fa;
         border-left: 3px solid #2c3e50;
         padding: 15px;
-        margin: 15px 0;
-        border-radius: 0 5px 5px 0;
+        margin: 20px 0;
       }
       .account-info p {
         margin: 5px 0;
-        color: #555;
       }
       .btn {
         display: inline-block;
-        background: #e74c3c;
+        background: #2c3e50 !important;
         color: white !important;
-        padding: 12px 24px;
-        text-decoration: none;
-        border-radius: 5px;
+        padding: 15px 30px;
+        text-decoration: none !important;
+        border-radius: 6px;
+        margin: 25px 0;
         font-weight: bold;
-        margin: 15px 0;
+        font-size: 16px;
+        text-align: center;
+        border: none;
+        box-shadow: 0 4px 12px rgba(44, 62, 80, 0.3);
+        transition: all 0.2s ease;
       }
       .btn:hover {
-        background: #c0392b;
+        background: #34495e !important;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(44, 62, 80, 0.4);
       }
-      .security-notice {
-        background: #fff8e1;
-        border: 1px solid #ffc107;
-        border-radius: 5px;
-        padding: 15px;
-        margin: 20px 0;
-        color: #8f6e00;
+      .alert {
+        padding: 12px;
+        margin: 15px 0;
+        border-radius: 4px;
+        font-size: 14px;
       }
-      .security-notice strong {
-        color: #6c5700;
+      .alert-warning {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        color: #856404;
+      }
+      .alert-info {
+        background: #d1ecf1;
+        border: 1px solid #bee5eb;
+        color: #0c5460;
       }
       .footer {
         background: #2c3e50;
-        color: white;
+        color: white !important;
         padding: 20px;
         text-align: center;
-        font-size: 12px;
       }
       .footer * {
         color: white !important;
       }
       .footer-logo-fallback {
+        background: #34495e;
+        border-radius: 50%;
         width: 60px;
         height: 60px;
         margin: 0 auto 15px;
-        border-radius: 8px;
-        background: #34495e;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 18px;
+        text-align: center;
+        line-height: 60px;
+        font-size: 20px;
         font-weight: bold;
-        border: 2px solid #5a6c7d;
+        color: white !important;
       }
       .footer-section {
-        margin: 15px 0;
-        text-align: center;
+        color: white !important;
+        font-size: 13px;
+        line-height: 1.6;
+        margin: 10px 0;
       }
       .footer-section strong {
         color: white !important;
-        display: block;
-        margin-bottom: 8px;
         font-size: 14px;
+        margin-bottom: 8px;
+        display: block;
       }
       .footer-link {
         color: #1abc9c !important;
@@ -120,47 +129,47 @@
       .footer-link:visited {
         color: #1abc9c !important;
       }
-      .copyright {
-        margin-top: 20px;
-        padding-top: 15px;
-        border-top: 1px solid #34495e;
-        font-size: 11px;
-        color: #bdc3c7 !important;
-        text-align: center;
-        line-height: 1.4;
-      }
       .social-icon {
+        display: inline-block;
+        margin: 0 8px;
+        width: 32px;
+        height: 32px;
         border-radius: 50%;
-        margin: 0 5px;
       }
-      
-      /* Media Queries for Mobile */
+      .copyright {
+        font-size: 12px;
+        color: white !important;
+        margin-top: 15px;
+        border-top: 1px solid #34495e;
+        padding-top: 15px;
+      }
       @media (max-width: 600px) {
         body {
           padding: 10px;
         }
-        .container {
-          margin: 0;
-        }
         .content {
           padding: 20px;
         }
-        .header {
-          padding: 20px 15px;
+        .btn {
+          display: block !important;
+          text-align: center;
+          width: 100% !important;
+          box-sizing: border-box;
+          padding: 15px 20px !important;
+          font-size: 16px !important;
         }
-        .footer {
-          padding: 20px 15px;
+        .header h2 {
+          font-size: 18px !important;
+        }
+        .logo {
+          width: 60px !important;
+          height: 60px !important;
         }
         .footer-logo-fallback {
-          width: 50px;
-          height: 50px;
-          font-size: 16px;
-        }
-        .btn {
-          display: block;
-          text-align: center;
-          width: 100%;
-          box-sizing: border-box;
+          width: 50px !important;
+          height: 50px !important;
+          line-height: 50px !important;
+          font-size: 18px !important;
         }
       }
     </style>
@@ -192,48 +201,46 @@
             color: white;
           "
         >
-          Educational Management Information System
+          Leading Technical Education Institution<br />
+          Excellence in Engineering & Technology
         </p>
       </div>
 
       <div class="content">
-        <h1>🔐 Password Reset Request</h1>
+        <h1>Email Reset Request Received</h1>
+        <p>Hello {{ full_name }},</p>
         <p>
-          Hello {{ user_name }}, we received a request to reset your password for your TCIOE EMIS account. Use the secure link below to create a new password.
+          We have successfully received your email reset request for the college
+          mail {{ college_email }}. Our administrative team will review your
+          request and get back to you soon.
         </p>
 
         <div class="account-info">
-          <p><strong>📧 Email:</strong> {{ user_email }}</p>
-          {% if primary_role_label %}
-          <p><strong>👤 Primary Role:</strong> {{ primary_role_label }}</p>
-          {% endif %}
-          {% if designation_title %}
-          <p><strong>🏢 Designation:</strong> {{ designation_title }}</p>
-          {% endif %}
-          {% if user_role %}
-          <p><strong>🔐 Additional Roles:</strong> {{ user_role }}</p>
-          {% endif %}
-          {% if username %}
-          <p><strong>👤 Username:</strong> {{ username }}</p>
-          {% endif %}
+          <p><strong>Request ID:</strong> #{{ request_sequence }}</p>
+          <p><strong>Primary Email:</strong> {{ college_email }}</p>
+          <p><strong>Secondary Email:</strong> {{ secondary_email }}</p>
+          <p>
+            <strong>Submitted On:</strong> {{ submitted_at|date:"M d, Y H:i" }}
+          </p>
+          <p><strong>Status:</strong> Pending Review</p>
         </div>
 
-        <div style="text-align: center; margin: 25px 0">
-          <a href="{{ reset_link }}" class="btn">🔑 Reset My Password</a>
+        <div class="alert alert-info">
+          <strong>What happens next?</strong><br />
+          • Our staff will verify your information<br />
+          • You will receive an update within 2-3 business days<br />
+          • If approved, your email will be reset according to your request
         </div>
 
-        <div class="security-notice">
-          <strong>⚠️ Important Security Notice:</strong> 
-          This password reset link will expire in 24 hours for your security. If you did not request this password reset, please ignore this message or contact the TCIOE EMIS support team immediately.
+        <div class="alert alert-warning">
+          <strong>Important:</strong> Please keep this email for your records.
+          If you need to follow up on your request, reference Request ID #{{
+          request_sequence }}.
         </div>
-
-        <p style="font-size: 13px; color: #6b7280; margin-top: 20px">
-          If the button above doesn't work, copy and paste this link into your browser:<br />
-          <a href="{{ reset_link }}" style="color: #3498db; word-break: break-all;">{{ reset_link }}</a>
-        </p>
 
         <p style="font-size: 14px; color: #666; margin-top: 25px">
-          For assistance or security concerns, please contact the TCIOE EMIS support team or visit our help center.
+          If you did not submit this request or have any questions, please
+          contact the TCIOE EMIS support team immediately.
         </p>
       </div>
 
@@ -292,38 +299,40 @@
               style="text-align: center; vertical-align: top; padding: 0 10px"
             >
               <div class="footer-section">
-                <strong style="color: white !important">Support</strong>
-                <div style="margin: 8px 0">
+                <strong style="color: white !important">Contact</strong>
+                <div style="margin: 8px 0; color: white !important">
+                  📧
                   <a href="mailto:emis@tcioe.edu.np" class="footer-link"
-                    >emis@tcioe.edu.np</a
+                    >admin@tcioe.edu.np</a
                   >
                 </div>
-                <div style="margin: 8px 0">
-                  <a href="tel:+977-1-5555555" class="footer-link"
-                    >+977-1-5555555</a
-                  >
+                <div style="margin: 8px 0; color: white !important">
+                  📍 Thapathali, Kathmandu
                 </div>
               </div>
             </td>
+
             <td
-              width="34%"
+              width="33%"
               style="text-align: center; vertical-align: top; padding: 0 10px"
             >
               <div class="footer-section">
                 <strong style="color: white !important">Quick Links</strong>
-                <div style="margin: 8px 0">
+                <div style="margin: 8px 0; color: white !important">
+                  🔗
                   <a href="https://tcioe.edu.np" class="footer-link">TCIOE</a>
                 </div>
-                <div style="margin: 8px 0">
+                <div style="margin: 8px 0; color: white !important">
+                  🏫
                   <a
-                    href="https://ioe.edu.np"
-                    target="_blank"
+                    href="https://emis.tcioe.edu.np/volunteers"
                     class="footer-link"
-                    >IOE</a
+                    >EMIS System</a
                   >
                 </div>
               </div>
             </td>
+
             <td
               width="33%"
               style="text-align: center; vertical-align: top; padding: 0 10px"
@@ -368,12 +377,12 @@
         <div class="copyright">
           © {{ current_year|default:"2025" }} Thapathali Campus, Institute of
           Engineering. All rights reserved.<br />
-          This is an automated security message. Please do not reply to this email.<br />
+          This is an automated message. Please do not reply to this email.<br />
           <br />
           <span
             style="font-size: 11px; opacity: 0.8; color: #1abc9c !important"
           >
-            📧 Email sent on {{ sent_time|default:"now" }}
+            Email sent on {{ submitted_at|date:"M d, Y H:i" }}
           </span>
         </div>
       </div>

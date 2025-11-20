@@ -29,6 +29,7 @@ from .serializers import (
     EMISVPSServiceSerializer,
 )
 from .webhook_utils import call_email_reset_webhook
+from src.libs.send_mail import _send_email
 
 logger = logging.getLogger(__name__)
 
@@ -124,6 +125,35 @@ class EMISHardwareViewSet(viewsets.ModelViewSet):
 class EmailResetRequestViewSet(viewsets.ModelViewSet):
     queryset = EmailResetRequest.objects.filter(is_active=True).order_by("-created_at")
     serializer_class = EmailResetRequestSerializer
+    
+    def create(self, request, *args, **kwargs):
+        """Create an email reset request and notify the requester that we've received it."""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        # Save the instance (this will set request_sequence and created_by as in serializer.create)
+        instance = serializer.save()
+
+        # Prepare and send notification email (best-effort; don't block the response on failures)
+        try:
+            from src.libs.send_mail import send_email_reset_received_notification
+            
+            # Use the enhanced email reset received notification
+            email_sent = send_email_reset_received_notification(
+                full_name=instance.full_name,
+                college_email=instance.primary_email,
+                secondary_email=instance.secondary_email,
+                request_sequence=instance.request_sequence,
+                submitted_at=instance.created_at,
+                request=request
+            )
+            
+            if not email_sent:
+                logger.warning("Failed to send 'request received' email for EmailResetRequest %s", instance.id)
+        except Exception as exc:  # pragma: no cover - logging on unexpected email failures
+            logger.exception("Failed to send 'request received' email for EmailResetRequest %s: %s", instance.id, str(exc))
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
     
     def get_permissions(self):
         """

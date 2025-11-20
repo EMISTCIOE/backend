@@ -37,26 +37,18 @@ def call_email_reset_webhook(
         
     Returns:
         bool: True if webhook was called successfully, False otherwise
+
     """
     
     if not settings.EMAIL_RESET_WEBHOOK_URL:
         logger.warning("EMAIL_RESET_WEBHOOK_URL not configured, skipping webhook call")
         return False
     
+
+    # Minimal payload required by the webhook: only college_email and secondary_email
     payload = {
-        "action": action,
-        "request_id": request_id,
-        "student_info": {
-            "primary_email": primary_email,
-            "secondary_email": secondary_email,
-            "full_name": full_name,
-            "roll_number": roll_number,
-            "phone_number": phone_number
-        },
-        "processing_info": {
-            "processed_by_email": processed_by_email,
-            "notes": notes or ""
-        }
+        "college_email": primary_email,
+        "secondary_email": secondary_email,
     }
     
     try:

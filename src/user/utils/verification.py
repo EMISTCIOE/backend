@@ -5,7 +5,7 @@ from django.templatetags.static import static
 from rest_framework import serializers
 
 from src.libs.messages import UNKNOWN_ERROR
-from src.libs.send_mail import _send_email
+from src.libs.send_mail import _send_email, send_welcome_email as _send_welcome_email, send_password_reset_email as _send_password_reset_email
 from src.user.models import User
 
 
@@ -50,43 +50,24 @@ def send_user_forget_password_email(
     request,
     redirect_url: str = "reset-password",
 ):
-    origin_url = _build_origin_url(request)
-
+    """
+    Send password reset email to user.
+    Enhanced to use the improved send_password_reset_email function.
+    """
     try:
-        subject = "Reset Your TCIOE EMIS Password"
+        origin_url = _build_origin_url(request)
         reset_link = f"{origin_url}/{redirect_url}/{token}"
-        body = f"Use this link to reset your password: {reset_link}"
-        email_template_name = "emails/password_reset"
-        logo_url = request.build_absolute_uri(static("images/logo.png"))
-        sent_time, current_year = _timestamp_info()
-        user_name = user.get_full_name() or user.username
-        (
-            primary_role_label,
-            designation_title,
-            user_role,
-        ) = _user_identity_snapshot(user)
-
-        email_context = {
-            "user": user,
-            "user_name": user_name,
-            "username": user.username,
-            "user_email": user.email,
-            "user_role": user_role,
-            "primary_role_label": primary_role_label,
-            "designation_title": designation_title,
-            "reset_link": reset_link,
-            "logo": logo_url,
-            "current_year": current_year,
-            "sent_time": sent_time,
-        }
-
-        _send_email(
-            subject,
-            body,
-            email_template_name,
-            email_context,
-            recipient_email,
+        
+        # Use the enhanced password reset email function
+        success = _send_password_reset_email(
+            user=user,
+            reset_link=reset_link,
+            request=request
         )
+        
+        if not success:
+            raise Exception("Failed to send password reset email")
+            
     except Exception as err:
         raise serializers.ValidationError({"error": UNKNOWN_ERROR}) from err
 
@@ -130,52 +111,22 @@ def send_user_welcome_email(
     login_url: str | None = None,
     privileges: list[str] | None = None,
 ):
-    origin_url = _build_origin_url(request)
-
+    """
+    Send welcome email to newly created user.
+    Enhanced to use the improved send_welcome_email function.
+    """
     try:
-        subject = "Welcome to TCIOE EMIS"
-        email_template_name = "emails/welcome_user"
-        body = "Welcome to TCIOE EMIS. Your account credentials are attached."
-        logo_url = request.build_absolute_uri(static("images/logo.png"))
-        sent_time, current_year = _timestamp_info()
-        user_name = user.get_full_name() or user.username
-        (
-            primary_role_label,
-            designation_title,
-            user_role,
-        ) = _user_identity_snapshot(user)
-        contact_number = getattr(user, "phone_no", None)
-        resolved_login_url = login_url or f"{origin_url}/login"
-        default_privileges = [
-            "Access the internal TCIOE EMIS dashboards",
-            "Track enquiries and notices",
-            "Coordinate department workflows",
-        ]
-        email_privileges = privileges or default_privileges
-
-        email_context = {
-            "user": user,
-            "user_name": user_name,
-            "username": user.username,
-            "user_email": user.email,
-            "password": password,
-            "user_role": user_role,
-            "primary_role_label": primary_role_label,
-            "designation_title": designation_title,
-            "contact_number": contact_number,
-            "login_url": resolved_login_url,
-            "logo": logo_url,
-            "privileges": email_privileges,
-            "current_year": current_year,
-            "sent_time": sent_time,
-        }
-
-        _send_email(
-            subject,
-            body,
-            email_template_name,
-            email_context,
-            user.email,
+        # Use the enhanced welcome email function
+        success = _send_welcome_email(
+            user=user,
+            password=password,
+            request=request,
+            login_url=login_url,
+            privileges=privileges
         )
+        
+        if not success:
+            raise Exception("Failed to send welcome email")
+            
     except Exception as err:
         raise serializers.ValidationError({"error": UNKNOWN_ERROR}) from err

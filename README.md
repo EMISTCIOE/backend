@@ -78,9 +78,18 @@ make add PACKAGE=package-name
 **Sync dependencies after pulling changes:**
 ```bash
 uv sync
+# or use the helper script:
+./scripts/uv_sync.sh
 # or use make:
 make sync
 ```
+
+## Environment variables
+
+The backend loads secrets from `.env` and other environment files. The email reset automation
+requires a single value:
+
+- `EMAIL_RESET_WEBHOOK_URL`: public webhook URL exposed by your n8n workflow.
 
 **Run any command in the uv environment:**
 ```bash

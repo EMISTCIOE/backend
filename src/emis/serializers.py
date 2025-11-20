@@ -223,25 +223,34 @@ class EmailResetRequestSerializer(serializers.ModelSerializer):
         """
         Convert camelCase input to snake_case for model fields
         """
-        # Create a mapping of camelCase to snake_case
+        # Accept both camelCase and snake_case input keys.
+        # The serializer defines camelCase fields (e.g. `fullName = serializers.CharField(source='full_name')`)
+        # so we want to pass camelCase keys to DRF's `to_internal_value`.
+        # Build mapping Camel -> snake and its inverse so we can convert snake_case -> camelCase.
         field_mapping = {
             'fullName': 'full_name',
-            'rollNumber': 'roll_number', 
+            'rollNumber': 'roll_number',
             'birthDate': 'birth_date',
             'primaryEmail': 'primary_email',
             'secondaryEmail': 'secondary_email',
             'phoneNumber': 'phone_number',
         }
-        
-        # Convert the data
-        converted_data = {}
+
+        inverse_mapping = {v: k for k, v in field_mapping.items()}
+
+        converted = {}
         for key, value in data.items():
+            # If client already sent camelCase keys that the serializer expects, keep them.
             if key in field_mapping:
-                converted_data[field_mapping[key]] = value
+                converted[key] = value
+            # If client sent snake_case keys, convert them to the camelCase serializer field name.
+            elif key in inverse_mapping:
+                converted[inverse_mapping[key]] = value
             else:
-                converted_data[key] = value
-                
-        return super().to_internal_value(converted_data)
+                # Leave other keys as-is (they may be additional fields/metadata)
+                converted[key] = value
+
+        return super().to_internal_value(converted)
 
     class Meta:
         model = EmailResetRequest

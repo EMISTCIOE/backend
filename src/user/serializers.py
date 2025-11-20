@@ -26,7 +26,7 @@ from .messages import (
 from .models import Permission, Role, User
 from .utils import send_user_welcome_email
 from .utils.generators import generate_strong_password
-from .utils.generators import generate_role_codename, generate_unique_user_username
+from .utils.generators import generate_role_codename, generate_unique_user_username, generate_username_from_name
 from .validators import validate_user_image
 
 # User Role Serializers
@@ -291,8 +291,9 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     roles = serializers.PrimaryKeyRelatedField(
         queryset=Role.objects.filter(is_active=True, is_system_managed=False),
         many=True,
+        required=False,
     )
-    username = serializers.CharField(allow_blank=True)
+    username = serializers.CharField(allow_blank=True, required=False)
     # Password is optional when creating users from CMS; backend will generate a strong
     # password if not provided by frontend and will include it in the welcome email.
     password = serializers.CharField(validators=[validate_password], required=False, write_only=True)
@@ -408,9 +409,9 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         roles = validated_data.pop("roles", [])
 
         if not username:
-            username = generate_unique_user_username(
-                user_type=SYSTEM_USER_ROLE,
-                email=email,
+            username = generate_username_from_name(
+                first_name=validated_data["first_name"],
+                last_name=validated_data["last_name"],
             )
 
         created_by = self.context["request"].user
