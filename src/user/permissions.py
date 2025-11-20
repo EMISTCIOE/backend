@@ -33,10 +33,12 @@ def _user_has_role(user, allowed_roles: set[str]) -> bool:
         return False
     if user.is_superuser:
         return True
+    # Check both the primary role field and any assigned role objects
+    primary_role = getattr(user, "role", None)
     user_roles = set(
         user.roles.filter(is_active=True).values_list("codename", flat=True),
     )
-    return bool(user_roles & allowed_roles)
+    return primary_role in allowed_roles or bool(user_roles & allowed_roles)
 
 
 class IsEMISStaff(BasePermission):
