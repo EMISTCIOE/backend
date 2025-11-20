@@ -468,14 +468,24 @@ class CampusKeyOfficialCreateSerializer(serializers.ModelSerializer):
         ]
 
     def validate_program(self, value):
-        if value is not None:
-            from src.department.models import AcademicProgram
+        # Accept None or empty string as no program selected.
+        if value in (None, ""):
+            return None
 
-            try:
-                return AcademicProgram.objects.get(id=value, is_active=True)
-            except AcademicProgram.DoesNotExist:
-                raise serializers.ValidationError("Invalid program ID.")
-        return None
+        # Ensure we have an integer id; coerce if possible and raise a
+        # validation error for invalid values instead of letting a
+        # lower-level exception propagate (which could become a 500).
+        try:
+            program_id = int(value)
+        except (TypeError, ValueError):
+            raise serializers.ValidationError("Invalid program ID.")
+
+        from src.department.models import AcademicProgram
+
+        try:
+            return AcademicProgram.objects.get(id=program_id, is_active=True)
+        except AcademicProgram.DoesNotExist:
+            raise serializers.ValidationError("Invalid program ID.")
 
     def validate(self, attrs):
         program = attrs.get("program")
@@ -554,14 +564,21 @@ class CampusKeyOfficialPatchSerializer(serializers.ModelSerializer):
         ]
 
     def validate_program(self, value):
-        if value is not None:
-            from src.department.models import AcademicProgram
+        # Accept None or empty string as no program selected.
+        if value in (None, ""):
+            return None
 
-            try:
-                return AcademicProgram.objects.get(id=value, is_active=True)
-            except AcademicProgram.DoesNotExist:
-                raise serializers.ValidationError("Invalid program ID.")
-        return None
+        try:
+            program_id = int(value)
+        except (TypeError, ValueError):
+            raise serializers.ValidationError("Invalid program ID.")
+
+        from src.department.models import AcademicProgram
+
+        try:
+            return AcademicProgram.objects.get(id=program_id, is_active=True)
+        except AcademicProgram.DoesNotExist:
+            raise serializers.ValidationError("Invalid program ID.")
 
     def validate(self, attrs):
         program = attrs.get("program")
