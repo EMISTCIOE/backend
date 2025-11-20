@@ -210,7 +210,8 @@ class UserLoginSerializer(serializers.ModelSerializer):
             return
 
         allowed_roles = {EMIS_STAFF_ROLE, ADMIN_ROLE, UNION_ROLE, CAMPUS_UNIT_ROLE, CAMPUS_SECTION_ROLE}
-        if user.role not in allowed_roles:
+        # accept either primary role field or any active attached role
+        if not _user_has_allowed_context_role(user, allowed_roles):
             raise serializers.ValidationError({"persona": INVALID_CREDENTIALS})
 
     def check_app_context(self, user: User, context_value: str | None) -> None:

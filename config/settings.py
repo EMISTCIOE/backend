@@ -40,7 +40,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://tcioe.edu.np",
     "https://www.tcioe.edu.np",
     "http://localhost:3000",
-    "http://localhost:3001",
+    "http://localhost:3003",
 ]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
@@ -72,13 +72,14 @@ CSRF_TRUSTED_ORIGINS = [
     "https://www.tcioe.edu.np",
     "http://localhost:3000",
     "http://localhost:3001",
+    "http://localhost:3003",
 ]
 
 
 CSP_FRAME_ANCESTORS = [
     "'self'",
     "http://localhost:3000",
-    "http://localhost:3001",
+    "http://localhost:3003",
     "https://app.tcioe.edu.np",
     "https://tcioe-cms.vercel.app",
     "https://tcioe.edu.np",
