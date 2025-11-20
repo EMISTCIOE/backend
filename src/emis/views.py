@@ -4,14 +4,24 @@ EMIS API viewsets for VPS info, hardware inventory, and email reset requests.
 
 import logging
 from django.utils import timezone
-from rest_framework import mixins, viewsets, status
+from rest_framework import filters, mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
 from src.user.permissions import IsEMISStaff
 
-from .models import EmailResetRequest, EMISHardware, EMISVPSInfo, EMISVPSService, RequestStatus
+from .models import (
+    EmailResetRequest,
+    EMISHardware,
+    EMISVPSInfo,
+    EMISVPSService,
+    EnvironmentType,
+    HardwareStatus,
+    HealthStatus,
+    RequestStatus,
+    ServiceStatus,
+)
 from .serializers import (
     EmailResetRequestSerializer,
     EMISHardwareSerializer,
@@ -27,20 +37,88 @@ class EMISVPSInfoViewSet(viewsets.ModelViewSet):
     queryset = EMISVPSInfo.objects.filter(is_active=True).order_by("vps_name")
     serializer_class = EMISVPSInfoSerializer
     permission_classes = [IsEMISStaff]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ["vps_name", "slug", "ip_address", "private_ip_address", "tags"]
+    ordering_fields = ["vps_name", "environment", "health_status", "updated_at"]
+
+    @action(detail=True, methods=["post"], url_path="mark-health")
+    def mark_health(self, request, pk=None):
+        node = self.get_object()
+        status_value = request.data.get("status")
+        if status_value not in HealthStatus.values:
+            return Response(
+                {"detail": "Invalid health status", "allowed": HealthStatus.values},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        node.mark_health(status_value)
+        return Response({"detail": "Health status updated", "health_status": node.health_status})
+
+    @action(detail=True, methods=["get"], url_path="services")
+    def list_services(self, request, pk=None):
+        node = self.get_object()
+        serializer = EMISVPSServiceSerializer(node.get_services(), many=True, context={"request": request})
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["post"], url_path="bulk-tag")
+    def bulk_tag(self, request):
+        ids = request.data.get("ids", [])
+        tags = request.data.get("tags", [])
+        if not isinstance(ids, list) or not isinstance(tags, list):
+            return Response({"detail": "ids and tags must be lists"}, status=status.HTTP_400_BAD_REQUEST)
+        updated = (
+            EMISVPSInfo.objects.filter(id__in=ids, is_active=True)
+            .update(tags=tags, updated_at=timezone.now(), updated_by=request.user)
+        )
+        return Response({"detail": f"Tags updated for {updated} VPS nodes"})
 
 
 class EMISVPSServiceViewSet(viewsets.ModelViewSet):
     serializer_class = EMISVPSServiceSerializer
     permission_classes = [IsEMISStaff]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ["name", "service_key", "domain", "maintained_by"]
+    ordering_fields = ["name", "status", "updated_at", "port"]
 
     def get_queryset(self):
         return EMISVPSService.objects.filter(is_active=True).order_by("vps", "port")
+
+    @action(detail=True, methods=["post"], url_path="deploy")
+    def deploy(self, request, pk=None):
+        service = self.get_object()
+        status_choice = request.data.get("status", ServiceStatus.RUNNING)
+        if status_choice not in ServiceStatus.values:
+            return Response(
+                {"detail": "Invalid status", "allowed": ServiceStatus.values},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        service.status = status_choice
+        service.version = request.data.get("version", service.version)
+        service.last_deployed_at = timezone.now()
+        service.updated_by = request.user
+        service.save(update_fields=["status", "version", "last_deployed_at", "updated_by", "updated_at"])
+        return Response({"detail": "Deployment metadata updated"})
 
 
 class EMISHardwareViewSet(viewsets.ModelViewSet):
     queryset = EMISHardware.objects.filter(is_active=True).order_by("name")
     serializer_class = EMISHardwareSerializer
     permission_classes = [IsEMISStaff]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ["name", "asset_tag", "ip_address", "location", "responsible_team"]
+    ordering_fields = ["name", "environment", "status", "updated_at"]
+
+    @action(detail=False, methods=["post"], url_path="bulk-import")
+    def bulk_import(self, request):
+        assets = request.data.get("assets", [])
+        if not isinstance(assets, list):
+            return Response({"detail": "assets must be a list"}, status=status.HTTP_400_BAD_REQUEST)
+        created = []
+        for payload in assets:
+            serializer = self.get_serializer(data=payload)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            created.append(serializer.data)
+        return Response({"detail": f"Imported {len(created)} assets", "items": created}, status=status.HTTP_201_CREATED)
 
 
 class EmailResetRequestViewSet(viewsets.ModelViewSet):

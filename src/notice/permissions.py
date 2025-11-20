@@ -5,6 +5,10 @@ from src.libs.permissions import validate_permissions
 
 class NoticePermission(BasePermission):
     def has_permission(self, request, view):
+        # Allow campus unit/section users basic notice access (view/create/update) within CMS
+        if getattr(request.user, "role", None) in {"CAMPUS-UNIT", "CAMPUS-SECTION"}:
+            return True
+
         user_permissions_dict = {
             "SAFE_METHODS": "view_notice",
             "POST": "add_notice",

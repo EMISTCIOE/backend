@@ -25,11 +25,22 @@ class EMISVPSServiceSerializer(serializers.ModelSerializer):
             "id",
             "vps",
             "name",
+            "service_key",
             "port",
+            "protocol",
             "service_type",
             "domain",
             "is_ssl_enabled",
+            "healthcheck_endpoint",
+            "healthcheck_expectation",
+            "version",
+            "deploy_strategy",
+            "auto_restart",
+            "maintained_by",
+            "status",
+            "last_deployed_at",
             "description",
+            "metadata",
             "url",
             "created_at",
             "updated_at",
@@ -52,6 +63,9 @@ class EMISVPSServiceSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         user = self.context["request"].user
         validated_data["updated_by"] = user
+        metadata = validated_data.get("metadata")
+        if metadata is not None and not isinstance(metadata, dict):
+            raise serializers.ValidationError({"metadata": "Metadata must be a JSON object"})
         return super().update(instance, validated_data)
 
 
@@ -64,10 +78,25 @@ class EMISVPSInfoSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "vps_name",
+            "slug",
+            "provider",
+            "environment",
+            "status",
+            "health_status",
             "ip_address",
+            "private_ip_address",
+            "location",
             "ram_gb",
             "cpu_cores",
             "storage_gb",
+            "storage_type",
+            "bandwidth_tb",
+            "ssh_port",
+            "operating_system",
+            "kernel_version",
+            "monitoring_url",
+            "last_health_check_at",
+            "tags",
             "description",
             "notes",
             "services",
@@ -80,6 +109,7 @@ class EMISVPSInfoSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             "id",
+            "slug",
             "services",
             "services_count",
             "created_at",
@@ -87,10 +117,19 @@ class EMISVPSInfoSerializer(serializers.ModelSerializer):
             "created_by",
             "updated_by",
             "is_active",
+            "last_health_check_at",
         ]
 
     def get_services_count(self, obj):
         return obj.services.filter(is_active=True).count()
+
+    def validate_tags(self, value):
+        if not isinstance(value, list):
+            raise serializers.ValidationError("Tags must be a list")
+        for tag in value:
+            if not isinstance(tag, str):
+                raise serializers.ValidationError("Tags must contain strings only")
+        return value
 
     def create(self, validated_data):
         user = self.context["request"].user
@@ -103,9 +142,10 @@ class EMISVPSInfoSerializer(serializers.ModelSerializer):
         validated_data["updated_by"] = user
         return super().update(instance, validated_data)
 
-    def update(self, instance, validated_data):
-        instance.updated_by = self.context["request"].user
-        return super().update(instance, validated_data)
+    def validate_metadata(self, value):
+        if value is not None and not isinstance(value, dict):
+            raise serializers.ValidationError("Metadata must be a JSON object")
+        return value
 
 
 class EMISHardwareSerializer(serializers.ModelSerializer):
@@ -118,13 +158,25 @@ class EMISHardwareSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "name",
+            "asset_tag",
             "hardware_type",
+            "manufacturer",
+            "model_number",
+            "serial_number",
             "ip_address",
             "location",
+            "environment",
+            "status",
+            "responsible_team",
+            "purchase_date",
+            "warranty_expires_at",
+            "power_draw_watts",
+            "rack_unit",
             "thumbnail_image",
             "endpoints",
             "specifications",
             "description",
+            "metadata",
             "created_at",
             "updated_at",
             "created_by",

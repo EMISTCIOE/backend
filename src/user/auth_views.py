@@ -51,6 +51,7 @@ class UserLoginView(APIView):
     """View to login a user"""
 
     permission_classes = [AllowAny]
+    authentication_classes = []  # Disable SessionAuthentication/CSRF enforcement for login
     serializer_class = UserLoginSerializer
     throttle_classes = [LoginThrottle]
 

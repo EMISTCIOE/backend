@@ -9,42 +9,80 @@ from .models import EMISHardware, EMISVPSInfo, EMISVPSService, EmailResetRequest
 
 @admin.register(EMISVPSInfo)
 class EMISVPSInfoAdmin(admin.ModelAdmin):
-    list_display = ["vps_name", "ip_address", "ram_gb", "cpu_cores", "is_active", "created_at"]
-    search_fields = ["vps_name", "ip_address"]
-    readonly_fields = ["created_at", "updated_at"]
+    list_display = [
+        "vps_name",
+        "environment",
+        "provider",
+        "ip_address",
+        "ram_gb",
+        "cpu_cores",
+        "health_status",
+        "status",
+        "is_active",
+    ]
+    list_filter = ["environment", "provider", "health_status", "status", "is_active"]
+    search_fields = ["vps_name", "slug", "ip_address", "private_ip_address", "tags"]
+    readonly_fields = ["slug", "created_at", "updated_at", "last_health_check_at"]
     fieldsets = (
-        (None, {"fields": ("vps_name", "ip_address", "ram_gb", "cpu_cores", "storage_gb")}),
-        ("Details", {"fields": ("description", "notes")}),
-        ("Status", {"fields": ("is_active",)}),
+        ("Identity", {"fields": ("vps_name", "slug", "provider", "environment", "status", "health_status")}),
+        ("Networking", {"fields": ("ip_address", "private_ip_address", "location", "ssh_port")}),
+        ("Resources", {"fields": ("ram_gb", "cpu_cores", "storage_gb", "storage_type", "bandwidth_tb")}),
+        ("Software", {"fields": ("operating_system", "kernel_version", "monitoring_url", "last_health_check_at")}),
+        ("Tags", {"fields": ("tags",)}),
+        ("Details", {"fields": ("description", "notes", "is_active")}),
+        ("Audit", {"fields": ("created_at", "updated_at")}),
     )
 
 
 @admin.register(EMISVPSService)
 class EMISVPSServiceAdmin(admin.ModelAdmin):
-    list_display = ["name", "vps", "port", "domain", "service_type", "is_active"]
-    list_filter = ["vps", "is_active", "is_ssl_enabled"]
-    search_fields = ["name", "domain", "service_type"]
-    readonly_fields = ["url", "created_at", "updated_at"]
+    list_display = [
+        "name",
+        "service_key",
+        "vps",
+        "protocol",
+        "port",
+        "domain",
+        "status",
+        "is_active",
+    ]
+    list_filter = ["vps", "status", "protocol", "is_ssl_enabled", "deploy_strategy"]
+    search_fields = ["name", "service_key", "domain", "maintained_by"]
+    readonly_fields = ["url", "created_at", "updated_at", "last_deployed_at"]
     fieldsets = (
-        (None, {"fields": ("vps", "name", "port", "service_type", "domain")}),
-        ("SSL", {"fields": ("is_ssl_enabled",)}),
-        ("Details", {"fields": ("description", "url")}),
-        ("Status", {"fields": ("is_active",)}),
+        ("Identity", {"fields": ("vps", "name", "service_key", "maintained_by", "status")}),
+        ("Networking", {"fields": ("protocol", "port", "domain", "is_ssl_enabled")}),
+        ("Ops", {"fields": ("service_type", "deploy_strategy", "auto_restart", "version", "last_deployed_at")}),
+        ("Health", {"fields": ("healthcheck_endpoint", "healthcheck_expectation", "url")}),
+        ("Meta", {"fields": ("description", "metadata", "is_active")}),
+        ("Audit", {"fields": ("created_at", "updated_at")}),
     )
 
 
 @admin.register(EMISHardware)
 class EMISHardwareAdmin(admin.ModelAdmin):
-    list_display = ["name", "hardware_type", "ip_address", "location", "is_active"]
-    list_filter = ["hardware_type", "is_active"]
-    search_fields = ["name", "location"]
+    list_display = [
+        "asset_tag",
+        "name",
+        "hardware_type",
+        "environment",
+        "status",
+        "location",
+        "ip_address",
+        "is_active",
+    ]
+    list_filter = ["hardware_type", "environment", "status", "is_active"]
+    search_fields = ["asset_tag", "name", "location", "ip_address", "responsible_team"]
     readonly_fields = ["created_at", "updated_at"]
     fieldsets = (
-        (None, {"fields": ("name", "hardware_type", "ip_address", "location")}),
+        ("Identity", {"fields": ("asset_tag", "name", "hardware_type", "status", "environment")}),
+        ("Vendor", {"fields": ("manufacturer", "model_number", "serial_number", "responsible_team")}),
+        ("Location", {"fields": ("location", "rack_unit", "ip_address")}),
+        ("Lifecycle", {"fields": ("purchase_date", "warranty_expires_at", "power_draw_watts")}),
         ("Media", {"fields": ("thumbnail_image",)}),
-        ("Technical", {"fields": ("endpoints", "specifications")}),
-        ("Details", {"fields": ("description",)}),
-        ("Status", {"fields": ("is_active",)}),
+        ("Technical", {"fields": ("endpoints", "specifications", "metadata")}),
+        ("Details", {"fields": ("description", "is_active")}),
+        ("Audit", {"fields": ("created_at", "updated_at")}),
     )
 
 

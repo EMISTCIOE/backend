@@ -1,9 +1,11 @@
-"""
-EMIS Management data models
-"""
+"""EMIS Management data models"""
+
+import uuid
 
 from django.core.validators import RegexValidator
 from django.db import models
+from django.utils import timezone
+from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
 from src.base.models import AuditInfoModel
@@ -19,24 +21,122 @@ class HardwareType(models.TextChoices):
     SERVER = "server", _("Server")
     FIREWALL = "firewall", _("Firewall")
     ENDPOINT = "endpoint", _("Endpoint")
+    STORAGE = "storage", _("Storage Array")
+    UPS = "ups", _("UPS / Power")
     OTHER = "other", _("Other")
 
 
+class EnvironmentType(models.TextChoices):
+    PRODUCTION = "production", _("Production")
+    STAGING = "staging", _("Staging")
+    DEVELOPMENT = "development", _("Development")
+    LAB = "lab", _("Lab / Prototype")
+
+
+class ProviderType(models.TextChoices):
+    DIGITALOCEAN = "digitalocean", _("DigitalOcean")
+    LIGHTSAIL = "lightsail", _("AWS Lightsail")
+    HETZNER = "hetzner", _("Hetzner")
+    ON_PREM = "on-prem", _("On-premises / Bare Metal")
+    OTHER = "other", _("Other")
+
+
+class NodeStatus(models.TextChoices):
+    ACTIVE = "active", _("Active")
+    MAINTENANCE = "maintenance", _("Maintenance")
+    RETIRED = "retired", _("Retired")
+    DECOMMISSIONED = "decommissioned", _("Decommissioned")
+
+
+class HealthStatus(models.TextChoices):
+    HEALTHY = "healthy", _("Healthy")
+    DEGRADED = "degraded", _("Degraded")
+    OUTAGE = "outage", _("Outage")
+    UNKNOWN = "unknown", _("Unknown")
+
+
+class ServiceStatus(models.TextChoices):
+    RUNNING = "running", _("Running")
+    PAUSED = "paused", _("Paused")
+    FAILED = "failed", _("Failed")
+    DEPLOYING = "deploying", _("Deploying")
+
+
+class ServiceProtocol(models.TextChoices):
+    HTTP = "http", _("HTTP")
+    HTTPS = "https", _("HTTPS")
+    TCP = "tcp", _("TCP")
+    UDP = "udp", _("UDP")
+
+
+class DeployStrategy(models.TextChoices):
+    MANUAL = "manual", _("Manual")
+    GITOPS = "gitops", _("GitOps")
+    CI_CD = "ci_cd", _("CI / CD")
+
+
+class HardwareStatus(models.TextChoices):
+    OPERATIONAL = "operational", _("Operational")
+    STANDBY = "standby", _("Standby")
+    MAINTENANCE = "maintenance", _("Maintenance")
+    RETIRED = "retired", _("Retired")
+
+
 class EMISVPSInfo(AuditInfoModel):
-    """
-    VPS server information with resource specifications and service management.
-    """
+    """VPS server information with resource specifications and operational metadata."""
 
     vps_name = models.CharField(
         _("VPS name"),
         max_length=255,
         unique=True,
-        help_text=_("Name of the VPS server"),
+        help_text=_("Human friendly name of the virtual server"),
     )
-    ip_address = models.GenericIPAddressField(_("IP address"))
+    slug = models.SlugField(
+        _("slug"),
+        unique=True,
+        blank=True,
+        default=uuid.uuid4,
+        help_text=_("Stable identifier used by automation and IaC"),
+    )
+    provider = models.CharField(
+        _("provider"),
+        max_length=50,
+        choices=ProviderType.choices,
+        default=ProviderType.DIGITALOCEAN,
+    )
+    environment = models.CharField(
+        _("environment"),
+        max_length=32,
+        choices=EnvironmentType.choices,
+        default=EnvironmentType.PRODUCTION,
+    )
+    status = models.CharField(
+        _("status"),
+        max_length=32,
+        choices=NodeStatus.choices,
+        default=NodeStatus.ACTIVE,
+    )
+    health_status = models.CharField(
+        _("health status"),
+        max_length=32,
+        choices=HealthStatus.choices,
+        default=HealthStatus.UNKNOWN,
+    )
+    ip_address = models.GenericIPAddressField(_("public IP address"))
+    private_ip_address = models.GenericIPAddressField(
+        _("private IP address"),
+        null=True,
+        blank=True,
+    )
+    location = models.CharField(
+        _("location"),
+        max_length=255,
+        default="N/A",
+        help_text=_("Datacenter region or rack name"),
+    )
     ram_gb = models.PositiveIntegerField(
         _("RAM (GB)"),
-        default=1,
+        default=2,
         help_text=_("Total RAM in gigabytes"),
     )
     cpu_cores = models.PositiveIntegerField(
@@ -50,6 +150,49 @@ class EMISVPSInfo(AuditInfoModel):
         blank=True,
         help_text=_("Total storage in gigabytes"),
     )
+    storage_type = models.CharField(
+        _("storage type"),
+        max_length=50,
+        default="SSD",
+        help_text=_("SSD, NVMe, HDD, etc."),
+    )
+    bandwidth_tb = models.DecimalField(
+        _("bandwidth (TB)"),
+        max_digits=5,
+        decimal_places=2,
+        default=1,
+    )
+    ssh_port = models.PositiveIntegerField(
+        _("SSH port"),
+        default=22,
+        help_text=_("Port for secure shell access"),
+    )
+    operating_system = models.CharField(
+        _("operating system"),
+        max_length=120,
+        default="Ubuntu 22.04 LTS",
+    )
+    kernel_version = models.CharField(
+        _("kernel version"),
+        max_length=120,
+        blank=True,
+    )
+    monitoring_url = models.URLField(
+        _("monitoring dashboard"),
+        blank=True,
+        help_text=_("Link to Grafana, Uptime Kuma or any monitoring panel"),
+    )
+    last_health_check_at = models.DateTimeField(
+        _("last health check"),
+        null=True,
+        blank=True,
+    )
+    tags = models.JSONField(
+        _("tags"),
+        default=list,
+        blank=True,
+        help_text=_("Free-form labels used for grouping (team, stack, batch, etc.)"),
+    )
     description = models.TextField(_("description"), blank=True)
     notes = models.TextField(_("notes"), blank=True)
 
@@ -59,16 +202,38 @@ class EMISVPSInfo(AuditInfoModel):
         ordering = ["vps_name"]
 
     def __str__(self):
-        return self.vps_name
+        return f"{self.vps_name} [{self.environment}]"
+
+    def save(self, *args, **kwargs):
+        base_slug = slugify(self.vps_name) or str(uuid.uuid4())
+        slug_candidate = base_slug
+        counter = 1
+        while EMISVPSInfo.objects.exclude(pk=self.pk).filter(slug=slug_candidate).exists():
+            slug_candidate = f"{base_slug}-{counter}"
+            counter += 1
+        self.slug = slug_candidate
+        super().save(*args, **kwargs)
 
     def get_services(self):
         return self.services.filter(is_active=True)
 
+    def mark_health(self, status: str, when=None):
+        if status not in HealthStatus.values:
+            raise ValueError("Invalid health status")
+        self.health_status = status
+        self.last_health_check_at = when or timezone.now()
+        self.save(
+            update_fields=[
+                "health_status",
+                "last_health_check_at",
+                "updated_at",
+                "updated_by",
+            ]
+        )
+
 
 class EMISVPSService(AuditInfoModel):
-    """
-    Services running on VPS servers with port and domain information.
-    """
+    """Services running on VPS servers with deployment metadata and health info."""
 
     vps = models.ForeignKey(
         EMISVPSInfo,
@@ -81,9 +246,20 @@ class EMISVPSService(AuditInfoModel):
         max_length=255,
         help_text=_("Name of the service (e.g., ecast, portal)"),
     )
+    service_key = models.CharField(
+        _("service key"),
+        max_length=120,
+        help_text=_("Systemd unit, container name or identifier"),
+    )
     port = models.PositiveIntegerField(
         _("port"),
         help_text=_("Port number the service runs on"),
+    )
+    protocol = models.CharField(
+        _("protocol"),
+        max_length=10,
+        choices=ServiceProtocol.choices,
+        default=ServiceProtocol.HTTP,
     )
     service_type = models.CharField(
         _("service type"),
@@ -100,12 +276,63 @@ class EMISVPSService(AuditInfoModel):
         default=False,
         help_text=_("Whether SSL/TLS is enabled for this service"),
     )
+    healthcheck_endpoint = models.CharField(
+        _("healthcheck endpoint"),
+        max_length=255,
+        blank=True,
+        help_text=_("Relative path or URL used for heartbeat checks"),
+    )
+    healthcheck_expectation = models.CharField(
+        _("health expectation"),
+        max_length=255,
+        blank=True,
+        help_text=_("Expected response (status code, JSON key, etc.)"),
+    )
+    version = models.CharField(
+        _("version"),
+        max_length=50,
+        blank=True,
+    )
+    deploy_strategy = models.CharField(
+        _("deploy strategy"),
+        max_length=32,
+        choices=DeployStrategy.choices,
+        default=DeployStrategy.MANUAL,
+    )
+    auto_restart = models.BooleanField(
+        _("auto restart"),
+        default=True,
+        help_text=_("Whether supervisors/systemd restart the service"),
+    )
+    maintained_by = models.CharField(
+        _("maintained by"),
+        max_length=255,
+        blank=True,
+        help_text=_("Owning team or point of contact"),
+    )
+    status = models.CharField(
+        _("status"),
+        max_length=32,
+        choices=ServiceStatus.choices,
+        default=ServiceStatus.RUNNING,
+    )
+    last_deployed_at = models.DateTimeField(
+        _("last deployed at"),
+        null=True,
+        blank=True,
+    )
     description = models.TextField(_("description"), blank=True)
+    metadata = models.JSONField(
+        _("metadata"),
+        default=dict,
+        blank=True,
+        help_text=_("Free-form JSON for env vars, scaling hints, etc."),
+    )
 
     class Meta:
         verbose_name = _("VPS service")
         verbose_name_plural = _("VPS services")
-        unique_together = [["vps", "port"], ["vps", "name"]]
+        unique_together = [["vps", "port"], ["vps", "name"], ["vps", "service_key"]]
         ordering = ["vps", "port"]
 
     def __str__(self):
@@ -113,25 +340,53 @@ class EMISVPSService(AuditInfoModel):
 
     @property
     def url(self):
-        protocol = "https" if self.is_ssl_enabled else "http"
+        protocol = self.protocol if self.protocol in ["http", "https"] else "http"
         port_suffix = f":{self.port}" if self.port not in [80, 443] else ""
         return f"{protocol}://{self.domain}{port_suffix}"
 
+    def is_external(self):
+        return self.protocol in {ServiceProtocol.HTTP, ServiceProtocol.HTTPS}
+
 
 class EMISHardware(AuditInfoModel):
-    """
-    Hardware inventory (routers, servers, endpoints) for EMIS.
-    """
+    """Hardware inventory (routers, servers, endpoints) for EMIS."""
 
     name = models.CharField(_("name"), max_length=255)
+    asset_tag = models.CharField(
+        _("asset tag"),
+        max_length=64,
+        unique=True,
+        default=uuid.uuid4,
+        help_text=_("Unique inventory tag or barcode ID"),
+    )
     hardware_type = models.CharField(
         _("hardware type"),
         max_length=32,
         choices=HardwareType.choices,
         default=HardwareType.SERVER,
     )
+    manufacturer = models.CharField(_("manufacturer"), max_length=120, blank=True)
+    model_number = models.CharField(_("model number"), max_length=120, blank=True)
+    serial_number = models.CharField(_("serial number"), max_length=120, blank=True)
     ip_address = models.GenericIPAddressField(_("IP address"), null=True, blank=True)
     location = models.CharField(_("location"), max_length=255, blank=True)
+    environment = models.CharField(
+        _("environment"),
+        max_length=32,
+        choices=EnvironmentType.choices,
+        default=EnvironmentType.PRODUCTION,
+    )
+    status = models.CharField(
+        _("status"),
+        max_length=32,
+        choices=HardwareStatus.choices,
+        default=HardwareStatus.OPERATIONAL,
+    )
+    responsible_team = models.CharField(_("responsible team"), max_length=120, blank=True)
+    purchase_date = models.DateField(_("purchase date"), null=True, blank=True)
+    warranty_expires_at = models.DateField(_("warranty expires at"), null=True, blank=True)
+    power_draw_watts = models.PositiveIntegerField(_("power draw (W)"), null=True, blank=True)
+    rack_unit = models.CharField(_("rack / unit"), max_length=50, blank=True)
     thumbnail_image = models.ImageField(
         _("thumbnail image"),
         upload_to="emis/hardware/thumbnails/",
@@ -152,6 +407,12 @@ class EMISHardware(AuditInfoModel):
         blank=True,
         help_text=_("Hardware specifications like RAM, CPU, storage, etc."),
     )
+    metadata = models.JSONField(
+        _("metadata"),
+        default=dict,
+        blank=True,
+        help_text=_("Any extra structured data (interfaces, notes, etc.)"),
+    )
 
     class Meta:
         verbose_name = _("EMIS hardware")
@@ -159,7 +420,7 @@ class EMISHardware(AuditInfoModel):
         ordering = ["name"]
 
     def __str__(self):
-        return f"{self.name} ({self.hardware_type})"
+        return f"{self.asset_tag} · {self.name}"
 
 
 class RequestStatus(models.TextChoices):

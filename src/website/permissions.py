@@ -1,7 +1,15 @@
 from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 from src.libs.permissions import get_user_permissions, validate_permissions
-from src.user.constants import UNION_ROLE, CLUB_ROLE, DEPARTMENT_ADMIN_ROLE, ADMIN_ROLE, EMIS_STAFF_ROLE
+from src.user.constants import (
+    ADMIN_ROLE,
+    CAMPUS_SECTION_ROLE,
+    CAMPUS_UNIT_ROLE,
+    CLUB_ROLE,
+    DEPARTMENT_ADMIN_ROLE,
+    EMIS_STAFF_ROLE,
+    UNION_ROLE,
+)
 
 
 class CampusInfoPermission(BasePermission):
@@ -202,7 +210,7 @@ class GlobalGalleryPermission(BasePermission):
             return True
 
         # Allow union users to view the global gallery
-        if getattr(request.user, "role", None) == UNION_ROLE:
+        if getattr(request.user, "role", None) in {UNION_ROLE, CAMPUS_UNIT_ROLE, CAMPUS_SECTION_ROLE}:
             if request.method in SAFE_METHODS:
                 return True
             return False
@@ -217,7 +225,7 @@ class GlobalGalleryPermission(BasePermission):
 
 class GlobalGalleryImagePermission(BasePermission):
     def has_permission(self, request, view):
-        if getattr(request.user, "role", None) == UNION_ROLE:
+        if getattr(request.user, "role", None) in {UNION_ROLE, CAMPUS_UNIT_ROLE, CAMPUS_SECTION_ROLE}:
             if request.method in SAFE_METHODS or request.method in {"POST", "PATCH", "DELETE"}:
                 return True
             return False
@@ -232,17 +240,29 @@ class GlobalGalleryImagePermission(BasePermission):
         return validate_permissions(request, user_permissions_dict)
 
     def has_object_permission(self, request, view, obj):
-        if getattr(request.user, "role", None) == UNION_ROLE:
+        if getattr(request.user, "role", None) in {UNION_ROLE, CAMPUS_UNIT_ROLE, CAMPUS_SECTION_ROLE}:
             union_id = getattr(request.user, "union_id", None)
-            if not union_id:
-                return False
+            unit_id = getattr(request.user, "campus_unit_id", None)
+            section_id = getattr(request.user, "campus_section_id", None)
 
-            if obj.union_id:
-                return str(obj.union_id) == str(union_id)
-
-            if obj.global_event_id:
-                return obj.global_event.unions.filter(id=union_id).exists()
-
+            # Union linkage
+            if union_id:
+                if obj.union_id and str(obj.union_id) == str(union_id):
+                    return True
+                if obj.global_event_id and obj.global_event.unions.filter(id=union_id).exists():
+                    return True
+            # Unit linkage
+            if unit_id:
+                if getattr(obj, "campus_unit_id", None) and str(obj.campus_unit_id) == str(unit_id):
+                    return True
+                if getattr(obj, "global_event_id", None) and obj.global_event.units.filter(id=unit_id).exists():
+                    return True
+            # Section linkage
+            if section_id:
+                if getattr(obj, "campus_section_id", None) and str(obj.campus_section_id) == str(section_id):
+                    return True
+                if getattr(obj, "global_event_id", None) and obj.global_event.sections.filter(id=section_id).exists():
+                    return True
             return False
 
         return True
