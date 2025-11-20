@@ -21,27 +21,65 @@ SECRET_KEY = env(
     "DJANGO_SECRET_KEY",
     default="sydPDD94R0UBhmbBTsXrQ4QDskUY3cPo6cmaa9YorUYNsbzgJqDgnEONnuGpxQ4x",
 )
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+    "cdn.tcioe.edu.np",
+    "tcioe.edu.np",
+    "www.tcioe.edu.np",
+    "app.tcioe.edu.np",
+    "192.168.1.102",
+    "192.168.254.21",
+]
 
-# Allow all CORS origins
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOWED_ORIGINS = []
+# CORS Configuration - Hardcoded for production
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOWED_ORIGINS = [
+    "https://app.tcioe.edu.np",
+    "https://cdn.tcioe.edu.np",
+    "https://tcioe.edu.np",
+    "https://www.tcioe.edu.np",
+    "http://localhost:3000",
+    "http://localhost:3001",
+]
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+CORS_PREFLIGHT_MAX_AGE = 86400
 
 
-CSRF_TRUSTED_ORIGINS =[
-        "https://tcioe.edu.np",
-        "http://tcioe.edu.np",
-        "https://*.tcioe.edu.np",
-        "http://*.tcioe.edu.np",
-        "http://localhost:3000",
-        "http://localhost:3001"]
+CSRF_TRUSTED_ORIGINS = [
+    "https://app.tcioe.edu.np",
+    "https://cdn.tcioe.edu.np",
+    "https://tcioe.edu.np",
+    "https://www.tcioe.edu.np",
+    "http://localhost:3000",
+    "http://localhost:3001",
+]
 
 
 CSP_FRAME_ANCESTORS = [
     "'self'",
     "http://localhost:3000",
     "http://localhost:3001",
-    "https://app.tcioe.edu.np"
+    "https://app.tcioe.edu.np",
     "https://tcioe-cms.vercel.app",
     "https://tcioe.edu.np",
     "http://tcioe.edu.np",
@@ -228,7 +266,12 @@ LOCALE_PATHS = [
 # SECURITY
 # ------------------------------------------------------------------------------
 SESSION_COOKIE_HTTPONLY = True
-CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript access for API calls
+CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE = True
+CSRF_USE_SESSIONS = False
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
