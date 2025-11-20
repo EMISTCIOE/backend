@@ -11,6 +11,8 @@ from src.libs.get_context import get_user_by_context
 from src.libs.messages import UNKNOWN_ERROR
 from src.user.constants import (
     ADMIN_ROLE,
+    CAMPUS_SECTION_ROLE,
+    CAMPUS_UNIT_ROLE,
     CLUB_ROLE,
     DEPARTMENT_ADMIN_ROLE,
     EMIS_STAFF_ROLE,
@@ -60,8 +62,8 @@ class LoginContext:
 
 
 APP_CONTEXT_ROLE_MAP = {
-    LoginContext.BACKEND: {EMIS_STAFF_ROLE, ADMIN_ROLE, UNION_ROLE},
-    LoginContext.CMS: {ADMIN_ROLE, EMIS_STAFF_ROLE, UNION_ROLE},
+    LoginContext.BACKEND: {EMIS_STAFF_ROLE, ADMIN_ROLE, UNION_ROLE, CAMPUS_UNIT_ROLE, CAMPUS_SECTION_ROLE},
+    LoginContext.CMS: {ADMIN_ROLE, EMIS_STAFF_ROLE, UNION_ROLE, CAMPUS_UNIT_ROLE, CAMPUS_SECTION_ROLE},
     LoginContext.DEPARTMENT: {DEPARTMENT_ADMIN_ROLE, CLUB_ROLE},
     LoginContext.CLUB: {CLUB_ROLE},
     LoginContext.UNION: {UNION_ROLE},
@@ -203,7 +205,7 @@ class UserLoginSerializer(serializers.ModelSerializer):
         if user.is_superuser:
             return
 
-        allowed_roles = {EMIS_STAFF_ROLE, ADMIN_ROLE, UNION_ROLE}
+        allowed_roles = {EMIS_STAFF_ROLE, ADMIN_ROLE, UNION_ROLE, CAMPUS_UNIT_ROLE, CAMPUS_SECTION_ROLE}
         if user.role not in allowed_roles:
             raise serializers.ValidationError({"persona": INVALID_CREDENTIALS})
 

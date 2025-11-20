@@ -20,6 +20,7 @@ from src.notice.messages import (
 from src.notice.validators import validate_notice_media_file
 
 from .models import Notice, NoticeCategory, NoticeMedia
+from src.user.models import User
 
 
 class NoticeMediaForNoticeListSerializer(serializers.ModelSerializer):
@@ -31,6 +32,8 @@ class NoticeMediaForNoticeListSerializer(serializers.ModelSerializer):
 class NoticeListSerializer(serializers.ModelSerializer):
     category_name = serializers.CharField(source="category.name")
     department_name = serializers.SerializerMethodField()
+    campus_unit_name = serializers.SerializerMethodField()
+    campus_section_name = serializers.SerializerMethodField()
     author_name = serializers.SerializerMethodField()
 
     class Meta:
@@ -44,9 +47,13 @@ class NoticeListSerializer(serializers.ModelSerializer):
             "is_approved_by_department",
             "is_approved_by_campus",
             "department",
+            "campus_unit",
+            "campus_section",
             "status",
             "category",
             "department_name",
+            "campus_unit_name",
+            "campus_section_name",
             "category_name",
             "published_at",
             "author_name",
@@ -54,6 +61,12 @@ class NoticeListSerializer(serializers.ModelSerializer):
 
     def get_department_name(self, obj) -> str:
         return obj.department.name if obj.department else ""
+
+    def get_campus_unit_name(self, obj) -> str:
+        return obj.campus_unit.name if obj.campus_unit else ""
+
+    def get_campus_section_name(self, obj) -> str:
+        return obj.campus_section.name if obj.campus_section else ""
 
     def get_author_name(self, obj) -> str:
         return obj.created_by.get_full_name() if obj.created_by else ""
@@ -64,6 +77,8 @@ class NoticeRetrieveSerializer(AbstractInfoRetrieveSerializer):
     category = CategoryForNoticeListSerializer()
     medias = NoticeMediaForNoticeListSerializer(many=True)
     author = UserForNoticeListSerializer(source="created_by")
+    campus_unit_name = serializers.SerializerMethodField()
+    campus_section_name = serializers.SerializerMethodField()
 
     class Meta(AbstractInfoRetrieveSerializer.Meta):
         model = Notice
@@ -78,12 +93,22 @@ class NoticeRetrieveSerializer(AbstractInfoRetrieveSerializer):
             "status",
             "is_featured",
             "department",
+            "campus_unit",
+            "campus_section",
             "category",
+            "campus_unit_name",
+            "campus_section_name",
             "published_at",
             "medias",
             "author",
         ]
         fields += AbstractInfoRetrieveSerializer.Meta.fields
+
+    def get_campus_unit_name(self, obj) -> str:
+        return obj.campus_unit.name if obj.campus_unit else ""
+
+    def get_campus_section_name(self, obj) -> str:
+        return obj.campus_section.name if obj.campus_section else ""
 
 
 class NoticeMediaForNoticeCreateSerializer(serializers.ModelSerializer):
@@ -114,6 +139,16 @@ class NoticeCreateSerializer(serializers.ModelSerializer):
         allow_null=True,
         required=False,
     )
+    campus_unit = serializers.PrimaryKeyRelatedField(
+        queryset=Department.objects.none(),  # replaced in __init__
+        allow_null=True,
+        required=False,
+    )
+    campus_section = serializers.PrimaryKeyRelatedField(
+        queryset=Department.objects.none(),  # replaced in __init__
+        allow_null=True,
+        required=False,
+    )
     category = serializers.PrimaryKeyRelatedField(
         queryset=NoticeCategory.objects.filter(is_active=True),
     )
@@ -130,7 +165,16 @@ class NoticeCreateSerializer(serializers.ModelSerializer):
             "is_featured",
             "description",
             "medias",
+            "campus_unit",
+            "campus_section",
         ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from src.website.models import CampusUnit, CampusSection
+
+        self.fields["campus_unit"].queryset = CampusUnit.objects.filter(is_active=True)
+        self.fields["campus_section"].queryset = CampusSection.objects.filter(is_active=True)
 
     def validate(self, attrs):
         """Ensure notice has either a title or at least one media."""
@@ -146,11 +190,30 @@ class NoticeCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = get_user_by_context(self.context)
         medias_data = validated_data.pop("medias", [])
+        campus_unit = validated_data.pop("campus_unit", None)
+        campus_section = validated_data.pop("campus_section", None)
+
+        # Enforce scope for campus unit/section roles
+        if user.role == User.RoleType.CAMPUS_UNIT:
+            if user.campus_unit is None:
+                raise serializers.ValidationError({"campus_unit": "Your account is not linked to a campus unit."})
+            if campus_unit and campus_unit != user.campus_unit:
+                raise serializers.ValidationError({"campus_unit": "You can only post notices for your campus unit."})
+            campus_unit = user.campus_unit
+
+        if user.role == User.RoleType.CAMPUS_SECTION:
+            if user.campus_section is None:
+                raise serializers.ValidationError({"campus_section": "Your account is not linked to a campus section."})
+            if campus_section and campus_section != user.campus_section:
+                raise serializers.ValidationError({"campus_section": "You can only post notices for your campus section."})
+            campus_section = user.campus_section
 
         notice = Notice.objects.create(
             title=(validated_data.get("title") or "").strip(),
             description=(validated_data.get("description") or "").strip(),
             department=validated_data.get("department"),
+            campus_unit=campus_unit,
+            campus_section=campus_section,
             thumbnail=validated_data.get("thumbnail", None),
             is_featured=validated_data["is_featured"],
             category=validated_data["category"],
@@ -206,6 +269,16 @@ class NoticePatchSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True,
     )
+    campus_unit = serializers.PrimaryKeyRelatedField(
+        queryset=Department.objects.none(),  # replaced in __init__
+        required=False,
+        allow_null=True,
+    )
+    campus_section = serializers.PrimaryKeyRelatedField(
+        queryset=Department.objects.none(),  # replaced in __init__
+        required=False,
+        allow_null=True,
+    )
     category = serializers.PrimaryKeyRelatedField(
         queryset=NoticeCategory.objects.filter(is_active=True),
         required=False,
@@ -223,7 +296,16 @@ class NoticePatchSerializer(serializers.ModelSerializer):
             "is_featured",
             "description",
             "medias",
+            "campus_unit",
+            "campus_section",
         ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        from src.website.models import CampusUnit, CampusSection
+
+        self.fields["campus_unit"].queryset = CampusUnit.objects.filter(is_active=True)
+        self.fields["campus_section"].queryset = CampusSection.objects.filter(is_active=True)
 
     def validate(self, attrs):
         """Ensure notice has either a title or at least one media."""
@@ -238,6 +320,8 @@ class NoticePatchSerializer(serializers.ModelSerializer):
     def update(self, instance: Notice, validated_data):
         user = get_user_by_context(self.context)
         medias_data = validated_data.pop("medias", [])
+        campus_unit = validated_data.pop("campus_unit", getattr(self.instance, "campus_unit", None))
+        campus_section = validated_data.pop("campus_section", getattr(self.instance, "campus_section", None))
 
         # Handle the thumbnail
         if "thumbnail" in validated_data:
@@ -248,6 +332,24 @@ class NoticePatchSerializer(serializers.ModelSerializer):
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value.strip() if isinstance(value, str) else value)
+
+        # Enforce scoping for campus unit/section roles
+        if user.role == User.RoleType.CAMPUS_UNIT:
+            if user.campus_unit is None:
+                raise serializers.ValidationError({"campus_unit": "Your account is not linked to a campus unit."})
+            if campus_unit and campus_unit != user.campus_unit:
+                raise serializers.ValidationError({"campus_unit": "You can only manage notices for your campus unit."})
+            campus_unit = user.campus_unit
+
+        if user.role == User.RoleType.CAMPUS_SECTION:
+            if user.campus_section is None:
+                raise serializers.ValidationError({"campus_section": "Your account is not linked to a campus section."})
+            if campus_section and campus_section != user.campus_section:
+                raise serializers.ValidationError({"campus_section": "You can only manage notices for your campus section."})
+            campus_section = user.campus_section
+
+        instance.campus_unit = campus_unit
+        instance.campus_section = campus_section
 
         if "is_draft" in validated_data:
             if validated_data["is_draft"]:

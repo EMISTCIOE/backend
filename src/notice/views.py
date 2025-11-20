@@ -16,6 +16,7 @@ from rest_framework.viewsets import ModelViewSet
 
 # Project Imports
 from src.libs.utils import set_binary_files_null_if_empty
+from src.user.models import User
 
 from .messages import MEDIA_DELETED_SUCCESS, MEDIA_NOT_FOUND, NOTICE_DELETED_SUCCESS
 from .models import Notice, NoticeMedia
@@ -36,7 +37,16 @@ class FilterForNoticeViewSet(FilterSet):
 
     class Meta:
         model = Notice
-        fields = ["id", "status", "department", "category", "is_featured", "date"]
+        fields = [
+            "id",
+            "status",
+            "department",
+            "campus_unit",
+            "campus_section",
+            "category",
+            "is_featured",
+            "date",
+        ]
 
 
 class NoticeViewSet(ModelViewSet):
@@ -51,6 +61,24 @@ class NoticeViewSet(ModelViewSet):
     queryset = Notice.objects.filter(is_archived=False)
     ordering_fields = ["-created_at", "published_at"]
     http_method_names = ["options", "head", "get", "patch", "delete", "post"]
+
+    def get_queryset(self):
+        qs = Notice.objects.filter(is_archived=False)
+        user = self.request.user
+
+        if not user or not user.is_authenticated:
+            return qs.none()
+
+        if user.is_superuser or user.is_emis_staff() or user.is_campus_admin():
+            return qs
+
+        if user.role == User.RoleType.CAMPUS_UNIT:
+            return qs.filter(campus_unit_id=user.campus_unit_id) if user.campus_unit_id else qs.none()
+
+        if user.role == User.RoleType.CAMPUS_SECTION:
+            return qs.filter(campus_section_id=user.campus_section_id) if user.campus_section_id else qs.none()
+
+        return qs
 
     def get_serializer_class(self):
         serializer_class = None
@@ -71,7 +99,7 @@ class NoticeViewSet(ModelViewSet):
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         # set blank file fields to None/null
-        fields_to_normalize = ["thumbnail", "department"]
+        fields_to_normalize = ["thumbnail", "department", "campus_unit", "campus_section"]
         if fields_to_normalize:
             set_binary_files_null_if_empty(fields_to_normalize, request.data)
         return super().create(request, *args, **kwargs)
@@ -79,7 +107,7 @@ class NoticeViewSet(ModelViewSet):
     @transaction.atomic
     def update(self, request, *args, **kwargs):
         # set blank file fields to None/null
-        fields_to_normalize = ["thumbnail", "department"]
+        fields_to_normalize = ["thumbnail", "department", "campus_unit", "campus_section"]
         if fields_to_normalize:
             set_binary_files_null_if_empty(fields_to_normalize, request.data)
         return super().update(request, *args, **kwargs)
@@ -148,5 +176,23 @@ class NoticeStatusUpdateAPIView(UpdateAPIView):
     lookup_field = "id"
     http_method_names = ["patch"]
 
+    def get_queryset(self):
+        qs = Notice.objects.filter(is_archived=False)
+        user = self.request.user
+
+        if not user or not user.is_authenticated:
+            return qs.none()
+
+        if user.is_superuser or user.is_emis_staff() or user.is_campus_admin():
+            return qs
+
+        if user.role == User.RoleType.CAMPUS_UNIT:
+            return qs.filter(campus_unit_id=user.campus_unit_id) if user.campus_unit_id else qs.none()
+
+        if user.role == User.RoleType.CAMPUS_SECTION:
+            return qs.filter(campus_section_id=user.campus_section_id) if user.campus_section_id else qs.none()
+
+        return qs
+
     def get_object(self):
-        return get_object_or_404(Notice, is_archived=False, pk=self.kwargs["id"])
+        return get_object_or_404(self.get_queryset(), pk=self.kwargs["id"])

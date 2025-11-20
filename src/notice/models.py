@@ -8,6 +8,7 @@ from django.utils.translation import gettext_lazy as _
 # Project Imports
 from src.base.models import AuditInfoModel
 from src.department.models import Department
+from src.website.models import CampusSection, CampusUnit
 from src.notice.utils import notice_media_upload_path
 from src.notice.validators import validate_notice_media_file
 
@@ -65,6 +66,22 @@ class Notice(AuditInfoModel):
         on_delete=models.SET_NULL,
         verbose_name=_("Department"),
         help_text=_("Department associated with this notice."),
+    )
+    campus_unit = models.ForeignKey(
+        CampusUnit,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Campus Unit"),
+        help_text=_("Campus unit associated with this notice."),
+    )
+    campus_section = models.ForeignKey(
+        CampusSection,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        verbose_name=_("Campus Section"),
+        help_text=_("Campus section associated with this notice."),
     )
     is_approved_by_department = models.BooleanField(
         default=False,
@@ -177,6 +194,8 @@ class Notice(AuditInfoModel):
         indexes = [
             models.Index(fields=["category"]),
             models.Index(fields=["department"]),
+            models.Index(fields=["campus_unit"]),
+            models.Index(fields=["campus_section"]),
             models.Index(fields=["slug"]),
         ]
 

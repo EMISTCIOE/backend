@@ -105,6 +105,8 @@ class FilterForUserViewSet(FilterSet):
     department = django_filters.NumberFilter(field_name="department_id", lookup_expr="exact")
     club = django_filters.NumberFilter(field_name="club_id", lookup_expr="exact")
     union = django_filters.NumberFilter(field_name="union_id", lookup_expr="exact")
+    campus_unit = django_filters.NumberFilter(field_name="campus_unit_id", lookup_expr="exact")
+    campus_section = django_filters.NumberFilter(field_name="campus_section_id", lookup_expr="exact")
 
     class Meta:
         model = User
@@ -120,6 +122,8 @@ class FilterForUserViewSet(FilterSet):
             "department",
             "club",
             "union",
+            "campus_unit",
+            "campus_section",
         ]
 
 
@@ -142,6 +146,8 @@ class UserViewSet(ModelViewSet):
             User.RoleType.DEPARTMENT_ADMIN,
             User.RoleType.CLUB,
             User.RoleType.UNION,
+            User.RoleType.CAMPUS_UNIT,
+            User.RoleType.CAMPUS_SECTION,
         ]
         return User.objects.filter(
             is_superuser=False,
@@ -195,6 +201,8 @@ class UserArchiveView(generics.DestroyAPIView):
             User.RoleType.DEPARTMENT_ADMIN,
             User.RoleType.CLUB,
             User.RoleType.UNION,
+            User.RoleType.CAMPUS_UNIT,
+            User.RoleType.CAMPUS_SECTION,
         ]
         return User.objects.filter(
             is_superuser=False,

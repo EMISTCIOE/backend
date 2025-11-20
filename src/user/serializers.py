@@ -7,7 +7,13 @@ from src.base.serializers import AbstractInfoRetrieveSerializer
 from src.department.models import Department
 from src.libs.get_context import get_user_by_context
 from src.user.constants import SYSTEM_USER_ROLE
-from src.website.models import CampusStaffDesignation, CampusUnion, StudentClub
+from src.website.models import (
+    CampusSection,
+    CampusStaffDesignation,
+    CampusUnion,
+    CampusUnit,
+    StudentClub,
+)
 
 from .messages import (
     USER_CREATED,
@@ -157,6 +163,8 @@ class UserListSerializer(serializers.ModelSerializer):
     department_name = serializers.SerializerMethodField()
     club_name = serializers.SerializerMethodField()
     union_name = serializers.SerializerMethodField()
+    campus_unit_name = serializers.SerializerMethodField()
+    campus_section_name = serializers.SerializerMethodField()
     role_display = serializers.CharField(
         source="get_role_display",
         read_only=True,
@@ -197,6 +205,12 @@ class UserListSerializer(serializers.ModelSerializer):
     def get_union_name(self, obj):
         return self._get_related_attr(obj, "union", "name")
 
+    def get_campus_unit_name(self, obj):
+        return self._get_related_attr(obj, "campus_unit", "name")
+
+    def get_campus_section_name(self, obj):
+        return self._get_related_attr(obj, "campus_section", "name")
+
 
 class UserRetrieveSerializer(serializers.ModelSerializer):
     roles = serializers.SerializerMethodField()
@@ -205,6 +219,8 @@ class UserRetrieveSerializer(serializers.ModelSerializer):
     department_name = serializers.SerializerMethodField()
     club_name = serializers.SerializerMethodField()
     union_name = serializers.SerializerMethodField()
+    campus_unit_name = serializers.SerializerMethodField()
+    campus_section_name = serializers.SerializerMethodField()
     role_display = serializers.CharField(
         source="get_role_display",
         read_only=True,
@@ -250,6 +266,12 @@ class UserRetrieveSerializer(serializers.ModelSerializer):
 
     def get_union_name(self, obj):
         return self._get_related_attr(obj, "union", "name")
+
+    def get_campus_unit_name(self, obj):
+        return self._get_related_attr(obj, "campus_unit", "name")
+
+    def get_campus_section_name(self, obj):
+        return self._get_related_attr(obj, "campus_section", "name")
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
@@ -298,6 +320,26 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True,
     )
+    campus_unit = serializers.PrimaryKeyRelatedField(
+        queryset=CampusUnit.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    campus_section = serializers.PrimaryKeyRelatedField(
+        queryset=CampusSection.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    campus_unit = serializers.PrimaryKeyRelatedField(
+        queryset=CampusUnit.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    campus_section = serializers.PrimaryKeyRelatedField(
+        queryset=CampusSection.objects.all(),
+        required=False,
+        allow_null=True,
+    )
 
     class Meta:
         model = User
@@ -315,6 +357,8 @@ class UserRegisterSerializer(serializers.ModelSerializer):
             "department",
             "club",
             "union",
+            "campus_unit",
+            "campus_section",
             "is_active",
         ]
 
@@ -346,6 +390,14 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         if role == User.RoleType.UNION and not attrs.get("union"):
             raise serializers.ValidationError(
                 {"union": "Union account must be linked to a union."},
+            )
+        if role == User.RoleType.CAMPUS_UNIT and not attrs.get("campus_unit"):
+            raise serializers.ValidationError(
+                {"campus_unit": "Campus unit account must be linked to a campus unit."},
+            )
+        if role == User.RoleType.CAMPUS_SECTION and not attrs.get("campus_section"):
+            raise serializers.ValidationError(
+                {"campus_section": "Campus section account must be linked to a campus section."},
             )
         if role == User.RoleType.DEPARTMENT_ADMIN and not attrs.get("department"):
             raise serializers.ValidationError(
@@ -394,6 +446,8 @@ class UserRegisterSerializer(serializers.ModelSerializer):
         user_instance.department = validated_data.get("department")
         user_instance.club = validated_data.get("club")
         user_instance.union = validated_data.get("union")
+        user_instance.campus_unit = validated_data.get("campus_unit")
+        user_instance.campus_section = validated_data.get("campus_section")
 
         user_instance.roles.add(*roles)  # Set the roles
 
@@ -463,6 +517,8 @@ class UserPatchSerializer(serializers.ModelSerializer):
             "department",
             "club",
             "union",
+            "campus_unit",
+            "campus_section",
         ]
 
     def validate(self, attrs):
@@ -475,6 +531,20 @@ class UserPatchSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     {"phone_no": USER_ERRORS["PHONE_EXISTS"]},
                 )
+
+        # Enforce linkage when role is changed or already requires associations
+        target_role = attrs.get("role", self.instance.role)
+        campus_unit = attrs.get("campus_unit", getattr(self.instance, "campus_unit", None))
+        campus_section = attrs.get("campus_section", getattr(self.instance, "campus_section", None))
+
+        if target_role == User.RoleType.CAMPUS_UNIT and not campus_unit:
+            raise serializers.ValidationError(
+                {"campus_unit": "Campus unit account must be linked to a campus unit."},
+            )
+        if target_role == User.RoleType.CAMPUS_SECTION and not campus_section:
+            raise serializers.ValidationError(
+                {"campus_section": "Campus section account must be linked to a campus section."},
+            )
 
         return attrs
 
@@ -525,6 +595,10 @@ class UserPatchSerializer(serializers.ModelSerializer):
             instance.club = validated_data.get("club")
         if "union" in validated_data:
             instance.union = validated_data.get("union")
+        if "campus_unit" in validated_data:
+            instance.campus_unit = validated_data.get("campus_unit")
+        if "campus_section" in validated_data:
+            instance.campus_section = validated_data.get("campus_section")
 
         instance.save()
         return instance

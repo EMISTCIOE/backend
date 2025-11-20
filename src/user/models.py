@@ -13,7 +13,13 @@ from rest_framework_simplejwt.tokens import RefreshToken
 # Project Imports
 from src.base.models import AuditInfoModel
 from src.department.models import Department
-from src.website.models import CampusStaffDesignation, StudentClub, CampusUnion
+from src.website.models import (
+    CampusStaffDesignation,
+    CampusSection,
+    CampusUnit,
+    StudentClub,
+    CampusUnion,
+)
 
 from .constants import (
     ADMIN_ROLE,
@@ -21,6 +27,8 @@ from .constants import (
     DEPARTMENT_ADMIN_ROLE,
     EMIS_STAFF_ROLE,
     PUBLIC_USER_ROLE,
+    CAMPUS_SECTION_ROLE,
+    CAMPUS_UNIT_ROLE,
     SYSTEM_USER_ROLE,
     UNION_ROLE,
 )
@@ -216,6 +224,8 @@ class User(AbstractUser):
         DEPARTMENT_ADMIN = DEPARTMENT_ADMIN_ROLE, _("Department Admin")
         CLUB = CLUB_ROLE, _("Student Club")
         UNION = UNION_ROLE, _("Union")
+        CAMPUS_UNIT = CAMPUS_UNIT_ROLE, _("Campus Unit")
+        CAMPUS_SECTION = CAMPUS_SECTION_ROLE, _("Campus Section")
 
     uuid = models.UUIDField(default=uuid4, unique=True, editable=False)
 
@@ -263,6 +273,22 @@ class User(AbstractUser):
         blank=True,
         verbose_name=_("union"),
         related_name="user_unions",
+    )
+    campus_unit = models.ForeignKey(
+        CampusUnit,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name=_("campus unit"),
+        related_name="user_units",
+    )
+    campus_section = models.ForeignKey(
+        CampusSection,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name=_("campus section"),
+        related_name="user_sections",
     )
     is_archived = models.BooleanField(
         _("archived"),
