@@ -152,23 +152,11 @@ class GetUserRolesForUserListSerializer(serializers.ModelSerializer):
 
 
 class UserListSerializer(serializers.ModelSerializer):
-    created_by_username = serializers.CharField(source="created_by.username")
-    designation_title = serializers.CharField(
-        source="designation.title",
-        read_only=True,
-    )
-    department_name = serializers.CharField(
-        source="department.name",
-        read_only=True,
-    )
-    club_name = serializers.CharField(
-        source="club.name",
-        read_only=True,
-    )
-    union_name = serializers.CharField(
-        source="union.name",
-        read_only=True,
-    )
+    created_by_username = serializers.SerializerMethodField()
+    designation_title = serializers.SerializerMethodField()
+    department_name = serializers.SerializerMethodField()
+    club_name = serializers.SerializerMethodField()
+    union_name = serializers.SerializerMethodField()
     role_display = serializers.CharField(
         source="get_role_display",
         read_only=True,
@@ -188,26 +176,35 @@ class UserListSerializer(serializers.ModelSerializer):
             "permissions",
         ]
 
+    @staticmethod
+    def _get_related_attr(obj, related_field, attr):
+        related = getattr(obj, related_field, None)
+        return getattr(related, attr, None) if related else None
+
+    def get_created_by_username(self, obj):
+        created_by = getattr(obj, "created_by", None)
+        return getattr(created_by, "username", None) if created_by else None
+
+    def get_designation_title(self, obj):
+        return self._get_related_attr(obj, "designation", "title")
+
+    def get_department_name(self, obj):
+        return self._get_related_attr(obj, "department", "name")
+
+    def get_club_name(self, obj):
+        return self._get_related_attr(obj, "club", "name")
+
+    def get_union_name(self, obj):
+        return self._get_related_attr(obj, "union", "name")
+
 
 class UserRetrieveSerializer(serializers.ModelSerializer):
     roles = serializers.SerializerMethodField()
-    created_by_username = serializers.CharField(source="created_by.username")
-    designation_title = serializers.CharField(
-        source="designation.title",
-        read_only=True,
-    )
-    department_name = serializers.CharField(
-        source="department.name",
-        read_only=True,
-    )
-    club_name = serializers.CharField(
-        source="club.name",
-        read_only=True,
-    )
-    union_name = serializers.CharField(
-        source="union.name",
-        read_only=True,
-    )
+    created_by_username = serializers.SerializerMethodField()
+    designation_title = serializers.SerializerMethodField()
+    department_name = serializers.SerializerMethodField()
+    club_name = serializers.SerializerMethodField()
+    union_name = serializers.SerializerMethodField()
     role_display = serializers.CharField(
         source="get_role_display",
         read_only=True,
@@ -225,6 +222,11 @@ class UserRetrieveSerializer(serializers.ModelSerializer):
             "groups",
         ]
 
+    @staticmethod
+    def _get_related_attr(obj, related_field, attr):
+        related = getattr(obj, related_field, None)
+        return getattr(related, attr, None) if related else None
+
     def get_roles(self, obj) -> list:
         """
         Return only active, non-archived, and non-system-managed roles.
@@ -232,6 +234,22 @@ class UserRetrieveSerializer(serializers.ModelSerializer):
         roles = obj.roles.filter(is_active=True, is_system_managed=False)
         serializer = GetUserRolesForUserListSerializer(roles, many=True)
         return serializer.data
+
+    def get_created_by_username(self, obj):
+        created_by = getattr(obj, "created_by", None)
+        return getattr(created_by, "username", None) if created_by else None
+
+    def get_designation_title(self, obj):
+        return self._get_related_attr(obj, "designation", "title")
+
+    def get_department_name(self, obj):
+        return self._get_related_attr(obj, "department", "name")
+
+    def get_club_name(self, obj):
+        return self._get_related_attr(obj, "club", "name")
+
+    def get_union_name(self, obj):
+        return self._get_related_attr(obj, "union", "name")
 
 
 class UserRegisterSerializer(serializers.ModelSerializer):
