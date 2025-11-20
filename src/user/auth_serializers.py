@@ -177,6 +177,10 @@ class UserLoginSerializer(serializers.ModelSerializer):
             "clubId": user.club.id if user.club else None,
             "unionName": user.union.name if user.union else None,
             "unionId": user.union.id if user.union else None,
+            "campusUnitName": user.campus_unit.name if user.campus_unit else None,
+            "campusUnitId": user.campus_unit.id if user.campus_unit else None,
+            "campusSectionName": user.campus_section.name if user.campus_section else None,
+            "campusSectionId": user.campus_section.id if user.campus_section else None,
         }
 
     def get_photo(self, user: User) -> str | None:

@@ -169,6 +169,8 @@ class UserListSerializer(serializers.ModelSerializer):
         source="get_role_display",
         read_only=True,
     )
+    campus_unit_id = serializers.IntegerField(source="campus_unit.id", read_only=True, required=False)
+    campus_section_id = serializers.IntegerField(source="campus_section.id", read_only=True, required=False)
 
     class Meta:
         model = User
@@ -317,16 +319,6 @@ class UserRegisterSerializer(serializers.ModelSerializer):
     )
     union = serializers.PrimaryKeyRelatedField(
         queryset=CampusUnion.objects.all(),
-        required=False,
-        allow_null=True,
-    )
-    campus_unit = serializers.PrimaryKeyRelatedField(
-        queryset=CampusUnit.objects.all(),
-        required=False,
-        allow_null=True,
-    )
-    campus_section = serializers.PrimaryKeyRelatedField(
-        queryset=CampusSection.objects.all(),
         required=False,
         allow_null=True,
     )

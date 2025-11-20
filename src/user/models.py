@@ -280,7 +280,7 @@ class User(AbstractUser):
         null=True,
         blank=True,
         verbose_name=_("campus unit"),
-        related_name="user_units",
+        related_name="user_campus_units",
     )
     campus_section = models.ForeignKey(
         CampusSection,
@@ -288,7 +288,7 @@ class User(AbstractUser):
         null=True,
         blank=True,
         verbose_name=_("campus section"),
-        related_name="user_sections",
+        related_name="user_campus_sections",
     )
     is_archived = models.BooleanField(
         _("archived"),

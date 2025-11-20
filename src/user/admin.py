@@ -38,6 +38,8 @@ class UserAdmin(DjangoUserAdmin):
                     "department",
                     "club",
                     "union",
+                    "campus_unit",
+                    "campus_section",
                 )
             },
         ),
@@ -80,6 +82,8 @@ class UserAdmin(DjangoUserAdmin):
                     "last_name",
                     "is_active",
                     "role",
+                    "campus_unit",
+                    "campus_section",
                 ),
             },
         ),
