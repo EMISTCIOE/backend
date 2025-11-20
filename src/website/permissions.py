@@ -145,6 +145,10 @@ class CampusUnionPermission(BasePermission):
 
 class CampusSectionPermission(BasePermission):
     def has_permission(self, request, view):
+        # Allow section users to manage their own section
+        if getattr(request.user, "role", None) == CAMPUS_SECTION_ROLE:
+            return request.method in SAFE_METHODS or request.method in {"PATCH"}
+
         user_permissions_dict = {
             "SAFE_METHODS": "view_campus_section",
             "POST": "add_campus_section",
@@ -153,9 +157,18 @@ class CampusSectionPermission(BasePermission):
         }
         return validate_permissions(request, user_permissions_dict)
 
+    def has_object_permission(self, request, view, obj):
+        if getattr(request.user, "role", None) == CAMPUS_SECTION_ROLE:
+            return str(obj.id) == str(getattr(request.user, "campus_section_id", None))
+        return True
+
 
 class CampusUnitPermission(BasePermission):
     def has_permission(self, request, view):
+        # Allow unit users to manage their own unit
+        if getattr(request.user, "role", None) == CAMPUS_UNIT_ROLE:
+            return request.method in SAFE_METHODS or request.method in {"PATCH"}
+
         user_permissions_dict = {
             "SAFE_METHODS": "view_campus_unit",
             "POST": "add_campus_unit",
@@ -163,6 +176,11 @@ class CampusUnitPermission(BasePermission):
             "DELETE": "delete_campus_unit",
         }
         return validate_permissions(request, user_permissions_dict)
+
+    def has_object_permission(self, request, view, obj):
+        if getattr(request.user, "role", None) == CAMPUS_UNIT_ROLE:
+            return str(obj.id) == str(getattr(request.user, "campus_unit_id", None))
+        return True
 
 
 class ResearchFacilityPermission(BasePermission):
@@ -300,6 +318,12 @@ class GlobalEventPermission(BasePermission):
                 return True
             # Union users cannot delete global events
             return False
+
+        # Campus Unit/Section users can create and edit events for their own scope
+        if hasattr(request.user, 'role') and request.user.role in {CAMPUS_UNIT_ROLE, CAMPUS_SECTION_ROLE}:
+            if request.method in SAFE_METHODS or request.method in ['POST', 'PATCH']:
+                return True
+            return False
         
         # Department users can create and edit global events (for their department and clubs)
         if hasattr(request.user, 'role') and request.user.role == DEPARTMENT_ADMIN_ROLE:
@@ -336,6 +360,16 @@ class GlobalEventPermission(BasePermission):
             if union_id:
                 # Check if the event is linked to the user's union
                 return obj.unions.filter(id=union_id).exists()
+            return False
+
+        # Unit/Section users can only access events linked to their scope
+        if hasattr(request.user, 'role') and request.user.role in {CAMPUS_UNIT_ROLE, CAMPUS_SECTION_ROLE}:
+            unit_id = getattr(request.user, 'campus_unit_id', None)
+            section_id = getattr(request.user, 'campus_section_id', None)
+            if unit_id and hasattr(obj, "units") and obj.units.filter(id=unit_id).exists():
+                return True
+            if section_id and hasattr(obj, "sections") and obj.sections.filter(id=section_id).exists():
+                return True
             return False
         
         # Department users can access events linked to their department or their department's clubs

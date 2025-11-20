@@ -16,13 +16,46 @@ PRIMARY_EMAIL_DOMAIN = "@tcioe.edu.np"
 
 
 class HardwareType(models.TextChoices):
+    # Network Equipment
     ROUTER = "router", _("Router")
     SWITCH = "switch", _("Switch")
-    SERVER = "server", _("Server")
     FIREWALL = "firewall", _("Firewall")
-    ENDPOINT = "endpoint", _("Endpoint")
+    ACCESS_POINT = "access_point", _("Access Point")
+    MODEM = "modem", _("Modem")
+    REPEATER = "repeater", _("Repeater")
+    BRIDGE = "bridge", _("Bridge")
+    GATEWAY = "gateway", _("Gateway")
+    LOAD_BALANCER = "load_balancer", _("Load Balancer")
+    
+    # Computing Equipment  
+    SERVER = "server", _("Server")
+    DESKTOP = "desktop", _("Desktop Computer")
+    LAPTOP = "laptop", _("Laptop")
+    TABLET = "tablet", _("Tablet")
+    MOBILE = "mobile", _("Mobile Device")
+    
+    # Storage Equipment
     STORAGE = "storage", _("Storage Array")
+    NAS = "nas", _("Network Attached Storage")
+    SAN = "san", _("Storage Area Network")
+    
+    # Peripherals
+    PRINTER = "printer", _("Printer")
+    SCANNER = "scanner", _("Scanner")
+    MONITOR = "monitor", _("Monitor")
+    PROJECTOR = "projector", _("Projector")
+    CAMERA = "camera", _("Camera")
+    
+    # Communication
+    TELEPHONE = "telephone", _("Telephone")
+    
+    # Infrastructure
     UPS = "ups", _("UPS / Power")
+    PDU = "pdu", _("Power Distribution Unit")
+    RACK = "rack", _("Server Rack")
+    KVM = "kvm", _("KVM Switch")
+    ENDPOINT = "endpoint", _("Endpoint")
+    
     OTHER = "other", _("Other")
 
 
@@ -95,7 +128,6 @@ class EMISVPSInfo(AuditInfoModel):
         _("slug"),
         unique=True,
         blank=True,
-        default=uuid.uuid4,
         help_text=_("Stable identifier used by automation and IaC"),
     )
     provider = models.CharField(

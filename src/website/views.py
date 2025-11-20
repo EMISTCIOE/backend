@@ -602,6 +602,17 @@ class CampusSectionViewSet(viewsets.ModelViewSet):
             return CampusSectionPatchSerializer
         return CampusSectionRetrieveSerializer
 
+    def get_queryset(self):
+        qs = CampusSection.objects.filter(is_archived=False)
+        user = self.request.user
+        if not user or not user.is_authenticated:
+            return qs.none()
+        if user.is_superuser or getattr(user, "role", None) in {ADMIN_ROLE, EMIS_STAFF_ROLE}:
+            return qs
+        if getattr(user, "role", None) == CAMPUS_SECTION_ROLE and getattr(user, "campus_section_id", None):
+            return qs.filter(id=user.campus_section_id)
+        return qs.none()
+
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         set_binary_files_null_if_empty(["thumbnail", "hero_image"], request.data)
@@ -663,6 +674,17 @@ class CampusUnitViewSet(viewsets.ModelViewSet):
         if self.request.method == "PATCH":
             return CampusUnitPatchSerializer
         return CampusUnitRetrieveSerializer
+
+    def get_queryset(self):
+        qs = CampusUnit.objects.filter(is_archived=False)
+        user = self.request.user
+        if not user or not user.is_authenticated:
+            return qs.none()
+        if user.is_superuser or getattr(user, "role", None) in {ADMIN_ROLE, EMIS_STAFF_ROLE}:
+            return qs
+        if getattr(user, "role", None) == CAMPUS_UNIT_ROLE and getattr(user, "campus_unit_id", None):
+            return qs.filter(id=user.campus_unit_id)
+        return qs.none()
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
