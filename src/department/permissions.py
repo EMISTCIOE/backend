@@ -26,6 +26,10 @@ class DepartmentPermission(BasePermission):
 
 class AcademicProgramPermission(BasePermission):
     def has_permission(self, request, view):
+        # Allow Admin and EMIS staff role-based access
+        if hasattr(request.user, 'role') and request.user.role in {ADMIN_ROLE, EMIS_STAFF_ROLE}:
+            return True
+
         # Allow campus unit and section users to view academic programs for form dropdowns
         if hasattr(request.user, 'role') and request.user.role in {CAMPUS_UNIT_ROLE, CAMPUS_SECTION_ROLE}:
             return request.method in SAFE_METHODS
