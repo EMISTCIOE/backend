@@ -1,6 +1,6 @@
 from rest_framework.permissions import SAFE_METHODS, BasePermission
 
-from src.libs.permissions import get_user_permissions, validate_permissions
+from src.libs.permissions import get_user_permissions, user_has_roles, validate_permissions
 from src.user.constants import (
     ADMIN_ROLE,
     CAMPUS_SECTION_ROLE,
@@ -27,7 +27,7 @@ class CampusInfoPermission(BasePermission):
 class CampusKeyOfficialPermission(BasePermission):
     def has_permission(self, request, view):
         # Allow Admin and EMIS staff role-based access
-        if hasattr(request.user, 'role') and request.user.role in {ADMIN_ROLE, EMIS_STAFF_ROLE}:
+        if user_has_roles(request.user, {ADMIN_ROLE, EMIS_STAFF_ROLE}):
             return True
             
         user_permissions_dict = {
@@ -43,7 +43,7 @@ class CampusKeyOfficialPermission(BasePermission):
 class CampusFeedbackPermission(BasePermission):
     def has_permission(self, request, view):
         # Allow Admin and EMIS staff role-based access
-        if hasattr(request.user, 'role') and request.user.role in {ADMIN_ROLE, EMIS_STAFF_ROLE}:
+        if user_has_roles(request.user, {ADMIN_ROLE, EMIS_STAFF_ROLE}):
             return True
 
         user_permissions_dict = {
@@ -58,7 +58,7 @@ class CampusFeedbackPermission(BasePermission):
 class CampusDownloadPermission(BasePermission):
     def has_permission(self, request, view):
         # Allow Admin and EMIS staff role-based access
-        if hasattr(request.user, 'role') and request.user.role in {ADMIN_ROLE, EMIS_STAFF_ROLE}:
+        if user_has_roles(request.user, {ADMIN_ROLE, EMIS_STAFF_ROLE}):
             return True
 
         user_permissions_dict = {
@@ -130,7 +130,7 @@ class CampusEventPermission(BasePermission):
 class CampusUnionPermission(BasePermission):
     def has_permission(self, request, view):
         # Allow Admin and EMIS staff role-based access
-        if hasattr(request.user, 'role') and request.user.role in {ADMIN_ROLE, EMIS_STAFF_ROLE}:
+        if user_has_roles(request.user, {ADMIN_ROLE, EMIS_STAFF_ROLE}):
             return True
             
         # Union users can view and edit their own union
@@ -162,7 +162,7 @@ class CampusUnionPermission(BasePermission):
 class CampusSectionPermission(BasePermission):
     def has_permission(self, request, view):
         # Allow Admin and EMIS staff role-based access
-        if hasattr(request.user, 'role') and request.user.role in {ADMIN_ROLE, EMIS_STAFF_ROLE}:
+        if user_has_roles(request.user, {ADMIN_ROLE, EMIS_STAFF_ROLE}):
             return True
             
         # Allow section users to manage their own section
@@ -190,7 +190,7 @@ class CampusSectionPermission(BasePermission):
 class CampusUnitPermission(BasePermission):
     def has_permission(self, request, view):
         # Allow Admin and EMIS staff role-based access
-        if hasattr(request.user, 'role') and request.user.role in {ADMIN_ROLE, EMIS_STAFF_ROLE}:
+        if user_has_roles(request.user, {ADMIN_ROLE, EMIS_STAFF_ROLE}):
             return True
             
         # Allow unit users to manage their own unit
@@ -218,7 +218,7 @@ class CampusUnitPermission(BasePermission):
 class ResearchFacilityPermission(BasePermission):
     def has_permission(self, request, view):
         # Allow Admin and EMIS staff role-based access
-        if hasattr(request.user, 'role') and request.user.role in {ADMIN_ROLE, EMIS_STAFF_ROLE}:
+        if user_has_roles(request.user, {ADMIN_ROLE, EMIS_STAFF_ROLE}):
             return True
 
         user_permissions_dict = {
@@ -233,7 +233,7 @@ class ResearchFacilityPermission(BasePermission):
 class StudentClubPermission(BasePermission):
     def has_permission(self, request, view):
         # Allow Admin and EMIS staff role-based access
-        if hasattr(request.user, 'role') and request.user.role in {ADMIN_ROLE, EMIS_STAFF_ROLE}:
+        if user_has_roles(request.user, {ADMIN_ROLE, EMIS_STAFF_ROLE}):
             return True
             
         # Allow campus unit and section users to view student clubs for form dropdowns
@@ -272,7 +272,7 @@ class GlobalGalleryPermission(BasePermission):
             return True
 
         # EMIS staff has full access to the global gallery
-        if getattr(request.user, "role", None) == EMIS_STAFF_ROLE:
+        if user_has_roles(request.user, {EMIS_STAFF_ROLE}):
             return True
 
         # Allow scoped roles to view the global gallery
@@ -298,7 +298,7 @@ class GlobalGalleryPermission(BasePermission):
 class GlobalGalleryImagePermission(BasePermission):
     def has_permission(self, request, view):
         # EMIS staff has full access to gallery images
-        if getattr(request.user, "role", None) == EMIS_STAFF_ROLE:
+        if user_has_roles(request.user, {EMIS_STAFF_ROLE}):
             return True
 
         if getattr(request.user, "role", None) in {
@@ -323,7 +323,7 @@ class GlobalGalleryImagePermission(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         # EMIS staff can manage any gallery image
-        if getattr(request.user, "role", None) == EMIS_STAFF_ROLE:
+        if user_has_roles(request.user, {EMIS_STAFF_ROLE}):
             return True
 
         if getattr(request.user, "role", None) in {
@@ -388,15 +388,11 @@ class GlobalEventPermission(BasePermission):
     
     def _can_change_approval_status(self, user):
         """Check if user can change approval status (admin and EMIS staff)"""
-        return (
-            user.is_superuser or 
-            getattr(user, 'role', None) == ADMIN_ROLE or 
-            getattr(user, 'role', None) == EMIS_STAFF_ROLE
-        )
+        return user_has_roles(user, {ADMIN_ROLE, EMIS_STAFF_ROLE})
     
     def has_permission(self, request, view):
         # EMIS staff has full access to manage global events
-        if getattr(request.user, "role", None) == EMIS_STAFF_ROLE:
+        if user_has_roles(request.user, {EMIS_STAFF_ROLE}):
             return True
 
         # Special case: Admin and EMIS staff can always change approval status
@@ -442,7 +438,7 @@ class GlobalEventPermission(BasePermission):
     
     def has_object_permission(self, request, view, obj):
         # EMIS staff can access any global event
-        if getattr(request.user, "role", None) == EMIS_STAFF_ROLE:
+        if user_has_roles(request.user, {EMIS_STAFF_ROLE}):
             return True
 
         # Special case: Admin and EMIS staff can always change approval status for any event

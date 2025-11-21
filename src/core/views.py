@@ -146,8 +146,8 @@ class DashboardStatsView(APIView):
         # ===== NOTICE STATISTICS =====
         notice_qs = self._active_queryset(Notice)
         total_notices = notice_qs.count()
-        active_notices = notice_qs.filter(status="published").count()
-        draft_notices = notice_qs.filter(status="draft").count()
+        active_notices = notice_qs.filter(status="APPROVED").count()
+        draft_notices = notice_qs.filter(status="DRAFT").count()
         featured_notices = notice_qs.filter(is_featured=True).count()
         recent_notices_count = notice_qs.filter(created_at__gte=seven_days_ago).count()
 
@@ -221,9 +221,11 @@ class DashboardStatsView(APIView):
         pending_feedback = feedback_qs.filter(is_resolved=False).count()
 
         # ===== PENDING/ACTION ITEMS =====
-        pending_notices = draft_notices  # Already calculated above
+        # For notices, count PENDING and DRAFT as pending items
+        pending_notices = notice_qs.filter(status__in=["PENDING", "DRAFT"]).count()
+        # For research, count proposed and ongoing as pending
         pending_research = research_qs.filter(
-            status__in=["draft", "under_review"],
+            status__in=["proposed", "ongoing"],
         ).count()
 
         # Calculate pending events (upcoming events)
@@ -238,9 +240,9 @@ class DashboardStatsView(APIView):
         except ImportError:
             pending_events = 0
 
-        # Calculate pending projects (ongoing/in-progress)
+        # Calculate pending projects (draft and in_progress)
         pending_projects = project_qs.filter(
-            status__in=["ongoing", "in_progress", "planning"],
+            status__in=["draft", "in_progress"],
         ).count()
 
         # ===== GRAPH DATA - TRENDS =====

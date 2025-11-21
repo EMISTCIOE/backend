@@ -358,6 +358,35 @@ class User(AbstractUser):
         refresh = RefreshToken.for_user(self)
         return {"refresh": str(refresh), "access": str(refresh.access_token)}
 
+    def has_role(self, role_codename: str) -> bool:
+        """
+        Check primary role and any active roles assigned via M2M to see
+        if the user has a given role code.
+        """
+        if self.is_superuser:
+            return True
+
+        if getattr(self, "role", None) == role_codename:
+            return True
+
+        if hasattr(self, "roles"):
+            return self.roles.filter(is_active=True, codename=role_codename).exists()
+
+        return False
+
+    def has_any_role(self, role_codenames: set[str]) -> bool:
+        if self.is_superuser:
+            return True
+
+        primary_role = getattr(self, "role", None)
+        if primary_role in role_codenames:
+            return True
+
+        if hasattr(self, "roles"):
+            return self.roles.filter(is_active=True, codename__in=role_codenames).exists()
+
+        return False
+
     def get_all_permissions(self):
         """
         Returns a distinct set of permissions from roles and user-specific permissions.
@@ -377,12 +406,11 @@ class User(AbstractUser):
         return list(combined_permissions)
 
     def is_emis_staff(self) -> bool:
-        return self.role == self.RoleType.EMIS_STAFF or self.is_superuser
+        return self.has_role(self.RoleType.EMIS_STAFF)
 
     def is_campus_admin(self) -> bool:
-        return (
-            self.role in {self.RoleType.ADMIN, self.RoleType.DEPARTMENT_ADMIN}
-            or self.is_superuser
+        return self.has_any_role(
+            {self.RoleType.ADMIN, self.RoleType.DEPARTMENT_ADMIN},
         )
 
     def is_union_member(self) -> bool:

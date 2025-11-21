@@ -1,5 +1,7 @@
 from rest_framework.permissions import SAFE_METHODS
 
+from src.user.constants import EMIS_STAFF_ROLE
+
 
 def get_user_permissions(request):
     user_permissions = []
@@ -11,6 +13,27 @@ def get_user_permissions(request):
     return user.get_all_permissions()
 
 
+def user_has_roles(user, allowed_roles: set[str]) -> bool:
+    """
+    Check whether the user has any of the given roles, considering both the
+    primary role field and any active roles assigned via the M2M `roles`.
+    """
+    if not user or user.is_anonymous:
+        return False
+
+    if getattr(user, "is_superuser", False):
+        return True
+
+    primary_role = getattr(user, "role", None)
+    if primary_role in allowed_roles:
+        return True
+
+    if hasattr(user, "roles"):
+        return user.roles.filter(is_active=True, codename__in=allowed_roles).exists()
+
+    return False
+
+
 def validate_permissions(request, user_permissions_dict):
     if request.user.is_anonymous:
         return False
@@ -19,7 +42,7 @@ def validate_permissions(request, user_permissions_dict):
         return False
 
     # EMIS staff should have blanket access across CMS/backends
-    if hasattr(request.user, "is_emis_staff") and request.user.is_emis_staff():
+    if user_has_roles(request.user, {EMIS_STAFF_ROLE}):
         return True
 
     if request.user.is_superuser:

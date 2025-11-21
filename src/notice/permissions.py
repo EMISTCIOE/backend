@@ -1,6 +1,6 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 
-from src.libs.permissions import validate_permissions
+from src.libs.permissions import validate_permissions, user_has_roles
 from src.user.constants import (
     UNION_ROLE,
     CAMPUS_UNIT_ROLE,
@@ -15,7 +15,7 @@ from src.user.constants import (
 class NoticePermission(BasePermission):
     def has_permission(self, request, view):
         # Allow Admin and EMIS staff role-based access
-        if hasattr(request.user, 'role') and request.user.role in {ADMIN_ROLE, EMIS_STAFF_ROLE}:
+        if user_has_roles(request.user, {ADMIN_ROLE, EMIS_STAFF_ROLE}):
             return True
             
         # Block Union users from notice operations (except viewing)
@@ -42,7 +42,7 @@ class NoticePermission(BasePermission):
     
     def has_object_permission(self, request, view, obj):
         # Allow Admin and EMIS staff role-based access
-        if hasattr(request.user, 'role') and request.user.role in {ADMIN_ROLE, EMIS_STAFF_ROLE}:
+        if user_has_roles(request.user, {ADMIN_ROLE, EMIS_STAFF_ROLE}):
             return True
             
         # Union users can only read notices
@@ -92,7 +92,7 @@ class NoticeStatusUpdatePermission(BasePermission):
 
     def has_permission(self, request, view):
         # Only allow Admin and EMIS Staff to update notice status
-        if hasattr(request.user, 'role') and request.user.role in {ADMIN_ROLE, EMIS_STAFF_ROLE}:
+        if user_has_roles(request.user, {ADMIN_ROLE, EMIS_STAFF_ROLE}):
             return True
         
         # Block Campus Unit and Section users from updating status
