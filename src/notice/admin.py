@@ -23,6 +23,7 @@ class NoticeAdmin(admin.ModelAdmin):
     )
     list_filter = ("status", "category", "department", "is_featured")
     search_fields = ("title",)
+    readonly_fields = ("slug",)
     inlines = [NoticeMediaInline]
 
     def save_formset(self, request, form, formset, change):
