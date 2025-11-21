@@ -85,13 +85,25 @@ def generate_strong_password():
     uppercase_letters = string.ascii_uppercase
     lowercase_letters = string.ascii_lowercase
     digits = string.digits
-    special_characters = string.punctuation
+    special_characters = "@#"  # Only @ and # symbols allowed
 
-    # Combine all character sets
+    # Ensure password has at least one of each required type
+    password_chars = [
+        secrets.choice(uppercase_letters),  # At least one uppercase
+        secrets.choice(lowercase_letters),  # At least one lowercase
+        secrets.choice(digits),             # At least one digit
+        secrets.choice(special_characters), # One symbol (@ or #)
+    ]
+
+    # Fill remaining characters (4 more to make 8 total) with any allowed characters
     all_characters = uppercase_letters + lowercase_letters + digits + special_characters
+    password_chars.extend(secrets.choice(all_characters) for _ in range(4))
+
+    # Shuffle the password to avoid predictable patterns
+    secrets.SystemRandom().shuffle(password_chars)
 
     # Generate a strong password of 8 characters using secrets module
-    return "".join(secrets.choice(all_characters) for _ in range(8))
+    return "".join(password_chars)
 
 
 def generate_secure_otp():

@@ -1,11 +1,15 @@
 from rest_framework.permissions import BasePermission
 
 from src.libs.permissions import validate_permissions
-from src.user.constants import EMIS_STAFF_ROLE
+from src.user.constants import EMIS_STAFF_ROLE, ADMIN_ROLE
 
 
 class UserSetupPermission(BasePermission):
     def has_permission(self, request, view):
+        # Allow Admin and EMIS staff role-based access
+        if hasattr(request.user, 'role') and request.user.role in {ADMIN_ROLE, EMIS_STAFF_ROLE}:
+            return True
+            
         user_permissions_dict = {
             "SAFE_METHODS": "view_user",
             "POST": "add_user",
@@ -18,6 +22,10 @@ class UserSetupPermission(BasePermission):
 
 class RoleSetupPermission(BasePermission):
     def has_permission(self, request, view):
+        # Allow Admin and EMIS staff role-based access
+        if hasattr(request.user, 'role') and request.user.role in {ADMIN_ROLE, EMIS_STAFF_ROLE}:
+            return True
+            
         user_permissions_dict = {
             "SAFE_METHODS": "view_user_role",
             "POST": "add_user_role",

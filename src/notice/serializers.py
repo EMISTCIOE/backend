@@ -153,6 +153,7 @@ class NoticeCreateSerializer(serializers.ModelSerializer):
         queryset=NoticeCategory.objects.filter(is_active=True),
     )
     is_draft = serializers.BooleanField(default=False, write_only=True)
+    is_featured = serializers.BooleanField(default=False, required=False)
 
     class Meta:
         model = Notice
@@ -175,7 +176,6 @@ class NoticeCreateSerializer(serializers.ModelSerializer):
 
         self.fields["campus_unit"].queryset = CampusUnit.objects.filter(is_active=True)
         self.fields["campus_section"].queryset = CampusSection.objects.filter(is_active=True)
-
     def validate(self, attrs):
         """Ensure notice has either a title or at least one media."""
 
@@ -192,6 +192,7 @@ class NoticeCreateSerializer(serializers.ModelSerializer):
         medias_data = validated_data.pop("medias", [])
         campus_unit = validated_data.pop("campus_unit", None)
         campus_section = validated_data.pop("campus_section", None)
+        department = validated_data.get("department")
 
         # Enforce scope for campus unit/section roles
         if user.role == User.RoleType.CAMPUS_UNIT:
@@ -208,22 +209,50 @@ class NoticeCreateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({"campus_section": "You can only post notices for your campus section."})
             campus_section = user.campus_section
 
+        if user.role == User.RoleType.DEPARTMENT_ADMIN:
+            if user.department is None:
+                raise serializers.ValidationError({"department": "Your account is not linked to a department."})
+            department = user.department
+            campus_unit = None
+            campus_section = None
+
+        if user.role == User.RoleType.CLUB:
+            # Club notices must stay within their department
+            club_department = getattr(user.club, "department", None) or user.department
+            if club_department is None:
+                raise serializers.ValidationError({"department": "Your club is not linked to any department."})
+            # If a department is provided, ensure it matches the club's department
+            if department and department != club_department:
+                raise serializers.ValidationError({"department": "You can only post notices for your club's department."})
+            department = club_department
+            campus_unit = None
+            campus_section = None
+
         notice = Notice.objects.create(
             title=(validated_data.get("title") or "").strip(),
             description=(validated_data.get("description") or "").strip(),
-            department=validated_data.get("department"),
+            department=department,
             campus_unit=campus_unit,
             campus_section=campus_section,
             thumbnail=validated_data.get("thumbnail", None),
-            is_featured=validated_data["is_featured"],
+            is_featured=validated_data.get("is_featured", False),  # Default to False for Campus Unit users
             category=validated_data["category"],
             created_by=user,
         )
 
-        if validated_data["is_draft"]:
+        # Default approval flags for scoped roles
+        notice.is_approved_by_department = False
+        notice.is_approved_by_campus = False
+
+        # Draft or pending flow (always pending for department admins / clubs unless explicitly draft)
+        if validated_data.get("is_draft", False):
             notice.status = NoticeStatus.DRAFT.value
         else:
             notice.status = NoticeStatus.PENDING.value
+
+        # Ensure featured is off for scoped roles
+        if user.role in {User.RoleType.CAMPUS_UNIT, User.RoleType.CAMPUS_SECTION, User.RoleType.DEPARTMENT_ADMIN, User.RoleType.CLUB}:
+            notice.is_featured = False
 
         notice.save()
 
@@ -322,6 +351,7 @@ class NoticePatchSerializer(serializers.ModelSerializer):
         medias_data = validated_data.pop("medias", [])
         campus_unit = validated_data.pop("campus_unit", getattr(self.instance, "campus_unit", None))
         campus_section = validated_data.pop("campus_section", getattr(self.instance, "campus_section", None))
+        department = validated_data.get("department", getattr(self.instance, "department", None))
 
         # Handle the thumbnail
         if "thumbnail" in validated_data:
@@ -348,14 +378,37 @@ class NoticePatchSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({"campus_section": "You can only manage notices for your campus section."})
             campus_section = user.campus_section
 
+        if user.role == User.RoleType.DEPARTMENT_ADMIN:
+            if user.department is None:
+                raise serializers.ValidationError({"department": "Your account is not linked to a department."})
+            department = user.department
+            campus_unit = None
+            campus_section = None
+
+        if user.role == User.RoleType.CLUB:
+            club_department = getattr(user.club, "department", None) or user.department
+            if club_department is None:
+                raise serializers.ValidationError({"department": "Your club is not linked to any department."})
+            if department and department != club_department:
+                raise serializers.ValidationError({"department": "You can only manage notices for your club's department."})
+            department = club_department
+            campus_unit = None
+            campus_section = None
+
         instance.campus_unit = campus_unit
         instance.campus_section = campus_section
+        instance.department = department
 
         if "is_draft" in validated_data:
             if validated_data["is_draft"]:
                 instance.status = NoticeStatus.DRAFT.value
             else:
                 instance.status = NoticeStatus.PENDING.value
+
+        if user.role in {User.RoleType.CAMPUS_UNIT, User.RoleType.CAMPUS_SECTION, User.RoleType.DEPARTMENT_ADMIN, User.RoleType.CLUB}:
+            instance.is_approved_by_department = False
+            instance.is_approved_by_campus = False
+            instance.is_featured = False
 
         # Update audit info
         instance.updated_by = user

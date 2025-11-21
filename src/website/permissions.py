@@ -26,6 +26,10 @@ class CampusInfoPermission(BasePermission):
 
 class CampusKeyOfficialPermission(BasePermission):
     def has_permission(self, request, view):
+        # Allow Admin and EMIS staff role-based access
+        if hasattr(request.user, 'role') and request.user.role in {ADMIN_ROLE, EMIS_STAFF_ROLE}:
+            return True
+            
         user_permissions_dict = {
             "SAFE_METHODS": "view_campus_key_official",
             "POST": "add_campus_key_official",
@@ -117,6 +121,10 @@ class CampusEventPermission(BasePermission):
 
 class CampusUnionPermission(BasePermission):
     def has_permission(self, request, view):
+        # Allow Admin and EMIS staff role-based access
+        if hasattr(request.user, 'role') and request.user.role in {ADMIN_ROLE, EMIS_STAFF_ROLE}:
+            return True
+            
         # Union users can view and edit their own union
         if getattr(request.user, 'role', None) == UNION_ROLE:
             if request.method in SAFE_METHODS or request.method == 'PATCH':
@@ -145,9 +153,17 @@ class CampusUnionPermission(BasePermission):
 
 class CampusSectionPermission(BasePermission):
     def has_permission(self, request, view):
+        # Allow Admin and EMIS staff role-based access
+        if hasattr(request.user, 'role') and request.user.role in {ADMIN_ROLE, EMIS_STAFF_ROLE}:
+            return True
+            
         # Allow section users to manage their own section
         if getattr(request.user, "role", None) == CAMPUS_SECTION_ROLE:
             return request.method in SAFE_METHODS or request.method in {"PATCH"}
+            
+        # Allow campus unit users to view sections for notice form dropdowns
+        if getattr(request.user, "role", None) == CAMPUS_UNIT_ROLE:
+            return request.method in SAFE_METHODS
 
         user_permissions_dict = {
             "SAFE_METHODS": "view_campus_section",
@@ -165,9 +181,17 @@ class CampusSectionPermission(BasePermission):
 
 class CampusUnitPermission(BasePermission):
     def has_permission(self, request, view):
+        # Allow Admin and EMIS staff role-based access
+        if hasattr(request.user, 'role') and request.user.role in {ADMIN_ROLE, EMIS_STAFF_ROLE}:
+            return True
+            
         # Allow unit users to manage their own unit
         if getattr(request.user, "role", None) == CAMPUS_UNIT_ROLE:
             return request.method in SAFE_METHODS or request.method in {"PATCH"}
+            
+        # Allow campus section users to view units for notice form dropdowns
+        if getattr(request.user, "role", None) == CAMPUS_SECTION_ROLE:
+            return request.method in SAFE_METHODS
 
         user_permissions_dict = {
             "SAFE_METHODS": "view_campus_unit",
@@ -196,6 +220,14 @@ class ResearchFacilityPermission(BasePermission):
 
 class StudentClubPermission(BasePermission):
     def has_permission(self, request, view):
+        # Allow Admin and EMIS staff role-based access
+        if hasattr(request.user, 'role') and request.user.role in {ADMIN_ROLE, EMIS_STAFF_ROLE}:
+            return True
+            
+        # Allow campus unit and section users to view student clubs for form dropdowns
+        if hasattr(request.user, 'role') and request.user.role in {CAMPUS_UNIT_ROLE, CAMPUS_SECTION_ROLE}:
+            return request.method in SAFE_METHODS
+            
         user_permissions_dict = {
             "SAFE_METHODS": "view_student_club",
             "POST": "add_student_club",
@@ -227,8 +259,14 @@ class GlobalGalleryPermission(BasePermission):
         if request.user and request.user.is_superuser:
             return True
 
-        # Allow union users to view the global gallery
-        if getattr(request.user, "role", None) in {UNION_ROLE, CAMPUS_UNIT_ROLE, CAMPUS_SECTION_ROLE}:
+        # Allow scoped roles to view the global gallery
+        if getattr(request.user, "role", None) in {
+            UNION_ROLE,
+            CAMPUS_UNIT_ROLE,
+            CAMPUS_SECTION_ROLE,
+            DEPARTMENT_ADMIN_ROLE,
+            CLUB_ROLE,
+        }:
             if request.method in SAFE_METHODS:
                 return True
             return False
@@ -243,7 +281,13 @@ class GlobalGalleryPermission(BasePermission):
 
 class GlobalGalleryImagePermission(BasePermission):
     def has_permission(self, request, view):
-        if getattr(request.user, "role", None) in {UNION_ROLE, CAMPUS_UNIT_ROLE, CAMPUS_SECTION_ROLE}:
+        if getattr(request.user, "role", None) in {
+            UNION_ROLE,
+            CAMPUS_UNIT_ROLE,
+            CAMPUS_SECTION_ROLE,
+            DEPARTMENT_ADMIN_ROLE,
+            CLUB_ROLE,
+        }:
             if request.method in SAFE_METHODS or request.method in {"POST", "PATCH", "DELETE"}:
                 return True
             return False
@@ -258,10 +302,18 @@ class GlobalGalleryImagePermission(BasePermission):
         return validate_permissions(request, user_permissions_dict)
 
     def has_object_permission(self, request, view, obj):
-        if getattr(request.user, "role", None) in {UNION_ROLE, CAMPUS_UNIT_ROLE, CAMPUS_SECTION_ROLE}:
+        if getattr(request.user, "role", None) in {
+            UNION_ROLE,
+            CAMPUS_UNIT_ROLE,
+            CAMPUS_SECTION_ROLE,
+            DEPARTMENT_ADMIN_ROLE,
+            CLUB_ROLE,
+        }:
             union_id = getattr(request.user, "union_id", None)
             unit_id = getattr(request.user, "campus_unit_id", None)
             section_id = getattr(request.user, "campus_section_id", None)
+            department_id = getattr(request.user, "department_id", None)
+            club_id = getattr(request.user, "club_id", None)
 
             # Union linkage
             if union_id:
@@ -271,15 +323,27 @@ class GlobalGalleryImagePermission(BasePermission):
                     return True
             # Unit linkage
             if unit_id:
-                if getattr(obj, "campus_unit_id", None) and str(obj.campus_unit_id) == str(unit_id):
+                if getattr(obj, "unit_id", None) and str(obj.unit_id) == str(unit_id):
                     return True
-                if getattr(obj, "global_event_id", None) and obj.global_event.units.filter(id=unit_id).exists():
+                if getattr(obj, "global_event_id", None) and obj.global_event and hasattr(obj.global_event, 'units') and obj.global_event.units.filter(id=unit_id).exists():
                     return True
             # Section linkage
             if section_id:
-                if getattr(obj, "campus_section_id", None) and str(obj.campus_section_id) == str(section_id):
+                if getattr(obj, "section_id", None) and str(obj.section_id) == str(section_id):
                     return True
-                if getattr(obj, "global_event_id", None) and obj.global_event.sections.filter(id=section_id).exists():
+                if getattr(obj, "global_event_id", None) and obj.global_event and hasattr(obj.global_event, 'sections') and obj.global_event.sections.filter(id=section_id).exists():
+                    return True
+            # Department linkage
+            if department_id:
+                if getattr(obj, "department_id", None) and str(obj.department_id) == str(department_id):
+                    return True
+                if getattr(obj, "global_event_id", None) and obj.global_event and hasattr(obj.global_event, "departments") and obj.global_event.departments.filter(id=department_id).exists():
+                    return True
+            # Club linkage
+            if club_id:
+                if getattr(obj, "club_id", None) and str(obj.club_id) == str(club_id):
+                    return True
+                if getattr(obj, "global_event_id", None) and obj.global_event and hasattr(obj.global_event, "clubs") and obj.global_event.clubs.filter(id=club_id).exists():
                     return True
             return False
 
