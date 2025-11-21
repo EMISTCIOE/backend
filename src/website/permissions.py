@@ -259,6 +259,10 @@ class GlobalGalleryPermission(BasePermission):
         if request.user and request.user.is_superuser:
             return True
 
+        # EMIS staff has full access to the global gallery
+        if getattr(request.user, "role", None) == EMIS_STAFF_ROLE:
+            return True
+
         # Allow scoped roles to view the global gallery
         if getattr(request.user, "role", None) in {
             UNION_ROLE,
@@ -281,6 +285,10 @@ class GlobalGalleryPermission(BasePermission):
 
 class GlobalGalleryImagePermission(BasePermission):
     def has_permission(self, request, view):
+        # EMIS staff has full access to gallery images
+        if getattr(request.user, "role", None) == EMIS_STAFF_ROLE:
+            return True
+
         if getattr(request.user, "role", None) in {
             UNION_ROLE,
             CAMPUS_UNIT_ROLE,
@@ -302,6 +310,10 @@ class GlobalGalleryImagePermission(BasePermission):
         return validate_permissions(request, user_permissions_dict)
 
     def has_object_permission(self, request, view, obj):
+        # EMIS staff can manage any gallery image
+        if getattr(request.user, "role", None) == EMIS_STAFF_ROLE:
+            return True
+
         if getattr(request.user, "role", None) in {
             UNION_ROLE,
             CAMPUS_UNIT_ROLE,
@@ -371,6 +383,10 @@ class GlobalEventPermission(BasePermission):
         )
     
     def has_permission(self, request, view):
+        # EMIS staff has full access to manage global events
+        if getattr(request.user, "role", None) == EMIS_STAFF_ROLE:
+            return True
+
         # Special case: Admin and EMIS staff can always change approval status
         if request.method == 'PATCH' and self._can_change_approval_status(request.user):
             if self._is_approval_only_update(request):
@@ -413,6 +429,10 @@ class GlobalEventPermission(BasePermission):
         return validate_permissions(request, user_permissions_dict)
     
     def has_object_permission(self, request, view, obj):
+        # EMIS staff can access any global event
+        if getattr(request.user, "role", None) == EMIS_STAFF_ROLE:
+            return True
+
         # Special case: Admin and EMIS staff can always change approval status for any event
         if request.method == 'PATCH' and self._can_change_approval_status(request.user):
             if self._is_approval_only_update(request):
