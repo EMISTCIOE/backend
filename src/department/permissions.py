@@ -45,6 +45,10 @@ class AcademicProgramPermission(BasePermission):
 
 class DepartmentDownloadPermission(BasePermission):
     def has_permission(self, request, view):
+        # Allow Admin and EMIS staff role-based access
+        if hasattr(request.user, 'role') and request.user.role in {ADMIN_ROLE, EMIS_STAFF_ROLE}:
+            return True
+
         user_permissions_dict = {
             "SAFE_METHODS": "view_department_download",
             "POST": "add_department_download",

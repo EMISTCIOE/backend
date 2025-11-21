@@ -13,6 +13,7 @@ from .views import (
     CampusStaffDesignationViewSet,
     CampusUnionViewSet,
     CampusUnitViewSet,
+    ResearchFacilityViewSet,
     GlobalEventViewSet,
     GlobalGalleryImageViewSet,
     GlobalGalleryListAPIView,
@@ -44,6 +45,7 @@ router.register("student-clubs", StudentClubViewSet, basename="student-club")
 router.register("campus-unions", CampusUnionViewSet, basename="campus-unions")
 router.register("campus-sections", CampusSectionViewSet, basename="campus-section")
 router.register("campus-units", CampusUnitViewSet, basename="campus-unit")
+router.register("research-facilities", ResearchFacilityViewSet, basename="research-facility")
 router.register(
     "gallery-images",
     GlobalGalleryImageViewSet,
