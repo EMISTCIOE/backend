@@ -9,7 +9,13 @@ from src.base.serializers import AbstractInfoRetrieveSerializer
 from src.core.models import FiscalSessionBS
 from src.department.models import Department
 from src.libs.get_context import get_user_by_context
-from src.user.constants import UNION_ROLE, CLUB_ROLE, DEPARTMENT_ADMIN_ROLE
+from src.user.constants import (
+    ADMIN_ROLE,
+    EMIS_STAFF_ROLE,
+    UNION_ROLE,
+    CLUB_ROLE,
+    DEPARTMENT_ADMIN_ROLE,
+)
 from src.libs.mixins import FileHandlingMixin
 from src.website.validators import (
     validate_campus_download_file,
@@ -2220,6 +2226,8 @@ class GlobalEventCreateSerializer(serializers.ModelSerializer):
             "location",
             "registration_link",
             "thumbnail",
+            "is_approved_by_department",
+            "is_approved_by_campus",
             "unions",
             "clubs",
             "departments",
@@ -2233,6 +2241,15 @@ class GlobalEventCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"event_end_date": EVENT_DATE_ERROR})
 
         current_user = get_user_by_context(self.context)
+        can_set_approval = (
+            getattr(current_user, "is_superuser", False)
+            or getattr(current_user, "role", None) in {ADMIN_ROLE, EMIS_STAFF_ROLE}
+        )
+
+        # Only privileged users can set approval flags during creation
+        if not can_set_approval:
+            attrs["is_approved_by_department"] = False
+            attrs["is_approved_by_campus"] = False
         
         # Handle union users
         if hasattr(current_user, 'role') and current_user.role == UNION_ROLE:
@@ -2348,6 +2365,19 @@ class GlobalEventPatchSerializer(FileHandlingMixin, serializers.ModelSerializer)
             "clubs",
             "departments",
         ]
+
+    def validate(self, attrs):
+        current_user = get_user_by_context(self.context)
+        can_set_approval = (
+            getattr(current_user, "is_superuser", False)
+            or getattr(current_user, "role", None) in {ADMIN_ROLE, EMIS_STAFF_ROLE}
+        )
+
+        if not can_set_approval:
+            attrs.pop("is_approved_by_department", None)
+            attrs.pop("is_approved_by_campus", None)
+
+        return attrs
 
     def validate(self, attrs):
         start = attrs.get(
