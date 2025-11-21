@@ -164,7 +164,7 @@ def send_welcome_email(user, password=None, request=None, login_url=None, privil
             origin_url = f"{request.scheme}://{request.get_host()}"
             login_url = f"{origin_url}/login"
         elif not login_url:
-            login_url = "https://emis.tcioe.edu.np/login"
+            login_url = "https://app.tcioe.edu.np/login"
         
         # Get user details
         user_name = user.get_full_name() or user.username

@@ -121,7 +121,7 @@ def send_user_welcome_email(
             user=user,
             password=password,
             request=request,
-            login_url=login_url,
+            login_url="https://app.tcioe.edu.np",
             privileges=privileges
         )
         
