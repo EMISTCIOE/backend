@@ -18,6 +18,10 @@ def validate_permissions(request, user_permissions_dict):
     if not request.user.is_active:
         return False
 
+    # EMIS staff should have blanket access across CMS/backends
+    if hasattr(request.user, "is_emis_staff") and request.user.is_emis_staff():
+        return True
+
     if request.user.is_superuser:
         return True
 
