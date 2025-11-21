@@ -1,4 +1,4 @@
-name: Deploy EMIS Backend to VPS
+name: Deploy TCIOE
 
 on:
   push:
