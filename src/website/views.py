@@ -935,6 +935,39 @@ class GlobalGalleryImageViewSet(viewsets.ModelViewSet):
                 Q(union_id=union_id)
                 | Q(global_event__unions__id=union_id),
             ).distinct()
+        if getattr(user, "role", None) == User.RoleType.CAMPUS_UNIT:
+            unit_id = getattr(user, "campus_unit_id", None)
+            if not unit_id:
+                return queryset.none()
+            return queryset.filter(
+                Q(unit_id=unit_id)
+                | Q(global_event__units__id=unit_id),
+            ).distinct()
+        if getattr(user, "role", None) == User.RoleType.CAMPUS_SECTION:
+            section_id = getattr(user, "campus_section_id", None)
+            if not section_id:
+                return queryset.none()
+            return queryset.filter(
+                Q(section_id=section_id)
+                | Q(global_event__sections__id=section_id),
+            ).distinct()
+        if getattr(user, "role", None) == User.RoleType.DEPARTMENT_ADMIN:
+            department_id = getattr(user, "department_id", None)
+            if not department_id:
+                return queryset.none()
+            return queryset.filter(
+                Q(department_id=department_id)
+                | Q(global_event__departments__id=department_id)
+                | Q(global_event__clubs__department_id=department_id),
+            ).distinct()
+        if getattr(user, "role", None) == User.RoleType.CLUB:
+            club_id = getattr(user, "club_id", None)
+            if not club_id:
+                return queryset.none()
+            return queryset.filter(
+                Q(club_id=club_id)
+                | Q(global_event__clubs__id=club_id),
+            ).distinct()
         return queryset
 
     def get_serializer_class(self):
