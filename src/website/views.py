@@ -939,18 +939,14 @@ class GlobalGalleryImageViewSet(viewsets.ModelViewSet):
             unit_id = getattr(user, "campus_unit_id", None)
             if not unit_id:
                 return queryset.none()
-            return queryset.filter(
-                Q(unit_id=unit_id)
-                | Q(global_event__units__id=unit_id),
-            ).distinct()
+            # GlobalEvent currently does not track campus units; limit to direct unit-linked images
+            return queryset.filter(Q(unit_id=unit_id)).distinct()
         if getattr(user, "role", None) == User.RoleType.CAMPUS_SECTION:
             section_id = getattr(user, "campus_section_id", None)
             if not section_id:
                 return queryset.none()
-            return queryset.filter(
-                Q(section_id=section_id)
-                | Q(global_event__sections__id=section_id),
-            ).distinct()
+            # GlobalEvent currently does not track campus sections; limit to direct section-linked images
+            return queryset.filter(Q(section_id=section_id)).distinct()
         if getattr(user, "role", None) == User.RoleType.DEPARTMENT_ADMIN:
             department_id = getattr(user, "department_id", None)
             if not department_id:
