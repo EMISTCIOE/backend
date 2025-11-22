@@ -14,16 +14,13 @@ class PublicArticleViewSet(viewsets.ReadOnlyModelViewSet):
     """
 
     permission_classes = [AllowAny]
-    queryset = (
-        Article.objects.select_related("department").prefetch_related("authors").all()
-    )
     serializer_class = ArticleSerializer
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
         filters.OrderingFilter,
     ]
-    filterset_fields = ["department__slug", "genre"]
+    filterset_fields = ["department__slug", "academic_program__slug", "genre"]
     search_fields = [
         "title",
         "abstract",
@@ -34,6 +31,23 @@ class PublicArticleViewSet(viewsets.ReadOnlyModelViewSet):
     ]
     ordering_fields = ["date_published", "title"]
     ordering = ["-date_published"]
+
+    def get_queryset(self):
+        qs = (
+            Article.objects.select_related("department", "academic_program")
+            .prefetch_related("authors")
+            .all()
+        )
+
+        department_slug = self.request.query_params.get("department_slug")
+        if department_slug:
+            qs = qs.filter(department__slug=department_slug)
+
+        program_slug = self.request.query_params.get("program_slug")
+        if program_slug:
+            qs = qs.filter(academic_program__slug=program_slug)
+
+        return qs
 
     @action(detail=False, methods=["get"])
     def featured(self, request):

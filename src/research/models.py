@@ -3,7 +3,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from src.base.models import AuditInfoModel
-from src.department.models import Department
+from src.department.models import AcademicProgram, Department
 
 RESEARCH_STATUS_CHOICES = [
     ("proposed", _("Proposed")),
@@ -75,6 +75,16 @@ class Research(AuditInfoModel):
         blank=True,
         verbose_name=_("Department"),
         help_text=_("Primary department (optional)"),
+    )
+
+    academic_program = models.ForeignKey(
+        AcademicProgram,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="research_items",
+        verbose_name=_("Academic Program"),
+        help_text=_("Link to a specific academic program (optional)"),
     )
 
     principal_investigator = models.CharField(

@@ -23,14 +23,22 @@ class PublicResearchViewSet(viewsets.ReadOnlyModelViewSet):
         filters.SearchFilter,
         filters.OrderingFilter,
     ]
-    filterset_fields = ["research_type", "department", "is_featured", "status"]
+    filterset_fields = [
+        "research_type",
+        "department",
+        "department__slug",
+        "academic_program",
+        "academic_program__slug",
+        "is_featured",
+        "status",
+    ]
     search_fields = ["title", "abstract", "keywords"]
     ordering_fields = ["created_at", "views_count", "title", "start_date"]
     ordering = ["-created_at"]
 
     def get_queryset(self):
-        return (
-            Research.objects.select_related("department")
+        qs = (
+            Research.objects.select_related("department", "academic_program")
             .prefetch_related(
                 "participants__department",
                 "category_assignments__category",
@@ -38,6 +46,16 @@ class PublicResearchViewSet(viewsets.ReadOnlyModelViewSet):
             )
             .filter(is_published=True)
         )
+
+        department_slug = self.request.query_params.get("department_slug")
+        if department_slug:
+            qs = qs.filter(department__slug=department_slug)
+
+        program_slug = self.request.query_params.get("program_slug")
+        if program_slug:
+            qs = qs.filter(academic_program__slug=program_slug)
+
+        return qs
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -68,6 +86,21 @@ class PublicResearchViewSet(viewsets.ReadOnlyModelViewSet):
             serializer = ResearchListSerializer(research, many=True)
             return Response(serializer.data)
         return Response({"error": "department_slug parameter is required"}, status=400)
+
+    @action(detail=False, methods=["get"])
+    def by_program(self, request):
+        """Get research by academic program"""
+        program_slug = request.query_params.get("program_slug")
+        if program_slug:
+            research = self.get_queryset().filter(
+                academic_program__slug=program_slug
+            )
+            serializer = ResearchListSerializer(research, many=True)
+            return Response(serializer.data)
+        return Response(
+            {"error": "program_slug parameter is required"},
+            status=400,
+        )
 
     @action(detail=False, methods=["get"])
     def by_type(self, request):

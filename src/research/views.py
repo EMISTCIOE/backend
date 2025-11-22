@@ -29,6 +29,7 @@ class ResearchViewSet(viewsets.ModelViewSet):
         "status",
         "research_type",
         "department",
+        "academic_program",
         "is_featured",
         "is_published",
     ]
@@ -44,7 +45,7 @@ class ResearchViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return (
-            Research.objects.select_related("department")
+            Research.objects.select_related("department", "academic_program")
             .prefetch_related(
                 "participants__department",
                 "category_assignments__category",
@@ -90,6 +91,19 @@ class ResearchViewSet(viewsets.ModelViewSet):
             serializer = ResearchListSerializer(research, many=True)
             return Response(serializer.data)
         return Response({"error": "department_id parameter is required"}, status=400)
+
+    @action(detail=False, methods=["get"])
+    def by_program(self, request):
+        """Get research grouped by academic program"""
+        program_id = request.query_params.get("program_id")
+        if program_id:
+            research = self.get_queryset().filter(
+                academic_program_id=program_id,
+                is_published=True,
+            )
+            serializer = ResearchListSerializer(research, many=True)
+            return Response(serializer.data)
+        return Response({"error": "program_id parameter is required"}, status=400)
 
     @action(detail=False, methods=["get"])
     def by_participant(self, request):

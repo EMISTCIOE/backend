@@ -30,6 +30,16 @@ class ProjectTagSerializer(serializers.ModelSerializer):
 
 class ProjectListSerializer(serializers.ModelSerializer):
     department_name = serializers.CharField(source="department.name", read_only=True)
+    academic_program_name = serializers.CharField(
+        source="academic_program.name",
+        read_only=True,
+        allow_null=True,
+    )
+    academic_program_short_name = serializers.CharField(
+        source="academic_program.short_name",
+        read_only=True,
+        allow_null=True,
+    )
     members_count = serializers.SerializerMethodField()
     tags = serializers.SerializerMethodField()
 
@@ -43,6 +53,9 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "status",
             "department",
             "department_name",
+            "academic_program",
+            "academic_program_name",
+            "academic_program_short_name",
             "supervisor_name",
             "academic_year",
             "thumbnail",
@@ -68,6 +81,16 @@ class ProjectListSerializer(serializers.ModelSerializer):
 
 class ProjectDetailSerializer(serializers.ModelSerializer):
     department_name = serializers.CharField(source="department.name", read_only=True)
+    academic_program_name = serializers.CharField(
+        source="academic_program.name",
+        read_only=True,
+        allow_null=True,
+    )
+    academic_program_short_name = serializers.CharField(
+        source="academic_program.short_name",
+        read_only=True,
+        allow_null=True,
+    )
     members = ProjectMemberSerializer(many=True, read_only=True)
     tags = serializers.SerializerMethodField()
 
@@ -82,6 +105,9 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
             "status",
             "department",
             "department_name",
+            "academic_program",
+            "academic_program_name",
+            "academic_program_short_name",
             "supervisor_name",
             "supervisor_email",
             "start_date",
@@ -127,6 +153,7 @@ class ProjectCreateUpdateSerializer(serializers.ModelSerializer):
             "project_type",
             "status",
             "department",
+            "academic_program",
             "supervisor_name",
             "supervisor_email",
             "start_date",

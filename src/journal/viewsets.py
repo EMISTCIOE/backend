@@ -6,7 +6,11 @@ from .serializers import ArticleSerializer, AuthorSerializer, BoardMemberSeriali
 
 
 class ArticleViewsets(viewsets.ModelViewSet):
-    queryset = Article.objects.all()
+    queryset = (
+        Article.objects.select_related("department", "academic_program")
+        .prefetch_related("authors")
+        .all()
+    )
     serializer_class = ArticleSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 

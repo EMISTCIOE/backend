@@ -29,6 +29,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         "status",
         "project_type",
         "department",
+        "academic_program",
         "is_featured",
         "is_published",
     ]
@@ -44,7 +45,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return (
-            Project.objects.select_related("department")
+            Project.objects.select_related("department", "academic_program")
             .prefetch_related("members__department", "tag_assignments__tag")
             .all()
         )
@@ -86,6 +87,19 @@ class ProjectViewSet(viewsets.ModelViewSet):
             serializer = ProjectListSerializer(projects, many=True)
             return Response(serializer.data)
         return Response({"error": "department_id parameter is required"}, status=400)
+
+    @action(detail=False, methods=["get"])
+    def by_program(self, request):
+        """Get projects grouped by academic program"""
+        program_id = request.query_params.get("program_id")
+        if program_id:
+            projects = self.get_queryset().filter(
+                academic_program_id=program_id,
+                is_published=True,
+            )
+            serializer = ProjectListSerializer(projects, many=True)
+            return Response(serializer.data)
+        return Response({"error": "program_id parameter is required"}, status=400)
 
     @action(detail=False, methods=["get"])
     def search_advanced(self, request):

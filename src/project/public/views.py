@@ -23,17 +23,34 @@ class PublicProjectViewSet(viewsets.ReadOnlyModelViewSet):
         filters.SearchFilter,
         filters.OrderingFilter,
     ]
-    filterset_fields = ["project_type", "department", "is_featured"]
+    filterset_fields = [
+        "project_type",
+        "department",
+        "department__slug",
+        "academic_program",
+        "academic_program__slug",
+        "is_featured",
+    ]
     search_fields = ["title", "abstract", "technologies_used"]
     ordering_fields = ["created_at", "views_count", "title"]
     ordering = ["-created_at"]
 
     def get_queryset(self):
-        return (
-            Project.objects.select_related("department")
+        qs = (
+            Project.objects.select_related("department", "academic_program")
             .prefetch_related("members__department", "tag_assignments__tag")
             .filter(is_published=True)
         )
+
+        department_slug = self.request.query_params.get("department_slug")
+        if department_slug:
+            qs = qs.filter(department__slug=department_slug)
+
+        program_slug = self.request.query_params.get("program_slug")
+        if program_slug:
+            qs = qs.filter(academic_program__slug=program_slug)
+
+        return qs
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -64,6 +81,21 @@ class PublicProjectViewSet(viewsets.ReadOnlyModelViewSet):
             serializer = ProjectListSerializer(projects, many=True)
             return Response(serializer.data)
         return Response({"error": "department_slug parameter is required"}, status=400)
+
+    @action(detail=False, methods=["get"])
+    def by_program(self, request):
+        """Get projects by academic program"""
+        program_slug = request.query_params.get("program_slug")
+        if program_slug:
+            projects = self.get_queryset().filter(
+                academic_program__slug=program_slug
+            )
+            serializer = ProjectListSerializer(projects, many=True)
+            return Response(serializer.data)
+        return Response(
+            {"error": "program_slug parameter is required"},
+            status=400,
+        )
 
     @action(detail=False, methods=["get"])
     def by_type(self, request):

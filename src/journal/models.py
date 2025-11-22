@@ -5,6 +5,8 @@ from django.db import models
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
+from src.department.models import AcademicProgram
+
 # Create your models here.
 
 
@@ -58,6 +60,15 @@ class Article(models.Model):
         verbose_name=_("Department"),
         help_text=_("Department associated with this article (optional)"),
         related_name="journal_articles",
+    )
+    academic_program = models.ForeignKey(
+        AcademicProgram,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name=_("Academic Program"),
+        help_text=_("Academic program associated with this article (optional)"),
+        related_name="journal_articles_by_program",
     )
     authors = models.ManyToManyField(Author, related_name="article_author")
     submission_id = models.IntegerField(

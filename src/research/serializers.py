@@ -54,6 +54,16 @@ class ResearchPublicationSerializer(serializers.ModelSerializer):
 
 class ResearchListSerializer(serializers.ModelSerializer):
     department_name = serializers.CharField(source="department.name", read_only=True)
+    academic_program_name = serializers.CharField(
+        source="academic_program.name",
+        read_only=True,
+        allow_null=True,
+    )
+    academic_program_short_name = serializers.CharField(
+        source="academic_program.short_name",
+        read_only=True,
+        allow_null=True,
+    )
     participants_count = serializers.SerializerMethodField()
     categories = serializers.SerializerMethodField()
     principal_investigator_short = serializers.SerializerMethodField()
@@ -68,6 +78,9 @@ class ResearchListSerializer(serializers.ModelSerializer):
             "status",
             "department",
             "department_name",
+            "academic_program",
+            "academic_program_name",
+            "academic_program_short_name",
             "principal_investigator_short",
             "funding_agency",
             "funding_amount",
@@ -103,6 +116,16 @@ class ResearchListSerializer(serializers.ModelSerializer):
 
 class ResearchDetailSerializer(serializers.ModelSerializer):
     department_name = serializers.CharField(source="department.name", read_only=True)
+    academic_program_name = serializers.CharField(
+        source="academic_program.name",
+        read_only=True,
+        allow_null=True,
+    )
+    academic_program_short_name = serializers.CharField(
+        source="academic_program.short_name",
+        read_only=True,
+        allow_null=True,
+    )
     participants = ResearchParticipantSerializer(many=True, read_only=True)
     categories = serializers.SerializerMethodField()
     publications = ResearchPublicationSerializer(many=True, read_only=True)
@@ -118,6 +141,9 @@ class ResearchDetailSerializer(serializers.ModelSerializer):
             "status",
             "department",
             "department_name",
+            "academic_program",
+            "academic_program_name",
+            "academic_program_short_name",
             "principal_investigator",
             "pi_email",
             "start_date",
@@ -169,6 +195,7 @@ class ResearchCreateUpdateSerializer(serializers.ModelSerializer):
             "research_type",
             "status",
             "department",
+            "academic_program",
             "principal_investigator",
             "pi_email",
             "start_date",
