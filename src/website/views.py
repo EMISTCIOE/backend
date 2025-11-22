@@ -16,6 +16,7 @@ from rest_framework.viewsets import ReadOnlyModelViewSet
 from src.libs.send_mail import send_campus_feedback_reply
 from src.libs.utils import set_binary_files_null_if_empty
 from src.user.constants import ADMIN_ROLE, EMIS_STAFF_ROLE, CAMPUS_SECTION_ROLE, CAMPUS_UNIT_ROLE
+from src.user.models import User
 from src.website.messages import (
     ACADEMIC_CALENDER_DELETED_SUCCESS,
     ACADEMIC_CALENDER_NOT_FOUND,
@@ -809,6 +810,22 @@ class StudentClubViewSet(viewsets.ModelViewSet):
     ordering_fields = ["-created_at", "name"]
     http_method_names = ["get", "head", "options", "post", "patch", "delete"]
 
+    def get_queryset(self):
+        queryset = StudentClub.objects.filter(is_archived=False)
+        user = self.request.user
+
+        if getattr(user, "role", None) == User.RoleType.CLUB:
+            club_id = getattr(user, "club_id", None)
+            return queryset.filter(id=club_id) if club_id else queryset.none()
+
+        if getattr(user, "role", None) == User.RoleType.DEPARTMENT_ADMIN:
+            department_id = getattr(user, "department_id", None)
+            if department_id:
+                return queryset.filter(department_id=department_id)
+            return queryset.none()
+
+        return queryset
+
     def get_serializer_class(self):
         if self.request.method == "GET":
             return (
@@ -1001,6 +1018,11 @@ class GlobalEventViewSet(viewsets.ModelViewSet):
                 return queryset.filter(
                     Q(departments__id=dept_id) | Q(clubs__department_id=dept_id)
                 ).distinct()
+            return queryset.none()
+        if getattr(user, "role", None) == user.RoleType.CLUB:
+            club_id = getattr(user, "club_id", None)
+            if club_id:
+                return queryset.filter(clubs__id=club_id).distinct()
             return queryset.none()
         return queryset
 

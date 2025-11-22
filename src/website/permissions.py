@@ -248,12 +248,20 @@ class StudentClubPermission(BasePermission):
         if user_has_roles(request.user, {ADMIN_ROLE, EMIS_STAFF_ROLE}):
             return True
 
+        role = getattr(request.user, 'role', None)
+
+        # Club users can view and update their own club (and manage members), but cannot delete the club
+        if role == CLUB_ROLE:
+            if getattr(view, "action", "") == "delete_member":
+                return True
+            return request.method in SAFE_METHODS or request.method == "PATCH"
+
         # Department admins can view student clubs linked to their department
-        if getattr(request.user, 'role', None) == DEPARTMENT_ADMIN_ROLE:
+        if role == DEPARTMENT_ADMIN_ROLE:
             return request.method in SAFE_METHODS
-            
+
         # Allow campus unit and section users to view student clubs for form dropdowns
-        if hasattr(request.user, 'role') and request.user.role in {CAMPUS_UNIT_ROLE, CAMPUS_SECTION_ROLE}:
+        if role in {CAMPUS_UNIT_ROLE, CAMPUS_SECTION_ROLE}:
             return request.method in SAFE_METHODS
             
         user_permissions_dict = {
@@ -263,6 +271,17 @@ class StudentClubPermission(BasePermission):
             "DELETE": "delete_student_club",
         }
         return validate_permissions(request, user_permissions_dict)
+
+    def has_object_permission(self, request, view, obj):
+        role = getattr(request.user, "role", None)
+
+        if role == CLUB_ROLE:
+            club_id = getattr(request.user, "club_id", None)
+            if not club_id:
+                return False
+            return str(obj.id) == str(club_id)
+
+        return True
 
 
 class StudentClubEventPermission(BasePermission):

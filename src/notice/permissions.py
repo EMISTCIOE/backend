@@ -21,6 +21,10 @@ class NoticePermission(BasePermission):
         # Block Union users from notice operations (except viewing)
         if user_has_roles(request.user, {UNION_ROLE}):
             return request.method in SAFE_METHODS
+
+        # Club users should not have access to notice module
+        if user_has_roles(request.user, {CLUB_ROLE}):
+            return False
         
         # Allow scoped roles basic notice access (view/create/update) within CMS
         if user_has_roles(
@@ -29,7 +33,6 @@ class NoticePermission(BasePermission):
                 CAMPUS_UNIT_ROLE,
                 CAMPUS_SECTION_ROLE,
                 DEPARTMENT_ADMIN_ROLE,
-                CLUB_ROLE,
             },
         ):
             return True
@@ -51,6 +54,10 @@ class NoticePermission(BasePermission):
         # Union users can only read notices
         if user_has_roles(request.user, {UNION_ROLE}):
             return request.method in SAFE_METHODS
+
+        # Club users should not have access to notice objects
+        if user_has_roles(request.user, {CLUB_ROLE}):
+            return False
         
         # Unit users can only access notices linked to their unit
         if user_has_roles(request.user, {CAMPUS_UNIT_ROLE}):
@@ -87,13 +94,6 @@ class NoticePermission(BasePermission):
 
             return False
 
-        # Club users can only access notices linked to their department (club notices flow)
-        if user_has_roles(request.user, {CLUB_ROLE}):
-            department_id = getattr(request.user, 'department_id', None)
-            if department_id:
-                return obj.department_id == department_id
-            return False
-        
         # Other roles: check standard permissions
         user_permissions_dict = {
             "SAFE_METHODS": "view_notice",
