@@ -2273,13 +2273,20 @@ class GlobalEventCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"event_end_date": EVENT_DATE_ERROR})
 
         current_user = get_user_by_context(self.context)
-        can_set_approval = (
-            getattr(current_user, "is_superuser", False)
-            or getattr(current_user, "role", None) in {ADMIN_ROLE, EMIS_STAFF_ROLE}
-        )
+        is_privileged = getattr(current_user, "is_superuser", False) or getattr(
+            current_user, "role", None
+        ) in {ADMIN_ROLE, EMIS_STAFF_ROLE}
+        is_department_admin = getattr(current_user, "role", None) == DEPARTMENT_ADMIN_ROLE
 
-        # Only privileged users can set approval flags during creation
-        if not can_set_approval:
+        # Approval rules
+        if is_privileged:
+            pass  # can set both flags
+        elif is_department_admin:
+            # Department admins can only set department approval; campus approval stays False
+            attrs["is_approved_by_campus"] = False
+            if "is_approved_by_department" not in attrs:
+                attrs["is_approved_by_department"] = False
+        else:
             attrs["is_approved_by_department"] = False
             attrs["is_approved_by_campus"] = False
         
@@ -2421,6 +2428,20 @@ class GlobalEventPatchSerializer(FileHandlingMixin, serializers.ModelSerializer)
             raise serializers.ValidationError({"event_end_date": EVENT_DATE_ERROR})
 
         current_user = get_user_by_context(self.context)
+        is_privileged = getattr(current_user, "is_superuser", False) or getattr(
+            current_user, "role", None
+        ) in {ADMIN_ROLE, EMIS_STAFF_ROLE}
+        is_department_admin = getattr(current_user, "role", None) == DEPARTMENT_ADMIN_ROLE
+
+        # Approval rules: privileged can set both; department admin only department; others none
+        if not is_privileged:
+            if is_department_admin:
+                attrs.pop("is_approved_by_campus", None)
+                if "is_approved_by_department" not in attrs:
+                    attrs["is_approved_by_department"] = False
+            else:
+                attrs.pop("is_approved_by_department", None)
+                attrs.pop("is_approved_by_campus", None)
         
         # Handle union users - fixed to match create serializer logic
         if hasattr(current_user, 'role') and current_user.role == UNION_ROLE:

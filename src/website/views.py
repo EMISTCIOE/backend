@@ -995,6 +995,13 @@ class GlobalEventViewSet(viewsets.ModelViewSet):
             if union_id:
                 return queryset.filter(unions__id=union_id).distinct()
             return queryset.none()
+        if getattr(user, "role", None) == user.RoleType.DEPARTMENT_ADMIN:
+            dept_id = getattr(user, "department_id", None)
+            if dept_id:
+                return queryset.filter(
+                    Q(departments__id=dept_id) | Q(clubs__department_id=dept_id)
+                ).distinct()
+            return queryset.none()
         return queryset
 
     def get_serializer_class(self):

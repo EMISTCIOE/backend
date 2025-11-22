@@ -241,8 +241,17 @@ class NoticeCreateSerializer(serializers.ModelSerializer):
         )
 
         # Default approval flags for scoped roles
-        notice.is_approved_by_department = False
-        notice.is_approved_by_campus = False
+        if user.is_superuser or user.is_emis_staff():
+            pass  # can set via payload
+        elif user.role == User.RoleType.DEPARTMENT_ADMIN:
+            notice.is_approved_by_campus = False
+            notice.is_approved_by_department = validated_data.get(
+                "is_approved_by_department",
+                False,
+            )
+        else:
+            notice.is_approved_by_department = False
+            notice.is_approved_by_campus = False
 
         # Draft or pending flow (always pending for department admins / clubs unless explicitly draft)
         if validated_data.get("is_draft", False):
@@ -405,9 +414,17 @@ class NoticePatchSerializer(serializers.ModelSerializer):
             else:
                 instance.status = NoticeStatus.PENDING.value
 
-        if user.role in {User.RoleType.CAMPUS_UNIT, User.RoleType.CAMPUS_SECTION, User.RoleType.DEPARTMENT_ADMIN, User.RoleType.CLUB}:
+        if user.role in {User.RoleType.CAMPUS_UNIT, User.RoleType.CAMPUS_SECTION, User.RoleType.CLUB}:
             instance.is_approved_by_department = False
             instance.is_approved_by_campus = False
+            instance.is_featured = False
+        elif user.role == User.RoleType.DEPARTMENT_ADMIN:
+            # Department admins can toggle department approval, not campus approval
+            instance.is_approved_by_campus = False
+            if "is_approved_by_department" in validated_data:
+                instance.is_approved_by_department = validated_data["is_approved_by_department"]
+            else:
+                instance.is_approved_by_department = False
             instance.is_featured = False
 
         # Update audit info

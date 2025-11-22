@@ -387,15 +387,15 @@ class GlobalEventPermission(BasePermission):
         return data_keys.issubset(approval_fields) and len(data_keys) > 0
     
     def _can_change_approval_status(self, user):
-        """Check if user can change approval status (admin and EMIS staff)"""
-        return user_has_roles(user, {ADMIN_ROLE, EMIS_STAFF_ROLE})
+        """Check if user can change approval status (admin, EMIS staff, department admin for dept approval)"""
+        return user_has_roles(user, {ADMIN_ROLE, EMIS_STAFF_ROLE, DEPARTMENT_ADMIN_ROLE})
     
     def has_permission(self, request, view):
         # EMIS staff has full access to manage global events
         if user_has_roles(request.user, {EMIS_STAFF_ROLE}):
             return True
 
-        # Special case: Admin and EMIS staff can always change approval status
+        # Special case: Admin/EMIS/DeptAdmin can always change approval status
         if request.method == 'PATCH' and self._can_change_approval_status(request.user):
             if self._is_approval_only_update(request):
                 return True
