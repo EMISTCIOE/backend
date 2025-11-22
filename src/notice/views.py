@@ -69,17 +69,17 @@ class NoticeViewSet(ModelViewSet):
         if not user or not user.is_authenticated:
             return qs.none()
 
-        if user.is_superuser or user.is_emis_staff() or user.is_campus_admin():
+        if user.is_superuser or user.is_emis_staff() or user.has_role(User.RoleType.ADMIN):
             return qs
+
+        if user.has_role(User.RoleType.DEPARTMENT_ADMIN):
+            return qs.filter(department_id=user.department_id) if user.department_id else qs.none()
 
         if user.role == User.RoleType.CAMPUS_UNIT:
             return qs.filter(campus_unit_id=user.campus_unit_id) if user.campus_unit_id else qs.none()
 
         if user.role == User.RoleType.CAMPUS_SECTION:
             return qs.filter(campus_section_id=user.campus_section_id) if user.campus_section_id else qs.none()
-
-        if user.role == User.RoleType.DEPARTMENT_ADMIN:
-            return qs.filter(department_id=user.department_id) if user.department_id else qs.none()
 
         return qs
 
@@ -186,8 +186,11 @@ class NoticeStatusUpdateAPIView(UpdateAPIView):
         if not user or not user.is_authenticated:
             return qs.none()
 
-        if user.is_superuser or user.is_emis_staff() or user.is_campus_admin():
+        if user.is_superuser or user.is_emis_staff() or user.has_role(User.RoleType.ADMIN):
             return qs
+
+        if user.has_role(User.RoleType.DEPARTMENT_ADMIN):
+            return qs.filter(department_id=user.department_id) if user.department_id else qs.none()
 
         if user.role == User.RoleType.CAMPUS_UNIT:
             return qs.filter(campus_unit_id=user.campus_unit_id) if user.campus_unit_id else qs.none()

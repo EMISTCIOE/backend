@@ -302,6 +302,8 @@ class NoticeMediaForNoticePatchSerializer(serializers.ModelSerializer):
 class NoticePatchSerializer(serializers.ModelSerializer):
     medias = NoticeMediaForNoticePatchSerializer(many=True, required=False)
     thumbnail = serializers.ImageField(allow_null=True, required=False)
+    is_approved_by_department = serializers.BooleanField(required=False)
+    is_approved_by_campus = serializers.BooleanField(required=False)
     department = serializers.PrimaryKeyRelatedField(
         queryset=Department.objects.filter(is_active=True),
         required=False,
@@ -332,6 +334,8 @@ class NoticePatchSerializer(serializers.ModelSerializer):
             "thumbnail",
             "is_draft",
             "is_featured",
+            "is_approved_by_department",
+            "is_approved_by_campus",
             "description",
             "medias",
             "campus_unit",
@@ -423,9 +427,19 @@ class NoticePatchSerializer(serializers.ModelSerializer):
             instance.is_approved_by_campus = False
             if "is_approved_by_department" in validated_data:
                 instance.is_approved_by_department = validated_data["is_approved_by_department"]
-            else:
-                instance.is_approved_by_department = False
+            # if not provided, keep current value (or default False on create path)
             instance.is_featured = False
+        elif user.is_superuser or user.is_emis_staff() or user.has_role(User.RoleType.ADMIN):
+            if "is_approved_by_department" in validated_data:
+                instance.is_approved_by_department = validated_data["is_approved_by_department"]
+            if "is_approved_by_campus" in validated_data:
+                instance.is_approved_by_campus = validated_data["is_approved_by_campus"]
+        else:
+            # Users with explicit permissions can only update provided approval flags
+            if "is_approved_by_department" in validated_data:
+                instance.is_approved_by_department = validated_data["is_approved_by_department"]
+            if "is_approved_by_campus" in validated_data:
+                instance.is_approved_by_campus = validated_data["is_approved_by_campus"]
 
         # Update audit info
         instance.updated_by = user

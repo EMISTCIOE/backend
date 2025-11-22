@@ -132,6 +132,10 @@ class CampusUnionPermission(BasePermission):
         # Allow Admin and EMIS staff role-based access
         if user_has_roles(request.user, {ADMIN_ROLE, EMIS_STAFF_ROLE}):
             return True
+
+        # Department admins can fetch campus unions for their workflows
+        if getattr(request.user, "role", None) == DEPARTMENT_ADMIN_ROLE:
+            return request.method in SAFE_METHODS
             
         # Union users can view and edit their own union
         if getattr(request.user, 'role', None) == UNION_ROLE:
@@ -168,6 +172,10 @@ class CampusSectionPermission(BasePermission):
         # Allow section users to manage their own section
         if getattr(request.user, "role", None) == CAMPUS_SECTION_ROLE:
             return request.method in SAFE_METHODS or request.method in {"PATCH"}
+
+        # Department admins can view sections for their own workflows
+        if getattr(request.user, "role", None) == DEPARTMENT_ADMIN_ROLE:
+            return request.method in SAFE_METHODS
             
         # Allow campus unit users to view sections for notice form dropdowns
         if getattr(request.user, "role", None) == CAMPUS_UNIT_ROLE:
@@ -196,6 +204,10 @@ class CampusUnitPermission(BasePermission):
         # Allow unit users to manage their own unit
         if getattr(request.user, "role", None) == CAMPUS_UNIT_ROLE:
             return request.method in SAFE_METHODS or request.method in {"PATCH"}
+
+        # Department admins can view units for their own workflows
+        if getattr(request.user, "role", None) == DEPARTMENT_ADMIN_ROLE:
+            return request.method in SAFE_METHODS
             
         # Allow campus section users to view units for notice form dropdowns
         if getattr(request.user, "role", None) == CAMPUS_SECTION_ROLE:
@@ -235,6 +247,10 @@ class StudentClubPermission(BasePermission):
         # Allow Admin and EMIS staff role-based access
         if user_has_roles(request.user, {ADMIN_ROLE, EMIS_STAFF_ROLE}):
             return True
+
+        # Department admins can view student clubs linked to their department
+        if getattr(request.user, 'role', None) == DEPARTMENT_ADMIN_ROLE:
+            return request.method in SAFE_METHODS
             
         # Allow campus unit and section users to view student clubs for form dropdowns
         if hasattr(request.user, 'role') and request.user.role in {CAMPUS_UNIT_ROLE, CAMPUS_SECTION_ROLE}:
@@ -275,7 +291,7 @@ class GlobalGalleryPermission(BasePermission):
         if user_has_roles(request.user, {EMIS_STAFF_ROLE}):
             return True
 
-        # Allow scoped roles to view the global gallery
+        # Allow scoped roles to view/create their scoped gallery
         if getattr(request.user, "role", None) in {
             UNION_ROLE,
             CAMPUS_UNIT_ROLE,
@@ -283,9 +299,8 @@ class GlobalGalleryPermission(BasePermission):
             DEPARTMENT_ADMIN_ROLE,
             CLUB_ROLE,
         }:
-            if request.method in SAFE_METHODS:
+            if request.method in SAFE_METHODS or request.method in {"POST", "PATCH", "DELETE"}:
                 return True
-            return False
 
         if request.method not in SAFE_METHODS:
             return False
@@ -467,14 +482,14 @@ class GlobalEventPermission(BasePermission):
         # Department users can access events linked to their department or their department's clubs
         if hasattr(request.user, 'role') and request.user.role == DEPARTMENT_ADMIN_ROLE:
             department_id = getattr(request.user, 'department_id', None)
-            if department_id:
-                # Check if the event is linked to the user's department or department's clubs
-                department_linked = obj.departments.filter(id=department_id).exists()
-                # Check if the event is linked to any club under this department
-                department_clubs_linked = obj.clubs.filter(department_id=department_id).exists()
-                return department_linked or department_clubs_linked
-            return False
-        
+            if not department_id:
+                return False
+            # Department admins must be able to toggle approvals on their events; if the event is linked to
+            # their department or any of its clubs, allow access.
+            department_linked = obj.departments.filter(id=department_id).exists()
+            department_clubs_linked = obj.clubs.filter(department_id=department_id).exists()
+            return department_linked or department_clubs_linked
+
         # Club users can only access events linked to their club
         if hasattr(request.user, 'role') and request.user.role == CLUB_ROLE:
             club_id = getattr(request.user, 'club_id', None)

@@ -105,6 +105,15 @@ class GlobalEventAdmin(admin.ModelAdmin):
         ("Registration", {"fields": ("registration_link",)}),
         ("Media", {"fields": ("thumbnail",)}),
         (
+            "Approval",
+            {
+                "fields": (
+                    "is_approved_by_department",
+                    "is_approved_by_campus",
+                )
+            },
+        ),
+        (
             "Associations",
             {"fields": ("unions", "clubs", "departments"), "classes": ("collapse",)},
         ),
