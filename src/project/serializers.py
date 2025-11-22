@@ -144,6 +144,12 @@ class ProjectCreateUpdateSerializer(serializers.ModelSerializer):
         allow_empty=True,
     )
 
+    def _get_request_user(self):
+        request = self.context.get("request")
+        if request and hasattr(request, "user"):
+            return request.user
+        return None
+
     class Meta:
         model = Project
         fields = [
@@ -173,12 +179,20 @@ class ProjectCreateUpdateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         members_data = validated_data.pop("members", [])
         tag_ids = validated_data.pop("tag_ids", [])
+        request_user = self._get_request_user()
+        creator = validated_data.get("created_by") or request_user
+        updater = validated_data.get("updated_by") or request_user
 
         project = Project.objects.create(**validated_data)
 
         # Create members
         for member_data in members_data:
-            ProjectMember.objects.create(project=project, **member_data)
+            ProjectMember.objects.create(
+                project=project,
+                created_by=creator,
+                updated_by=updater,
+                **member_data,
+            )
 
         # Assign tags
         for tag_id in tag_ids:
@@ -193,6 +207,8 @@ class ProjectCreateUpdateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         members_data = validated_data.pop("members", None)
         tag_ids = validated_data.pop("tag_ids", None)
+        request_user = self._get_request_user()
+        updater = validated_data.get("updated_by") or request_user
 
         # Update project fields
         for attr, value in validated_data.items():
@@ -205,7 +221,12 @@ class ProjectCreateUpdateSerializer(serializers.ModelSerializer):
             instance.members.all().delete()
             # Create new members
             for member_data in members_data:
-                ProjectMember.objects.create(project=instance, **member_data)
+                ProjectMember.objects.create(
+                    project=instance,
+                    created_by=instance.created_by or updater,
+                    updated_by=updater,
+                    **member_data,
+                )
 
         # Update tags if provided
         if tag_ids is not None:

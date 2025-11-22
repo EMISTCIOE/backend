@@ -57,6 +57,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
             return ProjectCreateUpdateSerializer
         return ProjectDetailSerializer
 
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user, updated_by=self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save(updated_by=self.request.user)
+
     @action(detail=True, methods=["post"])
     def increment_views(self, request, pk=None):
         """Increment the views count for a project"""
@@ -143,3 +149,9 @@ class ProjectTagViewSet(viewsets.ModelViewSet):
     search_fields = ["name"]
     ordering_fields = ["name", "created_at"]
     ordering = ["name"]
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user, updated_by=self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save(updated_by=self.request.user)

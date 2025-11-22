@@ -186,6 +186,12 @@ class ResearchCreateUpdateSerializer(serializers.ModelSerializer):
         allow_empty=True,
     )
 
+    def _get_request_user(self):
+        request = self.context.get("request")
+        if request and hasattr(request, "user"):
+            return request.user
+        return None
+
     class Meta:
         model = Research
         fields = [
@@ -221,16 +227,29 @@ class ResearchCreateUpdateSerializer(serializers.ModelSerializer):
         participants_data = validated_data.pop("participants", [])
         publications_data = validated_data.pop("publications", [])
         category_ids = validated_data.pop("category_ids", [])
+        request_user = self._get_request_user()
+        creator = validated_data.get("created_by") or request_user
+        updater = validated_data.get("updated_by") or request_user
 
         research = Research.objects.create(**validated_data)
 
         # Create participants
         for participant_data in participants_data:
-            ResearchParticipant.objects.create(research=research, **participant_data)
+            ResearchParticipant.objects.create(
+                research=research,
+                created_by=creator,
+                updated_by=updater,
+                **participant_data,
+            )
 
         # Create publications
         for publication_data in publications_data:
-            ResearchPublication.objects.create(research=research, **publication_data)
+            ResearchPublication.objects.create(
+                research=research,
+                created_by=creator,
+                updated_by=updater,
+                **publication_data,
+            )
 
         # Assign categories
         for category_id in category_ids:
@@ -249,6 +268,8 @@ class ResearchCreateUpdateSerializer(serializers.ModelSerializer):
         participants_data = validated_data.pop("participants", None)
         publications_data = validated_data.pop("publications", None)
         category_ids = validated_data.pop("category_ids", None)
+        request_user = self._get_request_user()
+        updater = validated_data.get("updated_by") or request_user
 
         # Update research fields
         for attr, value in validated_data.items():
@@ -263,6 +284,8 @@ class ResearchCreateUpdateSerializer(serializers.ModelSerializer):
             for participant_data in participants_data:
                 ResearchParticipant.objects.create(
                     research=instance,
+                    created_by=instance.created_by or updater,
+                    updated_by=updater,
                     **participant_data,
                 )
 
@@ -274,6 +297,8 @@ class ResearchCreateUpdateSerializer(serializers.ModelSerializer):
             for publication_data in publications_data:
                 ResearchPublication.objects.create(
                     research=instance,
+                    created_by=instance.created_by or updater,
+                    updated_by=updater,
                     **publication_data,
                 )
 

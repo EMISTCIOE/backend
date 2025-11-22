@@ -61,6 +61,12 @@ class ResearchViewSet(viewsets.ModelViewSet):
             return ResearchCreateUpdateSerializer
         return ResearchDetailSerializer
 
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user, updated_by=self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save(updated_by=self.request.user)
+
     @action(detail=True, methods=["post"])
     def increment_views(self, request, pk=None):
         """Increment the views count for a research"""
@@ -186,3 +192,9 @@ class ResearchCategoryViewSet(viewsets.ModelViewSet):
     search_fields = ["name", "description"]
     ordering_fields = ["name", "created_at"]
     ordering = ["name"]
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user, updated_by=self.request.user)
+
+    def perform_update(self, serializer):
+        serializer.save(updated_by=self.request.user)
