@@ -323,4 +323,39 @@ def send_email_reset_received_notification(full_name, college_email, secondary_e
         return False
 
 
+def send_campus_feedback_reply(full_name, recipient_email, response_message, original_message=None, resolved_by=None):
+    """
+    Send a reply to a campus feedback submitter using the existing email template stack.
+    """
+    if not recipient_email:
+        logger.warning("Skipping campus feedback reply email: missing recipient.")
+        return False
+
+    display_name = full_name or "there"
+    responder = resolved_by or "Campus Administration"
+    subject = "Your campus feedback has been reviewed"
+
+    body = (
+        f"Hello {display_name},\n\n"
+        f"Thank you for reaching out to us. Our team has reviewed your feedback and replied below:\n\n"
+        f"{response_message}\n\n"
+        f"Best regards,\n{responder}"
+    )
+
+    context = {
+        "full_name": display_name,
+        "response_message": response_message,
+        "original_message": original_message or "",
+        "resolved_by": responder,
+    }
+
+    return _send_email(
+        subject=subject,
+        body=body,
+        template_name="emails/campus_feedback_reply",
+        context=context,
+        recipient_email=recipient_email,
+        email_type="INFO",
+    )
+
 

@@ -13,6 +13,7 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
 # Project Imports
+from src.libs.send_mail import send_campus_feedback_reply
 from src.libs.utils import set_binary_files_null_if_empty
 from src.user.constants import ADMIN_ROLE, EMIS_STAFF_ROLE, CAMPUS_SECTION_ROLE, CAMPUS_UNIT_ROLE
 from src.website.messages import (
@@ -297,9 +298,29 @@ class CampusFeedbackViewSet(ReadOnlyModelViewSet):
             instance,
             data=request.data,
             partial=True,
+            context={"request": request},
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
+
+        # Send a reply email to the submitter if available
+        if instance.email and serializer.validated_data.get("is_resolved"):
+            response_message = serializer.validated_data.get(
+                "response_message",
+                getattr(instance, "response_message", ""),
+            )
+            resolved_by = getattr(request.user, "get_full_name", lambda: None)() or getattr(
+                request.user,
+                "username",
+                None,
+            )
+            send_campus_feedback_reply(
+                full_name=instance.full_name,
+                recipient_email=instance.email,
+                response_message=response_message,
+                original_message=instance.message,
+                resolved_by=resolved_by,
+            )
         return Response(
             {"message": CAMPUS_FEEDBACK_RESOLVE_SUCCESS},
             status=status.HTTP_200_OK,

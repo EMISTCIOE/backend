@@ -673,14 +673,44 @@ class CampusFeedbackListSerializer(serializers.ModelSerializer):
             "email",
             "message",
             "is_resolved",
+            "response_message",
+            "resolved_at",
+            "resolved_by",
             "created_at",
         ]
 
 
 class CampusFeedbackResolveSerializer(serializers.ModelSerializer):
+    def validate(self, attrs):
+        is_resolved = attrs.get("is_resolved", self.instance.is_resolved if self.instance else False)
+        response_message = attrs.get("response_message", "")
+
+        if is_resolved and not response_message:
+            raise serializers.ValidationError(
+                {"response_message": "Please provide a reply message before marking as resolved."}
+            )
+
+        return attrs
+
+    def update(self, instance, validated_data):
+        instance.is_resolved = validated_data.get("is_resolved", instance.is_resolved)
+        instance.response_message = validated_data.get("response_message", instance.response_message)
+
+        # Track resolution metadata
+        if instance.is_resolved:
+            from django.utils import timezone
+
+            instance.resolved_at = timezone.now()
+            request = self.context.get("request")
+            if request and getattr(request, "user", None) and request.user.is_authenticated:
+                instance.resolved_by = request.user
+
+        instance.save(update_fields=["is_resolved", "response_message", "resolved_at", "resolved_by", "updated_at"])
+        return instance
+
     class Meta:
         model = CampusFeedback
-        fields = ["is_resolved"]
+        fields = ["is_resolved", "response_message"]
 
 
 # Campus Downloads Serializers

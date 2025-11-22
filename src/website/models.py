@@ -1,5 +1,6 @@
 from ckeditor.fields import RichTextField
 from django.core.exceptions import ValidationError
+from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
@@ -998,6 +999,26 @@ class CampusFeedback(PublicAuditInfoModel):
     email = models.EmailField(_("Email"), blank=True)
     message = models.TextField(_("Feedback or Suggestion"))
     is_resolved = models.BooleanField(_("Resolved"), default=False)
+    response_message = models.TextField(
+        _("Response Message"),
+        blank=True,
+        help_text=_("Admin reply that will be emailed back to the submitter."),
+    )
+    resolved_at = models.DateTimeField(
+        _("Resolved At"),
+        null=True,
+        blank=True,
+        help_text=_("Timestamp when the feedback was marked resolved."),
+    )
+    resolved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="resolved_campus_feedbacks",
+        verbose_name=_("Resolved By"),
+        help_text=_("User who resolved the feedback."),
+    )
 
     class Meta:
         verbose_name = _("Campus Feedback")

@@ -76,7 +76,7 @@ class DepartmentViewSet(ModelViewSet):
     search_fields = ["name", "short_name"]
     queryset = Department.objects.filter(is_archived=False)
     ordering_fields = ["-created_at", "short_name"]
-    http_method_names = ["options", "head", "get", "patch", "post"]
+    http_method_names = ["options", "head", "get", "patch", "post", "delete"]
 
     def get_serializer_class(self):
         serializer_class = None
@@ -109,6 +109,25 @@ class DepartmentViewSet(ModelViewSet):
         if file_fields:
             set_binary_files_null_if_empty(file_fields, request.data)
         return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        """Delete a department along with its thumbnail file."""
+        try:
+            instance = self.get_object()
+        except Exception:
+            return Response(
+                {"detail": "Department not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        if instance.thumbnail:
+            instance.thumbnail.delete(save=False)
+
+        instance.delete()
+        return Response(
+            {"message": "Department deleted successfully"},
+            status=status.HTTP_200_OK,
+        )
 
 
 class DepartmentSocialMediaDestroyAPIView(generics.DestroyAPIView):
