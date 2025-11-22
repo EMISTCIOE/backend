@@ -91,7 +91,9 @@ class DepartmentCreateSerializer(serializers.ModelSerializer):
     thumbnail = serializers.ImageField(
         validators=[validate_photo_thumbnail],
         allow_null=True,
+        required=False,
     )
+    is_active = serializers.BooleanField(required=False, default=True)
 
     class Meta:
         model = Department
@@ -104,6 +106,7 @@ class DepartmentCreateSerializer(serializers.ModelSerializer):
             "phone_no",
             "thumbnail",
             "social_links",
+            "is_active",
         ]
 
     def create(self, validated_data):
@@ -111,8 +114,9 @@ class DepartmentCreateSerializer(serializers.ModelSerializer):
         current_user = get_user_by_context(self.context)
 
         validated_data["name"] = validated_data.pop("name").strip().title()
-        validated_data["short_name"] = validated_data.pop("short_name").strip()
+        validated_data["short_name"] = validated_data.pop("short_name", "").strip()
         validated_data["created_by"] = current_user
+        validated_data["is_active"] = validated_data.pop("is_active", True)
 
         instance = Department.objects.create(**validated_data)
 
