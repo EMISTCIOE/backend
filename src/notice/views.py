@@ -78,6 +78,9 @@ class NoticeViewSet(ModelViewSet):
         if user.role == User.RoleType.CAMPUS_SECTION:
             return qs.filter(campus_section_id=user.campus_section_id) if user.campus_section_id else qs.none()
 
+        if user.role == User.RoleType.DEPARTMENT_ADMIN:
+            return qs.filter(department_id=user.department_id) if user.department_id else qs.none()
+
         return qs
 
     def get_serializer_class(self):

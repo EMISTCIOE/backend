@@ -78,6 +78,16 @@ class DepartmentViewSet(ModelViewSet):
     ordering_fields = ["-created_at", "short_name"]
     http_method_names = ["options", "head", "get", "patch", "post", "delete"]
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        user = getattr(self.request, "user", None)
+        if user and getattr(user, "role", None) == user.RoleType.DEPARTMENT_ADMIN:
+            department_id = getattr(user, "department_id", None)
+            if department_id:
+                return qs.filter(id=department_id)
+            return qs.none()
+        return qs
+
     def get_serializer_class(self):
         serializer_class = None
 
@@ -168,6 +178,16 @@ class AcademicProgramViewSet(ModelViewSet):
     ordering_fields = ["-created_at", "name", "short_name"]
     http_method_names = ["options", "head", "get", "patch", "post", "delete"]
 
+    def get_queryset(self):
+        qs = super().get_queryset()
+        user = getattr(self.request, "user", None)
+        if user and getattr(user, "role", None) == user.RoleType.DEPARTMENT_ADMIN:
+            department_id = getattr(user, "department_id", None)
+            if department_id:
+                return qs.filter(department_id=department_id)
+            return qs.none()
+        return qs
+
     def get_serializer_class(self):
         if self.request.method == "GET":
             return (
@@ -224,6 +244,16 @@ class DepartmentDownloadViewSet(ModelViewSet):
     queryset = DepartmentDownload.objects.filter(is_archived=False)
     ordering_fields = ["-created_at", "title"]
     http_method_names = ["options", "head", "get", "patch", "post", "delete"]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        user = getattr(self.request, "user", None)
+        if user and getattr(user, "role", None) == user.RoleType.DEPARTMENT_ADMIN:
+            department_id = getattr(user, "department_id", None)
+            if department_id:
+                return qs.filter(department_id=department_id)
+            return qs.none()
+        return qs
 
     def get_serializer_class(self):
         if self.request.method == "GET":
