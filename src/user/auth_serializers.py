@@ -209,7 +209,15 @@ class UserLoginSerializer(serializers.ModelSerializer):
         if user.is_superuser:
             return
 
-        allowed_roles = {EMIS_STAFF_ROLE, ADMIN_ROLE, UNION_ROLE, CAMPUS_UNIT_ROLE, CAMPUS_SECTION_ROLE}
+        allowed_roles = {
+            EMIS_STAFF_ROLE,
+            ADMIN_ROLE,
+            UNION_ROLE,
+            CAMPUS_UNIT_ROLE,
+            CAMPUS_SECTION_ROLE,
+            DEPARTMENT_ADMIN_ROLE,
+            CLUB_ROLE,
+        }
         # accept either primary role field or any active attached role
         if not _user_has_allowed_context_role(user, allowed_roles):
             raise serializers.ValidationError({"persona": INVALID_CREDENTIALS})

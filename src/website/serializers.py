@@ -295,6 +295,7 @@ class CampusKeyOfficialListSerializer(serializers.ModelSerializer):
                 "short_name": short_name,
             }
         return None
+
     
     def get_fields(self):
         """Conditionally remove phone_number for public/non-CMS requests.
@@ -397,6 +398,7 @@ class CampusKeyOfficialRetrieveSerializer(AbstractInfoRetrieveSerializer):
                 "email": email,
             }
         return None
+
 
     def get_program(self, obj):
         if obj.program:
@@ -1206,13 +1208,13 @@ class CampusSectionCreateSerializer(serializers.ModelSerializer):
         allow_empty=True,
     )
     members = serializers.PrimaryKeyRelatedField(
-        queryset=CampusKeyOfficial.objects.filter(is_active=True, is_key_official=True),
+        queryset=CampusKeyOfficial.objects.filter(is_active=True),
         many=True,
         required=False,
         allow_empty=True,
     )
     department_head = serializers.PrimaryKeyRelatedField(
-        queryset=CampusKeyOfficial.objects.filter(is_active=True, is_key_official=True),
+        queryset=CampusKeyOfficial.objects.filter(is_active=True),
         allow_null=True,
         required=False,
     )
@@ -1317,13 +1319,13 @@ class CampusSectionPatchSerializer(FileHandlingMixin, serializers.ModelSerialize
         allow_empty=True,
     )
     members = serializers.PrimaryKeyRelatedField(
-        queryset=CampusKeyOfficial.objects.filter(is_active=True, is_key_official=True),
+        queryset=CampusKeyOfficial.objects.filter(is_active=True),
         many=True,
         required=False,
         allow_empty=True,
     )
     department_head = serializers.PrimaryKeyRelatedField(
-        queryset=CampusKeyOfficial.objects.filter(is_active=True, is_key_official=True),
+        queryset=CampusKeyOfficial.objects.filter(is_active=True),
         allow_null=True,
         required=False,
     )
