@@ -47,6 +47,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
         model = Project
         fields = [
             "id",
+            "slug",
             "title",
             "abstract",
             "project_type",
@@ -59,6 +60,8 @@ class ProjectListSerializer(serializers.ModelSerializer):
             "supervisor_name",
             "academic_year",
             "thumbnail",
+            "github_url",
+            "demo_url",
             "is_featured",
             "is_published",
             "views_count",
@@ -98,6 +101,7 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
         model = Project
         fields = [
             "id",
+            "slug",
             "title",
             "description",
             "abstract",

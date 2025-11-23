@@ -41,6 +41,7 @@ class ProjectAdmin(admin.ModelAdmin):
         "abstract",
         "supervisor_name",
         "technologies_used",
+        "slug",
     ]
     readonly_fields = [
         "views_count",
@@ -53,7 +54,16 @@ class ProjectAdmin(admin.ModelAdmin):
     fieldsets = (
         (
             "Basic Information",
-            {"fields": ("title", "description", "abstract", "project_type", "status")},
+            {
+                "fields": (
+                    "title",
+                    "slug",
+                    "description",
+                    "abstract",
+                    "project_type",
+                    "status",
+                )
+            },
         ),
         (
             "Academic Details",

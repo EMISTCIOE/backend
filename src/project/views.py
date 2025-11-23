@@ -32,6 +32,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         "academic_program",
         "is_featured",
         "is_published",
+        "slug",
     ]
     search_fields = [
         "title",

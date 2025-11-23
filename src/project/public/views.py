@@ -1,4 +1,6 @@
 from django.db.models import Q
+from django.http import Http404
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, viewsets
 from rest_framework.decorators import action
@@ -32,6 +34,7 @@ class PublicProjectViewSet(viewsets.ReadOnlyModelViewSet):
         "academic_program__slug",
         "is_featured",
         "status",
+        "slug",
     ]
     search_fields = [
         "title",
@@ -95,6 +98,21 @@ class PublicProjectViewSet(viewsets.ReadOnlyModelViewSet):
         if self.action == "list":
             return ProjectListSerializer
         return ProjectDetailSerializer
+
+    def get_object(self):
+        """Allow lookup by slug or ID for public project detail."""
+        queryset = self.filter_queryset(self.get_queryset())
+        lookup_value = self.kwargs.get(self.lookup_url_kwarg or self.lookup_field)
+
+        if lookup_value is None:
+            raise Http404("Project not specified")
+
+        obj = queryset.filter(slug=lookup_value).first()
+        if obj is None:
+            obj = get_object_or_404(queryset, pk=lookup_value)
+
+        self.check_object_permissions(self.request, obj)
+        return obj
 
     def retrieve(self, request, *args, **kwargs):
         """Override retrieve to increment views"""
