@@ -3,7 +3,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("website", "0016_campuskeyofficial_is_key_official_and_more"),
+        ("website", "0034_campusfeedback_resolved_at_and_more"),
     ]
 
     operations = [
