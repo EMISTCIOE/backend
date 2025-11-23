@@ -58,6 +58,9 @@ class AuditInfoModel(models.Model):
         abstract = True
 
     def save(self, *args, **kwargs):
+        # Backfill created_by when only updated_by is provided (e.g., some admin formsets)
+        if not self.created_by_id and getattr(self, "updated_by_id", None):
+            self.created_by_id = self.updated_by_id
         if self.is_archived and self.is_active:
             self.is_active = False
         super().save(*args, **kwargs)
