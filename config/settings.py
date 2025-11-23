@@ -29,8 +29,7 @@ ALLOWED_HOSTS = [
     "cdn.tcioe.edu.np",
     ".tcioe.edu.np",
     "10.10.100.213",
-    "192.168.1.102",
-    "192.168.254.21",
+    "10.10.100.245"
 ]
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -38,7 +37,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:3003",
     "http://10.10.100.213",
-    "https://10.10.100.213",
+    "http://10.10.100.245",
 ]
 # Allow any subdomain (and the apex) over http(s), optional port
 CORS_ALLOWED_ORIGIN_REGEXES = [
