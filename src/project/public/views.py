@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, viewsets
 from rest_framework.decorators import action
@@ -30,9 +31,16 @@ class PublicProjectViewSet(viewsets.ReadOnlyModelViewSet):
         "academic_program",
         "academic_program__slug",
         "is_featured",
+        "status",
     ]
-    search_fields = ["title", "abstract", "technologies_used"]
-    ordering_fields = ["created_at", "views_count", "title"]
+    search_fields = [
+        "title",
+        "abstract",
+        "technologies_used",
+        "supervisor_name",
+        "members__full_name",
+    ]
+    ordering_fields = ["created_at", "views_count", "title", "start_date"]
     ordering = ["-created_at"]
 
     def get_queryset(self):
@@ -42,6 +50,20 @@ class PublicProjectViewSet(viewsets.ReadOnlyModelViewSet):
             .filter(is_published=True)
         )
 
+        # Support filtering via tag slugs or IDs (comma separated)
+        tags_param = self.request.query_params.get("tags")
+        if tags_param:
+            tags = [tag.strip() for tag in tags_param.split(",") if tag.strip()]
+            tag_ids = [int(tag) for tag in tags if tag.isdigit()]
+            tag_slugs = [tag for tag in tags if not tag.isdigit()]
+            tag_filter = Q()
+            if tag_ids:
+                tag_filter |= Q(tag_assignments__tag__id__in=tag_ids)
+            if tag_slugs:
+                tag_filter |= Q(tag_assignments__tag__slug__in=tag_slugs)
+            if tag_filter:
+                qs = qs.filter(tag_filter)
+
         department_slug = self.request.query_params.get("department_slug")
         if department_slug:
             qs = qs.filter(department__slug=department_slug)
@@ -50,7 +72,7 @@ class PublicProjectViewSet(viewsets.ReadOnlyModelViewSet):
         if program_slug:
             qs = qs.filter(academic_program__slug=program_slug)
 
-        return qs
+        return qs.distinct()
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -76,36 +98,79 @@ class PublicProjectViewSet(viewsets.ReadOnlyModelViewSet):
     def by_department(self, request):
         """Get projects by department"""
         department_slug = request.query_params.get("department_slug")
-        if department_slug:
-            projects = self.get_queryset().filter(department__slug=department_slug)
-            serializer = ProjectListSerializer(projects, many=True)
-            return Response(serializer.data)
-        return Response({"error": "department_slug parameter is required"}, status=400)
+        if not department_slug:
+            return Response(
+                {"error": "department_slug parameter is required"},
+                status=400,
+            )
+
+        projects = self.filter_queryset(
+            self.get_queryset().filter(department__slug=department_slug)
+        )
+        page = self.paginate_queryset(projects)
+        if page is not None:
+            serializer = ProjectListSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = ProjectListSerializer(projects, many=True)
+        return Response(serializer.data)
 
     @action(detail=False, methods=["get"])
     def by_program(self, request):
         """Get projects by academic program"""
         program_slug = request.query_params.get("program_slug")
-        if program_slug:
-            projects = self.get_queryset().filter(
-                academic_program__slug=program_slug
+        if not program_slug:
+            return Response(
+                {"error": "program_slug parameter is required"},
+                status=400,
             )
-            serializer = ProjectListSerializer(projects, many=True)
-            return Response(serializer.data)
-        return Response(
-            {"error": "program_slug parameter is required"},
-            status=400,
+
+        projects = self.filter_queryset(
+            self.get_queryset().filter(academic_program__slug=program_slug)
         )
+        page = self.paginate_queryset(projects)
+        if page is not None:
+            serializer = ProjectListSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = ProjectListSerializer(projects, many=True)
+        return Response(serializer.data)
 
     @action(detail=False, methods=["get"])
     def by_type(self, request):
         """Get projects by type"""
         project_type = request.query_params.get("type")
-        if project_type:
-            projects = self.get_queryset().filter(project_type=project_type)
-            serializer = ProjectListSerializer(projects, many=True)
-            return Response(serializer.data)
-        return Response({"error": "type parameter is required"}, status=400)
+        if not project_type:
+            return Response({"error": "type parameter is required"}, status=400)
+
+        projects = self.filter_queryset(
+            self.get_queryset().filter(project_type=project_type)
+        )
+        page = self.paginate_queryset(projects)
+        if page is not None:
+            serializer = ProjectListSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = ProjectListSerializer(projects, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["get"])
+    def by_status(self, request):
+        """Get projects by status"""
+        status_filter = request.query_params.get("status")
+        if not status_filter:
+            return Response({"error": "status parameter is required"}, status=400)
+
+        projects = self.filter_queryset(
+            self.get_queryset().filter(status=status_filter)
+        )
+        page = self.paginate_queryset(projects)
+        if page is not None:
+            serializer = ProjectListSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = ProjectListSerializer(projects, many=True)
+        return Response(serializer.data)
 
 
 class PublicProjectTagViewSet(viewsets.ReadOnlyModelViewSet):
