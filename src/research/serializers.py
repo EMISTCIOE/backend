@@ -72,6 +72,7 @@ class ResearchListSerializer(serializers.ModelSerializer):
         model = Research
         fields = [
             "id",
+            "slug",
             "title",
             "abstract",
             "research_type",
@@ -134,6 +135,7 @@ class ResearchDetailSerializer(serializers.ModelSerializer):
         model = Research
         fields = [
             "id",
+            "slug",
             "title",
             "description",
             "abstract",

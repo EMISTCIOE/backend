@@ -1,5 +1,6 @@
 from ckeditor.fields import RichTextField
 from django.db import models
+from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 
 from src.base.models import AuditInfoModel
@@ -40,6 +41,15 @@ class Research(AuditInfoModel):
         _("Research Title"),
         max_length=300,
         help_text=_("Title of the research"),
+    )
+
+    slug = models.SlugField(
+        _("Slug"),
+        max_length=255,
+        unique=True,
+        null=True,
+        blank=True,
+        help_text=_("URL-friendly identifier for the research"),
     )
 
     description = RichTextField(
@@ -189,6 +199,31 @@ class Research(AuditInfoModel):
 
     def __str__(self):
         return self.title
+
+    def _generate_unique_slug(self):
+        base_slug = slugify(self.slug or self.title) or "research"
+        candidate = base_slug
+        counter = 2
+
+        while (
+            Research.objects.filter(slug=candidate)
+            .exclude(pk=self.pk)
+            .exists()
+        ):
+            candidate = f"{base_slug}-{counter}"
+            counter += 1
+
+        return candidate
+
+    def save(self, *args, **kwargs):
+        # Generate slug only when missing to avoid breaking existing links.
+        if self.title and not self.slug:
+            self.slug = self._generate_unique_slug()
+        elif self.slug:
+            # Normalize provided slug and keep it unique.
+            self.slug = self._generate_unique_slug()
+
+        super().save(*args, **kwargs)
 
 
 class ResearchParticipant(AuditInfoModel):
