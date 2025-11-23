@@ -195,6 +195,15 @@ class CampusKeyOfficial(AuditInfoModel):
             "Administrative unit the staff member is associated with (if applicable).",
         ),
     )
+    campus_section = models.ForeignKey(
+        "CampusSection",
+        on_delete=models.SET_NULL,
+        related_name="staff_members_primary",
+        verbose_name=_("Campus Section"),
+        null=True,
+        blank=True,
+        help_text=_("Campus section the staff member is associated with (if applicable)."),
+    )
     display_order = models.PositiveSmallIntegerField(
         _("Display Order"),
         default=1,

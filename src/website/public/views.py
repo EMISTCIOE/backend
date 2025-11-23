@@ -90,11 +90,11 @@ class PublicCampusKeyOfficialFilterSet(FilterSet):
     )
     is_key_official = django_filters.BooleanFilter()
     campus_section = django_filters.CharFilter(
-        field_name="campus_sections__slug",
+        field_name="campus_section__slug",
         lookup_expr="iexact",
     )
     campus_section_uuid = django_filters.UUIDFilter(
-        field_name="campus_sections__uuid",
+        field_name="campus_section__uuid",
     )
 
     class Meta:
@@ -109,7 +109,8 @@ class PublicCampusKeyOfficialListAPIView(ListAPIView):
     serializer_class = PublicCampusKeyOfficialSerializer
     queryset = CampusKeyOfficial.objects.filter(is_active=True).select_related(
         "designation",
-    ).prefetch_related("campus_sections")
+        "campus_section",
+    )
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     ordering = ["display_order"]
     search_fields = ["full_name", "designation__title"]
@@ -168,7 +169,7 @@ class PublicCampusSectionReadOnlyViewSet(ReadOnlyModelViewSet):
     permission_classes = [AllowAny]
     queryset = CampusSection.objects.filter(is_active=True).prefetch_related(
         "members__designation",
-        "members__campus_sections",
+        "members__campus_section",
     )
     filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
     filterset_fields = ["slug", "name"]
@@ -191,7 +192,7 @@ class PublicCampusUnitReadOnlyViewSet(ReadOnlyModelViewSet):
     permission_classes = [AllowAny]
     queryset = CampusUnit.objects.filter(is_active=True).prefetch_related(
         "members__designation",
-        "members__campus_sections",
+        "members__campus_section",
     )
     filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
     filterset_fields = ["slug", "name"]

@@ -206,12 +206,12 @@ class CampusKeyOfficialAdmin(admin.ModelAdmin):
         "department",
         "program",
         "unit",
+        "campus_section",
         "email",
         "phone_number",
         "is_key_official",
         "is_active",
     )
-    inlines = [CampusSectionMembershipInline]
     search_fields = (
         "full_name",
         "designation__title",
@@ -220,7 +220,7 @@ class CampusKeyOfficialAdmin(admin.ModelAdmin):
         "department__name",
         "program__name",
         "unit__name",
-        "campus_sections__name",
+        "campus_section__name",
     )
     list_filter = (
         "designation",
@@ -239,18 +239,19 @@ class CampusKeyOfficialAdmin(admin.ModelAdmin):
             },
         ),
         (
-            "Position & Assignment",
-            {
-                "fields": (
-                    "designation",
-                    "department",
-                    "program",
-                    "unit",
-                    "display_order",
-                    "is_key_official",
-                ),
-                "description": "Note: Assign either a department OR a unit, not both. Program is only applicable with departments.",
-            },
+        "Position & Assignment",
+        {
+            "fields": (
+                "designation",
+                "department",
+                "program",
+                "unit",
+                "campus_section",
+                "display_order",
+                "is_key_official",
+            ),
+            "description": "Note: Assign either a department OR a unit, not both. Program is only applicable with departments.",
+        },
         ),
         (
             "Contact Information",

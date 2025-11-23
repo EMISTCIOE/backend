@@ -206,11 +206,11 @@ class CampusKeyOfficialFilterSet(FilterSet):
     is_key_official = django_filters.BooleanFilter()
     is_active = django_filters.BooleanFilter()
     campus_section = django_filters.CharFilter(
-        field_name="campus_sections__slug",
+        field_name="campus_section__slug",
         lookup_expr="iexact",
     )
     campus_section_uuid = django_filters.UUIDFilter(
-        field_name="campus_sections__uuid",
+        field_name="campus_section__uuid",
     )
 
     class Meta:
@@ -227,7 +227,8 @@ class CampusKeyOfficialViewSet(viewsets.ModelViewSet):
         "department",
         "program",
         "unit",
-    ).prefetch_related("campus_sections")
+        "campus_section",
+    )
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
     search_fields = [
         "full_name",
@@ -236,7 +237,7 @@ class CampusKeyOfficialViewSet(viewsets.ModelViewSet):
         "email",
         "department__name",
         "unit__name",
-        "campus_sections__name",
+        "campus_section__name",
     ]
     ordering_fields = ["full_name", "created_at", "display_order"]
     ordering = ["display_order", "-created_at"]
@@ -615,7 +616,7 @@ class CampusSectionViewSet(viewsets.ModelViewSet):
     permission_classes = [CampusSectionPermission]
     queryset = CampusSection.objects.filter(is_archived=False).prefetch_related(
         "members__designation",
-        "members__campus_sections",
+        "members__campus_section",
     )
     filterset_class = FilterForCampusSectionViewSet
     filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
@@ -691,7 +692,7 @@ class CampusUnitViewSet(viewsets.ModelViewSet):
     permission_classes = [CampusUnitPermission]
     queryset = CampusUnit.objects.filter(is_archived=False).prefetch_related(
         "members__designation",
-        "members__campus_sections",
+        "members__campus_section",
     )
     filterset_class = FilterForCampusUnitViewSet
     filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)

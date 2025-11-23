@@ -229,7 +229,7 @@ class CampusKeyOfficialListSerializer(serializers.ModelSerializer):
     department = serializers.SerializerMethodField()
     program = serializers.SerializerMethodField()
     unit = serializers.SerializerMethodField()
-    campus_sections = serializers.SerializerMethodField()
+    campus_section = serializers.SerializerMethodField()
 
     class Meta:
         model = CampusKeyOfficial
@@ -249,7 +249,7 @@ class CampusKeyOfficialListSerializer(serializers.ModelSerializer):
             "department",
             "program",
             "unit",
-            "campus_sections",
+            "campus_section",
             "display_order",
         ]
 
@@ -298,19 +298,16 @@ class CampusKeyOfficialListSerializer(serializers.ModelSerializer):
             }
         return None
 
-    def get_campus_sections(self, obj):
-        sections = getattr(obj, "campus_sections", None)
-        if sections is None:
-            return []
-        return [
-            {
-                "id": section.id,
-                "uuid": str(section.uuid),
-                "name": section.name,
-                "slug": section.slug,
-            }
-            for section in sections.all()
-        ]
+    def get_campus_section(self, obj):
+        section = getattr(obj, "campus_section", None)
+        if not section:
+            return None
+        return {
+            "id": section.id,
+            "uuid": str(section.uuid),
+            "name": section.name,
+            "slug": section.slug,
+        }
 
     
     def get_fields(self):
@@ -357,7 +354,7 @@ class CampusKeyOfficialRetrieveSerializer(AbstractInfoRetrieveSerializer):
     department = serializers.SerializerMethodField()
     program = serializers.SerializerMethodField()
     unit = serializers.SerializerMethodField()
-    campus_sections = serializers.SerializerMethodField()
+    campus_section = serializers.SerializerMethodField()
 
     class Meta(AbstractInfoRetrieveSerializer.Meta):
         model = CampusKeyOfficial
@@ -375,7 +372,7 @@ class CampusKeyOfficialRetrieveSerializer(AbstractInfoRetrieveSerializer):
             "department",
             "program",
             "unit",
-            "campus_sections",
+            "campus_section",
             "display_order",
         ]
 
@@ -426,20 +423,16 @@ class CampusKeyOfficialRetrieveSerializer(AbstractInfoRetrieveSerializer):
                 "short_name": obj.program.short_name,
             }
         return None
-
-    def get_campus_sections(self, obj):
-        sections = getattr(obj, "campus_sections", None)
-        if sections is None:
-            return []
-        return [
-            {
-                "id": section.id,
-                "uuid": str(section.uuid),
-                "name": section.name,
-                "slug": section.slug,
-            }
-            for section in sections.all()
-        ]
+    def get_campus_section(self, obj):
+        section = getattr(obj, "campus_section", None)
+        if not section:
+            return None
+        return {
+            "id": section.id,
+            "uuid": str(section.uuid),
+            "name": section.name,
+            "slug": section.slug,
+        }
 
     def get_fields(self):
         """Apply same conditional phone hiding for retrieve serializer."""
@@ -488,9 +481,9 @@ class CampusKeyOfficialCreateSerializer(serializers.ModelSerializer):
         allow_null=True,
         required=False,
     )
-    campus_sections = serializers.PrimaryKeyRelatedField(
+    campus_section = serializers.PrimaryKeyRelatedField(
         queryset=CampusSection.objects.filter(is_active=True),
-        many=True,
+        allow_null=True,
         required=False,
     )
 
@@ -509,7 +502,7 @@ class CampusKeyOfficialCreateSerializer(serializers.ModelSerializer):
             "department",
             "program",
             "unit",
-            "campus_sections",
+            "campus_section",
             "display_order",
         ]
 
@@ -563,13 +556,16 @@ class CampusKeyOfficialCreateSerializer(serializers.ModelSerializer):
         created_by = get_user_by_context(self.context)
         validated_data["created_by"] = created_by
         validated_data["full_name"] = validated_data.pop("full_name").title()
-
-        campus_sections = validated_data.pop("campus_sections", None)
+        campus_section = validated_data.pop("campus_section", None)
         official = CampusKeyOfficial.objects.create(**validated_data)
 
-        if campus_sections is not None:
-            official.campus_sections.set(campus_sections)
-
+        # Keep the ManyToMany in sync for legacy relationships; only one section allowed
+        if campus_section is not None:
+            official.campus_sections.set([campus_section])
+            official.campus_section = campus_section
+            official.save(update_fields=["campus_section"])
+        else:
+            official.campus_sections.clear()
         return official
 
     def to_representation(self, instance):
@@ -596,9 +592,9 @@ class CampusKeyOfficialPatchSerializer(serializers.ModelSerializer):
         allow_null=True,
         required=False,
     )
-    campus_sections = serializers.PrimaryKeyRelatedField(
+    campus_section = serializers.PrimaryKeyRelatedField(
         queryset=CampusSection.objects.filter(is_active=True),
-        many=True,
+        allow_null=True,
         required=False,
     )
 
@@ -617,7 +613,7 @@ class CampusKeyOfficialPatchSerializer(serializers.ModelSerializer):
             "department",
             "program",
             "unit",
-            "campus_sections",
+            "campus_section",
             "display_order",
         ]
 
@@ -678,7 +674,8 @@ class CampusKeyOfficialPatchSerializer(serializers.ModelSerializer):
         if "full_name" in validated_data:
             validated_data["full_name"] = validated_data.pop("full_name").title()
 
-        campus_sections = validated_data.pop("campus_sections", None)
+        has_campus_section = "campus_section" in validated_data
+        campus_section = validated_data.pop("campus_section", None)
 
         # Handle the photo
         if "photo" in validated_data:
@@ -690,8 +687,11 @@ class CampusKeyOfficialPatchSerializer(serializers.ModelSerializer):
         for key, value in validated_data.items():
             setattr(instance, key, value)
 
-        if campus_sections is not None:
-            instance.campus_sections.set(campus_sections)
+        if has_campus_section:
+            instance.campus_sections.clear()
+            instance.campus_section = campus_section
+            if campus_section:
+                instance.campus_sections.set([campus_section])
 
         instance.updated_by = updated_by
         instance.save()
