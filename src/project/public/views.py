@@ -43,6 +43,23 @@ class PublicProjectViewSet(viewsets.ReadOnlyModelViewSet):
     ordering_fields = ["created_at", "views_count", "title", "start_date"]
     ordering = ["-created_at"]
 
+    def _apply_limit_offset(self, queryset):
+        """Apply limit/offset params for custom actions without using paginated responses."""
+        try:
+            limit = int(self.request.query_params.get("limit", 0))
+        except (TypeError, ValueError):
+            limit = 0
+        try:
+            offset = int(self.request.query_params.get("offset", 0))
+        except (TypeError, ValueError):
+            offset = 0
+
+        if limit and limit > 0:
+            return queryset[offset : offset + limit]
+        if offset:
+            return queryset[offset:]
+        return queryset
+
     def get_queryset(self):
         qs = (
             Project.objects.select_related("department", "academic_program")
@@ -107,11 +124,7 @@ class PublicProjectViewSet(viewsets.ReadOnlyModelViewSet):
         projects = self.filter_queryset(
             self.get_queryset().filter(department__slug=department_slug)
         )
-        page = self.paginate_queryset(projects)
-        if page is not None:
-            serializer = ProjectListSerializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
+        projects = self._apply_limit_offset(projects)
         serializer = ProjectListSerializer(projects, many=True)
         return Response(serializer.data)
 
@@ -128,11 +141,7 @@ class PublicProjectViewSet(viewsets.ReadOnlyModelViewSet):
         projects = self.filter_queryset(
             self.get_queryset().filter(academic_program__slug=program_slug)
         )
-        page = self.paginate_queryset(projects)
-        if page is not None:
-            serializer = ProjectListSerializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
+        projects = self._apply_limit_offset(projects)
         serializer = ProjectListSerializer(projects, many=True)
         return Response(serializer.data)
 
@@ -146,11 +155,7 @@ class PublicProjectViewSet(viewsets.ReadOnlyModelViewSet):
         projects = self.filter_queryset(
             self.get_queryset().filter(project_type=project_type)
         )
-        page = self.paginate_queryset(projects)
-        if page is not None:
-            serializer = ProjectListSerializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
+        projects = self._apply_limit_offset(projects)
         serializer = ProjectListSerializer(projects, many=True)
         return Response(serializer.data)
 
@@ -164,11 +169,7 @@ class PublicProjectViewSet(viewsets.ReadOnlyModelViewSet):
         projects = self.filter_queryset(
             self.get_queryset().filter(status=status_filter)
         )
-        page = self.paginate_queryset(projects)
-        if page is not None:
-            serializer = ProjectListSerializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
+        projects = self._apply_limit_offset(projects)
         serializer = ProjectListSerializer(projects, many=True)
         return Response(serializer.data)
 
