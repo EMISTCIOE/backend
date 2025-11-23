@@ -2,6 +2,8 @@
 
 import uuid
 
+from ckeditor.fields import RichTextField
+from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
 from django.utils import timezone
@@ -108,11 +110,143 @@ class DeployStrategy(models.TextChoices):
     CI_CD = "ci_cd", _("CI / CD")
 
 
+class DownloadCategory(models.TextChoices):
+    REPORT_FORM = "report_form", _("Reports & Forms")
+    RESOURCE = "resource", _("Resources & Downloads")
+
+
+class NoticeCategory(models.TextChoices):
+    SECURITY = "security", _("Security Update")
+    MAINTENANCE = "maintenance", _("Maintenance")
+    RELEASE = "release", _("Release & Feature")
+    ADVISORY = "advisory", _("Advisory")
+    GENERAL = "general", _("General")
+
+
+class NoticeSeverity(models.TextChoices):
+    INFO = "info", _("Info")
+    MINOR = "minor", _("Minor")
+    MAJOR = "major", _("Major")
+    CRITICAL = "critical", _("Critical")
+
+
 class HardwareStatus(models.TextChoices):
     OPERATIONAL = "operational", _("Operational")
     STANDBY = "standby", _("Standby")
     MAINTENANCE = "maintenance", _("Maintenance")
     RETIRED = "retired", _("Retired")
+
+
+def _generate_unique_slug(model, base_value: str, fallback: str = "item") -> str:
+    """Generate a unique slug for the provided model using the base value."""
+    base_slug = slugify(base_value) or fallback
+    slug_candidate = base_slug
+    suffix = 1
+    while model.objects.filter(slug=slug_candidate).exists():
+        slug_candidate = f"{base_slug}-{suffix}"
+        suffix += 1
+    return slug_candidate
+
+
+class EMISDownload(AuditInfoModel):
+    """Downloadable assets specifically for EMIS (reports/forms vs resources)."""
+
+    title = models.CharField(_("Title"), max_length=150)
+    description = models.TextField(_("Description"), blank=True)
+    category = models.CharField(
+        _("Category"),
+        max_length=20,
+        choices=DownloadCategory.choices,
+        default=DownloadCategory.RESOURCE,
+    )
+    file = models.FileField(
+        _("File"),
+        upload_to="emis/downloads/",
+        null=True,
+        blank=True,
+        help_text=_("Upload the downloadable document or form."),
+    )
+    link_url = models.URLField(
+        _("Link URL"),
+        blank=True,
+        help_text=_("Optional external link if the file is hosted elsewhere."),
+    )
+
+    class Meta:
+        verbose_name = _("EMIS download")
+        verbose_name_plural = _("EMIS downloads")
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.title
+
+    def clean(self):
+        """Ensure at least one of file/link_url is provided."""
+        if not self.file and not self.link_url:
+            raise ValidationError(_("Either a file or a link URL must be provided."))
+        super().clean()
+
+
+class EMISNotice(AuditInfoModel):
+    """Operational and security notices specific to the EMIS platform."""
+
+    slug = models.SlugField(_("Slug"), max_length=255, unique=True, blank=True)
+    title = models.CharField(_("Title"), max_length=200)
+    summary = models.CharField(_("Summary"), max_length=300, blank=True)
+    body = RichTextField(_("Body"), blank=True)
+    category = models.CharField(
+        _("Category"),
+        max_length=20,
+        choices=NoticeCategory.choices,
+        default=NoticeCategory.GENERAL,
+    )
+    severity = models.CharField(
+        _("Severity"),
+        max_length=20,
+        choices=NoticeSeverity.choices,
+        default=NoticeSeverity.INFO,
+    )
+    published_at = models.DateTimeField(_("Published at"), default=timezone.now)
+    is_published = models.BooleanField(
+        _("Published"),
+        default=True,
+        help_text=_("Unpublish to hide the notice from the public feed."),
+    )
+    attachment = models.FileField(
+        _("Attachment"),
+        upload_to="emis/notices/",
+        null=True,
+        blank=True,
+        help_text=_("Optional attachment such as a PDF advisory."),
+    )
+    external_url = models.URLField(
+        _("External URL"),
+        blank=True,
+        help_text=_("Optional reference link for more details."),
+    )
+    views = models.PositiveIntegerField(_("Views"), default=0)
+
+    class Meta:
+        verbose_name = _("EMIS notice")
+        verbose_name_plural = _("EMIS notices")
+        ordering = ["-published_at"]
+        indexes = [
+            models.Index(fields=["slug"]),
+            models.Index(fields=["category"]),
+            models.Index(fields=["severity"]),
+        ]
+
+    def __str__(self):
+        return self.title
+
+    def save(self, *args, **kwargs):
+        if not self.slug and self.title:
+            self.slug = _generate_unique_slug(EMISNotice, self.title, fallback="emis-notice")
+        super().save(*args, **kwargs)
+
+    def increment_views(self):
+        EMISNotice.objects.filter(pk=self.pk).update(views=models.F("views") + 1)
+        self.refresh_from_db(fields=["views"])
 
 
 class EMISVPSInfo(AuditInfoModel):

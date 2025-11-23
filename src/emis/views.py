@@ -12,7 +12,9 @@ from rest_framework.permissions import AllowAny
 from src.user.permissions import IsEMISStaff
 
 from .models import (
+    EMISDownload,
     EmailResetRequest,
+    EMISNotice,
     EMISHardware,
     EMISVPSInfo,
     EMISVPSService,
@@ -23,7 +25,9 @@ from .models import (
     ServiceStatus,
 )
 from .serializers import (
+    EMISDownloadSerializer,
     EmailResetRequestSerializer,
+    EMISNoticeSerializer,
     EMISHardwareSerializer,
     EMISVPSInfoSerializer,
     EMISVPSServiceSerializer,
@@ -32,6 +36,47 @@ from .webhook_utils import call_email_reset_webhook
 from src.libs.send_mail import _send_email
 
 logger = logging.getLogger(__name__)
+
+
+class EMISDownloadViewSet(viewsets.ModelViewSet):
+    serializer_class = EMISDownloadSerializer
+    permission_classes = [IsEMISStaff]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ["title", "description", "link_url"]
+    ordering_fields = ["created_at", "title", "category"]
+
+    def get_queryset(self):
+        queryset = EMISDownload.objects.filter(is_active=True)
+        category = self.request.query_params.get("category")
+        if category:
+            queryset = queryset.filter(category=category)
+        return queryset.order_by("-created_at")
+
+
+class EMISNoticeViewSet(viewsets.ModelViewSet):
+    serializer_class = EMISNoticeSerializer
+    permission_classes = [IsEMISStaff]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    search_fields = ["title", "summary", "body"]
+    ordering_fields = ["published_at", "severity", "category", "is_published"]
+
+    def get_queryset(self):
+        queryset = EMISNotice.objects.filter(is_active=True)
+        category = self.request.query_params.get("category")
+        severity = self.request.query_params.get("severity")
+        is_published = self.request.query_params.get("is_published")
+
+        if category:
+            queryset = queryset.filter(category=category)
+        if severity:
+            queryset = queryset.filter(severity=severity)
+        if is_published is not None:
+            if str(is_published).lower() in ["true", "1"]:
+                queryset = queryset.filter(is_published=True)
+            elif str(is_published).lower() in ["false", "0"]:
+                queryset = queryset.filter(is_published=False)
+
+        return queryset.order_by("-published_at", "-created_at")
 
 
 class EMISVPSInfoViewSet(viewsets.ModelViewSet):

@@ -4,7 +4,14 @@ EMIS Admin registration for VPS info, hardware, and email reset requests.
 
 from django.contrib import admin
 
-from .models import EMISHardware, EMISVPSInfo, EMISVPSService, EmailResetRequest
+from .models import (
+    EMISDownload,
+    EMISHardware,
+    EMISNotice,
+    EMISVPSInfo,
+    EMISVPSService,
+    EmailResetRequest,
+)
 
 
 @admin.register(EMISVPSInfo)
@@ -98,3 +105,20 @@ class EmailResetRequestAdmin(admin.ModelAdmin):
         ("Status", {"fields": ("status", "processed_at", "processed_by", "notes")}),
         ("System", {"fields": ("request_sequence", "created_at", "updated_at")}),
     )
+
+
+@admin.register(EMISDownload)
+class EMISDownloadAdmin(admin.ModelAdmin):
+    list_display = ["title", "category", "link_url", "file", "is_active", "created_at"]
+    list_filter = ["category", "is_active"]
+    search_fields = ["title", "description", "link_url"]
+    readonly_fields = ["created_at", "updated_at"]
+
+
+@admin.register(EMISNotice)
+class EMISNoticeAdmin(admin.ModelAdmin):
+    list_display = ["title", "category", "severity", "published_at", "is_published", "is_active"]
+    list_filter = ["category", "severity", "is_published", "is_active"]
+    search_fields = ["title", "summary", "body"]
+    readonly_fields = ["slug", "views", "created_at", "updated_at"]
+    ordering = ["-published_at"]

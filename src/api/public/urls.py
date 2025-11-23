@@ -12,4 +12,5 @@ urlpatterns = [
     path("research-mod/", include("src.research.public.urls")),
     path("journal-mod/", include("src.journal.public.urls")),
     path("curriculum-mod/", include("src.curriculum.urls")),
+    path("emis/", include("src.emis.public.urls")),
 ]

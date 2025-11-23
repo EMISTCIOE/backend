@@ -8,7 +8,9 @@ from rest_framework import serializers
 
 from .models import (
     EmailResetRequest,
+    EMISDownload,
     EMISHardware,
+    EMISNotice,
     EMISVPSInfo,
     EMISVPSService,
     PRIMARY_EMAIL_DOMAIN,
@@ -185,6 +187,99 @@ class EMISHardwareSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             "id",
+            "created_at",
+            "updated_at",
+            "created_by",
+            "updated_by",
+            "is_active",
+        ]
+
+    def create(self, validated_data):
+        user = self.context["request"].user
+        validated_data["created_by"] = user
+        validated_data["updated_by"] = user
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        user = self.context["request"].user
+        validated_data["updated_by"] = user
+        return super().update(instance, validated_data)
+
+
+class EMISDownloadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EMISDownload
+        fields = [
+            "id",
+            "uuid",
+            "title",
+            "description",
+            "category",
+            "file",
+            "link_url",
+            "created_at",
+            "updated_at",
+            "created_by",
+            "updated_by",
+            "is_active",
+        ]
+        read_only_fields = [
+            "id",
+            "uuid",
+            "created_at",
+            "updated_at",
+            "created_by",
+            "updated_by",
+            "is_active",
+        ]
+
+    def validate(self, attrs):
+        file = attrs.get("file") or getattr(self.instance, "file", None)
+        link_url = attrs.get("link_url") or getattr(self.instance, "link_url", None)
+        if not file and not link_url:
+            raise serializers.ValidationError("Either a file or link URL is required.")
+        return attrs
+
+    def create(self, validated_data):
+        user = self.context["request"].user
+        validated_data["created_by"] = user
+        validated_data["updated_by"] = user
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        user = self.context["request"].user
+        validated_data["updated_by"] = user
+        return super().update(instance, validated_data)
+
+
+class EMISNoticeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EMISNotice
+        fields = [
+            "id",
+            "uuid",
+            "slug",
+            "title",
+            "summary",
+            "body",
+            "category",
+            "severity",
+            "published_at",
+            "is_published",
+            "attachment",
+            "external_url",
+            "views",
+            "created_at",
+            "updated_at",
+            "created_by",
+            "updated_by",
+            "is_active",
+        ]
+        read_only_fields = [
+            "id",
+            "uuid",
+            "slug",
+            "views",
             "created_at",
             "updated_at",
             "created_by",
