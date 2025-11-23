@@ -46,7 +46,9 @@ class CdnRedirectMiddleware:
 
     def __call__(self, request):
         host = request.get_host().split(":")[0].lower()
-        if host == self.CDN_HOST:
+        path = request.path or "/"
+
+        if host == self.CDN_HOST and path in {"", "/"}:
             redirect_url = f"{self.TARGET_HOST}{request.get_full_path()}"
             return HttpResponsePermanentRedirect(redirect_url)
 
