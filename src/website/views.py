@@ -205,10 +205,17 @@ class CampusKeyOfficialFilterSet(FilterSet):
     )
     is_key_official = django_filters.BooleanFilter()
     is_active = django_filters.BooleanFilter()
+    campus_section = django_filters.CharFilter(
+        field_name="campus_sections__slug",
+        lookup_expr="iexact",
+    )
+    campus_section_uuid = django_filters.UUIDFilter(
+        field_name="campus_sections__uuid",
+    )
 
     class Meta:
         model = CampusKeyOfficial
-        fields = ["designation", "is_key_official", "is_active"]
+        fields = ["designation", "is_key_official", "is_active", "campus_section", "campus_section_uuid"]
 
 
 class CampusKeyOfficialViewSet(viewsets.ModelViewSet):
@@ -220,7 +227,7 @@ class CampusKeyOfficialViewSet(viewsets.ModelViewSet):
         "department",
         "program",
         "unit",
-    )
+    ).prefetch_related("campus_sections")
     filter_backends = [SearchFilter, OrderingFilter, DjangoFilterBackend]
     search_fields = [
         "full_name",
@@ -229,6 +236,7 @@ class CampusKeyOfficialViewSet(viewsets.ModelViewSet):
         "email",
         "department__name",
         "unit__name",
+        "campus_sections__name",
     ]
     ordering_fields = ["full_name", "created_at", "display_order"]
     ordering = ["display_order", "-created_at"]
@@ -605,7 +613,10 @@ class FilterForCampusSectionViewSet(FilterSet):
 
 class CampusSectionViewSet(viewsets.ModelViewSet):
     permission_classes = [CampusSectionPermission]
-    queryset = CampusSection.objects.filter(is_archived=False)
+    queryset = CampusSection.objects.filter(is_archived=False).prefetch_related(
+        "members__designation",
+        "members__campus_sections",
+    )
     filterset_class = FilterForCampusSectionViewSet
     filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
     search_fields = ["name", "short_description", "detailed_description"]
@@ -678,7 +689,10 @@ class FilterForCampusUnitViewSet(FilterSet):
 
 class CampusUnitViewSet(viewsets.ModelViewSet):
     permission_classes = [CampusUnitPermission]
-    queryset = CampusUnit.objects.filter(is_archived=False)
+    queryset = CampusUnit.objects.filter(is_archived=False).prefetch_related(
+        "members__designation",
+        "members__campus_sections",
+    )
     filterset_class = FilterForCampusUnitViewSet
     filter_backends = (SearchFilter, OrderingFilter, DjangoFilterBackend)
     search_fields = ["name", "short_description", "detailed_description"]

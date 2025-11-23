@@ -229,6 +229,7 @@ class CampusKeyOfficialListSerializer(serializers.ModelSerializer):
     department = serializers.SerializerMethodField()
     program = serializers.SerializerMethodField()
     unit = serializers.SerializerMethodField()
+    campus_sections = serializers.SerializerMethodField()
 
     class Meta:
         model = CampusKeyOfficial
@@ -248,6 +249,7 @@ class CampusKeyOfficialListSerializer(serializers.ModelSerializer):
             "department",
             "program",
             "unit",
+            "campus_sections",
             "display_order",
         ]
 
@@ -296,6 +298,20 @@ class CampusKeyOfficialListSerializer(serializers.ModelSerializer):
             }
         return None
 
+    def get_campus_sections(self, obj):
+        sections = getattr(obj, "campus_sections", None)
+        if sections is None:
+            return []
+        return [
+            {
+                "id": section.id,
+                "uuid": str(section.uuid),
+                "name": section.name,
+                "slug": section.slug,
+            }
+            for section in sections.all()
+        ]
+
     
     def get_fields(self):
         """Conditionally remove phone_number for public/non-CMS requests.
@@ -341,6 +357,7 @@ class CampusKeyOfficialRetrieveSerializer(AbstractInfoRetrieveSerializer):
     department = serializers.SerializerMethodField()
     program = serializers.SerializerMethodField()
     unit = serializers.SerializerMethodField()
+    campus_sections = serializers.SerializerMethodField()
 
     class Meta(AbstractInfoRetrieveSerializer.Meta):
         model = CampusKeyOfficial
@@ -358,6 +375,7 @@ class CampusKeyOfficialRetrieveSerializer(AbstractInfoRetrieveSerializer):
             "department",
             "program",
             "unit",
+            "campus_sections",
             "display_order",
         ]
 
@@ -409,6 +427,20 @@ class CampusKeyOfficialRetrieveSerializer(AbstractInfoRetrieveSerializer):
             }
         return None
 
+    def get_campus_sections(self, obj):
+        sections = getattr(obj, "campus_sections", None)
+        if sections is None:
+            return []
+        return [
+            {
+                "id": section.id,
+                "uuid": str(section.uuid),
+                "name": section.name,
+                "slug": section.slug,
+            }
+            for section in sections.all()
+        ]
+
     def get_fields(self):
         """Apply same conditional phone hiding for retrieve serializer."""
         fields = super().get_fields()
@@ -456,6 +488,11 @@ class CampusKeyOfficialCreateSerializer(serializers.ModelSerializer):
         allow_null=True,
         required=False,
     )
+    campus_sections = serializers.PrimaryKeyRelatedField(
+        queryset=CampusSection.objects.filter(is_active=True),
+        many=True,
+        required=False,
+    )
 
     class Meta:
         model = CampusKeyOfficial
@@ -472,6 +509,7 @@ class CampusKeyOfficialCreateSerializer(serializers.ModelSerializer):
             "department",
             "program",
             "unit",
+            "campus_sections",
             "display_order",
         ]
 
@@ -526,7 +564,13 @@ class CampusKeyOfficialCreateSerializer(serializers.ModelSerializer):
         validated_data["created_by"] = created_by
         validated_data["full_name"] = validated_data.pop("full_name").title()
 
-        return CampusKeyOfficial.objects.create(**validated_data)
+        campus_sections = validated_data.pop("campus_sections", None)
+        official = CampusKeyOfficial.objects.create(**validated_data)
+
+        if campus_sections is not None:
+            official.campus_sections.set(campus_sections)
+
+        return official
 
     def to_representation(self, instance):
         return {"message": CAMPUS_KEY_OFFICIAL_CREATE_SUCCESS}
@@ -552,6 +596,11 @@ class CampusKeyOfficialPatchSerializer(serializers.ModelSerializer):
         allow_null=True,
         required=False,
     )
+    campus_sections = serializers.PrimaryKeyRelatedField(
+        queryset=CampusSection.objects.filter(is_active=True),
+        many=True,
+        required=False,
+    )
 
     class Meta:
         model = CampusKeyOfficial
@@ -568,6 +617,7 @@ class CampusKeyOfficialPatchSerializer(serializers.ModelSerializer):
             "department",
             "program",
             "unit",
+            "campus_sections",
             "display_order",
         ]
 
@@ -628,6 +678,8 @@ class CampusKeyOfficialPatchSerializer(serializers.ModelSerializer):
         if "full_name" in validated_data:
             validated_data["full_name"] = validated_data.pop("full_name").title()
 
+        campus_sections = validated_data.pop("campus_sections", None)
+
         # Handle the photo
         if "photo" in validated_data:
             if instance.photo and default_storage.exists(instance.photo.name):
@@ -637,6 +689,9 @@ class CampusKeyOfficialPatchSerializer(serializers.ModelSerializer):
 
         for key, value in validated_data.items():
             setattr(instance, key, value)
+
+        if campus_sections is not None:
+            instance.campus_sections.set(campus_sections)
 
         instance.updated_by = updated_by
         instance.save()

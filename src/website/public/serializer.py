@@ -85,6 +85,7 @@ class PublicCampusKeyOfficialSerializer(serializers.ModelSerializer):
         source="get_title_prefix_display",
         read_only=True,
     )
+    campus_sections = serializers.SerializerMethodField()
 
     class Meta:
         model = CampusKeyOfficial
@@ -101,6 +102,20 @@ class PublicCampusKeyOfficialSerializer(serializers.ModelSerializer):
             "phone_number",
             "is_key_official",
             "display_order",
+            "campus_sections",
+        ]
+
+    def get_campus_sections(self, obj):
+        sections = getattr(obj, "campus_sections", None)
+        if sections is None:
+            return []
+        return [
+            {
+                "uuid": str(section.uuid),
+                "name": section.name,
+                "slug": section.slug,
+            }
+            for section in sections.all()
         ]
 
 

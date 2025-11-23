@@ -172,6 +172,14 @@ admin.site.register(CampusUnit)
 admin.site.register(ResearchFacility)
 
 
+class CampusSectionMembershipInline(admin.TabularInline):
+    model = CampusSection.members.through
+    extra = 1
+    fk_name = "campuskeyofficial"
+    verbose_name = "Campus Section"
+    verbose_name_plural = "Campus Sections"
+
+
 @admin.register(CampusInfo)
 class CampusInfoAdmin(admin.ModelAdmin):
     pass
@@ -203,6 +211,7 @@ class CampusKeyOfficialAdmin(admin.ModelAdmin):
         "is_key_official",
         "is_active",
     )
+    inlines = [CampusSectionMembershipInline]
     search_fields = (
         "full_name",
         "designation__title",
@@ -211,6 +220,7 @@ class CampusKeyOfficialAdmin(admin.ModelAdmin):
         "department__name",
         "program__name",
         "unit__name",
+        "campus_sections__name",
     )
     list_filter = (
         "designation",
