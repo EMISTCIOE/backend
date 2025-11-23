@@ -1,4 +1,4 @@
-from django.http import JsonResponse
+from django.http import HttpResponsePermanentRedirect, JsonResponse
 
 
 class BlockPostmanMiddleware:
@@ -31,3 +31,23 @@ class CSPMiddleware:
             ] = "default-src 'self' https://notices.tcioe.edu.np"
 
         return response
+
+
+class CdnRedirectMiddleware:
+    """
+    Redirect direct requests to the CDN domain back to the primary site.
+    """
+
+    CDN_HOST = "cdn.tcioe.edu.np"
+    TARGET_HOST = "https://tcioe.edu.np"
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        host = request.get_host().split(":")[0].lower()
+        if host == self.CDN_HOST:
+            redirect_url = f"{self.TARGET_HOST}{request.get_full_path()}"
+            return HttpResponsePermanentRedirect(redirect_url)
+
+        return self.get_response(request)

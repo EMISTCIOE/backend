@@ -24,7 +24,11 @@ SECRET_KEY = env(
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
+    "tcioe.edu.np",
+    "app.tcioe.edu.np",
+    "cdn.tcioe.edu.np",
     ".tcioe.edu.np",
+    "10.10.100.213",
     "192.168.1.102",
     "192.168.254.21",
 ]
@@ -64,7 +68,18 @@ CORS_PREFLIGHT_MAX_AGE = 86400
 
 
 CSRF_TRUSTED_ORIGINS = [
-    "*",
+    "https://tcioe.edu.np",
+    "https://app.tcioe.edu.np",
+    "https://cdn.tcioe.edu.np",
+    "https://*.tcioe.edu.np",
+    "http://10.10.100.213",
+    "https://10.10.100.213",
+    "http://localhost",
+    "http://localhost:3000",
+    "http://localhost:3003",
+    "http://localhost:8000",
+    "http://127.0.0.1",
+    "http://127.0.0.1:8000",
 ]
 
 CSP_FRAME_ANCESTORS = [
@@ -125,6 +140,7 @@ MIDDLEWARE = [
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "src.libs.middlewares.CdnRedirectMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "csp.middleware.CSPMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
