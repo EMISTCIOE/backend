@@ -24,23 +24,21 @@ SECRET_KEY = env(
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
-    "cdn.tcioe.edu.np",
-    "tcioe.edu.np",
-    "www.tcioe.edu.np",
-    "app.tcioe.edu.np",
+    ".tcioe.edu.np",
     "192.168.1.102",
     "192.168.254.21",
 ]
+CORS_ALLOW_ALL_ORIGINS = True
 
-# CORS Configuration - Hardcoded for production
-CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
-    "https://app.tcioe.edu.np",
-    "https://cdn.tcioe.edu.np",
-    "https://tcioe.edu.np",
-    "https://www.tcioe.edu.np",
     "http://localhost:3000",
     "http://localhost:3003",
+    "http://10.10.100.213",
+    "https://10.10.100.213",
+]
+# Allow any subdomain (and the apex) over http(s), optional port
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https?://([a-z0-9-]+\.)*tcioe\.edu\.np(:\d+)?$",
 ]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
@@ -66,26 +64,11 @@ CORS_PREFLIGHT_MAX_AGE = 86400
 
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://app.tcioe.edu.np",
-    "https://cdn.tcioe.edu.np",
-    "https://tcioe.edu.np",
-    "https://www.tcioe.edu.np",
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "http://localhost:3003",
+    "*",
 ]
 
-
 CSP_FRAME_ANCESTORS = [
-    "'self'",
-    "http://localhost:3000",
-    "http://localhost:3003",
-    "https://app.tcioe.edu.np",
-    "https://tcioe-cms.vercel.app",
-    "https://tcioe.edu.np",
-    "http://tcioe.edu.np",
-    "https://*.tcioe.edu.np",
-    "http://*.tcioe.edu.np",
+    "*",
 ]
 CSP_DEFAULT_SRC = ("'self'",)
 CSP_IMG_SRC = ("'self'", "data:", "https://cdn.jsdelivr.net")  # Allow Swagger icons
