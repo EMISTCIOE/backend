@@ -29,7 +29,8 @@ ALLOWED_HOSTS = [
     "cdn.tcioe.edu.np",
     ".tcioe.edu.np",
     "10.10.100.213",
-    "10.10.100.245"
+    "10.10.100.215",
+    "10.10.100.245",
 ]
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -37,11 +38,17 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:3003",
     "http://10.10.100.213",
+    "http://10.10.100.213:3009",
     "http://10.10.100.245",
+    "http://10.10.100.245:3009",
+    "http://10.10.100.215",
+    "http://10.10.100.215:3009",
 ]
 # Allow any subdomain (and the apex) over http(s), optional port
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^https?://([a-z0-9-]+\.)*tcioe\.edu\.np(:\d+)?$",
+    r"^https?://10\.10\.100\.213(:\d+)?$",
+    r"^https?://10\.10\.100\.215(:\d+)?$",
 ]
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
@@ -73,6 +80,13 @@ CSRF_TRUSTED_ORIGINS = [
     "https://*.tcioe.edu.np",
     "http://10.10.100.213",
     "https://10.10.100.213",
+    "http://10.10.100.213:3009",
+    "http://10.10.100.245",
+    "https://10.10.100.245",
+    "http://10.10.100.245:3009",
+    "http://10.10.100.215",
+    "https://10.10.100.215",
+    "http://10.10.100.215:3009",
     "http://localhost",
     "http://localhost:3000",
     "http://localhost:3003",
