@@ -111,8 +111,9 @@ class DeployStrategy(models.TextChoices):
 
 
 class DownloadCategory(models.TextChoices):
-    REPORT_FORM = "report_form", _("Reports & Forms")
-    RESOURCE = "resource", _("Resources & Downloads")
+    REPORTS = "reports", _("Reports")
+    FORMS = "forms", _("Forms")
+    DOWNLOADS = "downloads", _("Downloads")
 
 
 class NoticeCategory(models.TextChoices):
@@ -157,7 +158,7 @@ class EMISDownload(AuditInfoModel):
         _("Category"),
         max_length=20,
         choices=DownloadCategory.choices,
-        default=DownloadCategory.RESOURCE,
+        default=DownloadCategory.DOWNLOADS,
     )
     file = models.FileField(
         _("File"),
