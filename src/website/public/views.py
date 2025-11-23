@@ -110,6 +110,8 @@ class PublicCampusKeyOfficialListAPIView(ListAPIView):
     queryset = CampusKeyOfficial.objects.filter(is_active=True).select_related(
         "designation",
         "campus_section",
+        "department",
+        "unit",
     )
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     ordering = ["display_order"]

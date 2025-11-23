@@ -85,6 +85,8 @@ class PublicCampusKeyOfficialSerializer(serializers.ModelSerializer):
         source="get_title_prefix_display",
         read_only=True,
     )
+    department = PublicDepartmentSummarySerializer(read_only=True)
+    unit = serializers.SerializerMethodField()
     campus_section = serializers.SerializerMethodField()
 
     class Meta:
@@ -99,11 +101,22 @@ class PublicCampusKeyOfficialSerializer(serializers.ModelSerializer):
             "message",
             "photo",
             "email",
-            "phone_number",
             "is_key_official",
             "display_order",
+            "department",
+            "unit",
             "campus_section",
         ]
+
+    def get_unit(self, obj):
+        unit = getattr(obj, "unit", None)
+        if not unit:
+            return None
+        return {
+            "uuid": str(unit.uuid),
+            "name": unit.name,
+            "slug": unit.slug,
+        }
 
     def get_campus_section(self, obj):
         section = getattr(obj, "campus_section", None)
