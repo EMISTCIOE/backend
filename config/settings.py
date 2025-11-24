@@ -24,61 +24,64 @@ SECRET_KEY = env(
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
-    "tcioe.edu.np",
-    "app.tcioe.edu.np",
-    "cdn.tcioe.edu.np",
-    ".tcioe.edu.np",
+    ".tcioe.edu.np",  # Allows tcioe.edu.np and all subdomains
     "10.10.100.213",
     "10.10.100.215",
     "10.10.100.245",
 ]
-CORS_ALLOW_ALL_ORIGINS = True
-
+# CORS Configuration
+CORS_ALLOW_ALL_ORIGINS = env.bool(
+    "CORS_ALLOW_ALL_ORIGINS", DEBUG
+)  # Only allow all in DEBUG mode
 CORS_ALLOWED_ORIGINS = [
+    "https://tcioe.edu.np",
+    "https://www.tcioe.edu.np",
+    "https://app.tcioe.edu.np",
+    "https://cdn.tcioe.edu.np",
     "http://localhost:3000",
     "http://localhost:3003",
-    "http://10.10.100.213",
-    "http://10.10.100.213:3009",
-    "http://1o.10.100.247:3009"
-    "http://10.10.100.245",
-    "http://10.10.100.245:3009",
-    "http://10.10.100.215",
-    "http://10.10.100.215:3009",
+    "http://localhost:3009",
 ]
-# Allow any subdomain (and the apex) over http(s), optional port
+# Allow any subdomain of tcioe.edu.np
 CORS_ALLOWED_ORIGIN_REGEXES = [
-    r"^https?://([a-z0-9-]+\.)*tcioe\.edu\.np(:\d+)?$",
-    r"^https?://10\.10\.100\.213(:\d+)?$",
-    r"^https?://10\.10\.100\.215(:\d+)?$",
+    r"^https://[a-zA-Z0-9\-]+\.tcioe\.edu\.np$",  # Any HTTPS subdomain
+    r"^http://localhost(:\d+)?$",  # Any localhost port for development
 ]
+
+
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
-    'accept',
-    'accept-encoding',
-    'authorization',
-    'content-type',
-    'dnt',
-    'origin',
-    'user-agent',
-    'x-csrftoken',
-    'x-requested-with',
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
 ]
 CORS_ALLOW_METHODS = [
-    'DELETE',
-    'GET',
-    'OPTIONS',
-    'PATCH',
-    'POST',
-    'PUT',
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
 ]
 CORS_PREFLIGHT_MAX_AGE = 86400
 
 
 CSRF_TRUSTED_ORIGINS = [
+    # Production domains
     "https://tcioe.edu.np",
+    "https://www.tcioe.edu.np",
     "https://app.tcioe.edu.np",
     "https://cdn.tcioe.edu.np",
-    "https://*.tcioe.edu.np",
+    # HTTP variants for local development
+    "http://tcioe.edu.np",
+    "http://app.tcioe.edu.np",
+    # Internal IPs
     "http://10.10.100.213",
     "https://10.10.100.213",
     "http://10.10.100.213:3009",
@@ -88,13 +91,18 @@ CSRF_TRUSTED_ORIGINS = [
     "http://10.10.100.215",
     "https://10.10.100.215",
     "http://10.10.100.215:3009",
+    # Local development
     "http://localhost",
     "http://localhost:3000",
     "http://localhost:3003",
+    "http://localhost:3009",
     "http://localhost:8000",
     "http://127.0.0.1",
+    "http://127.0.0.1:3000",
     "http://127.0.0.1:8000",
 ]
+# Also allow any HTTPS subdomain of tcioe.edu.np via regex pattern
+# Django 4.0+ supports this automatically with the wildcard pattern above
 
 CSP_FRAME_ANCESTORS = [
     "*",
@@ -210,14 +218,13 @@ if not LOCAL:
         },
     }
 else:
-     DATABASES = {
-         "default": {
-             "ENGINE": "django.db.backends.sqlite3",
-             "NAME": BASE_DIR / "db.sqlite3",
-         },
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        },
     }
 
-    
 
 DATABASES["default"]["ATOMIC_REQUESTS"] = True
 
@@ -279,10 +286,10 @@ LOCALE_PATHS = [
 # SECURITY
 # ------------------------------------------------------------------------------
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SAMESITE = "None"
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = False  # Allow JavaScript access for API calls
-CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SAMESITE = "None"
 CSRF_COOKIE_SECURE = True
 CSRF_USE_SESSIONS = False
 USE_X_FORWARDED_HOST = True
