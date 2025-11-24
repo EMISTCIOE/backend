@@ -1,16 +1,17 @@
+import re
+
 from ckeditor.fields import RichTextField
 from django.db import models
 from django.utils import timezone
 from django.utils.text import slugify as django_slugify
-import re
 from django.utils.translation import gettext_lazy as _
 
 # Project Imports
 from src.base.models import AuditInfoModel
 from src.department.models import Department
-from src.website.models import CampusSection, CampusUnit
 from src.notice.utils import notice_media_upload_path
 from src.notice.validators import validate_notice_media_file
+from src.website.models import CampusSection, CampusUnit
 
 from .constants import NOTICE_THUMBNAIL_PATH, MediaType, NoticeStatus
 
@@ -91,7 +92,7 @@ class Notice(AuditInfoModel):
     is_approved_by_campus = models.BooleanField(
         default=False,
         verbose_name=_("Approved by Campus"),
-        help_text=_("Indicates whether the campus has approved this notice."),
+        help_text=_("dicates whether the campus has approved this notice."),
     )
     is_featured = models.BooleanField(
         default=False,
@@ -157,7 +158,9 @@ class Notice(AuditInfoModel):
         # Prefer appending year to avoid UUIDs. Use published_at year if set,
         # otherwise fallback to current year.
         try:
-            year = self.published_at.year if getattr(self, "published_at", None) else None
+            year = (
+                self.published_at.year if getattr(self, "published_at", None) else None
+            )
         except Exception:
             year = None
 
