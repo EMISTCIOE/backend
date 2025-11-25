@@ -182,12 +182,11 @@ class Notice(AuditInfoModel):
             idx += 1
 
     def save(self, *args, **kwargs):
-        # If this is a new Notice (being created), always set status to
-        # APPROVED. This ensures notices created via any API/form are
-        # approved by default regardless of incoming payload.
-        # Use _state.adding which is the recommended way to detect creation.
-        if getattr(self, "_state", None) and getattr(self._state, "adding", False):
-            self.status = NoticeStatus.APPROVED.value
+        # Always set status to APPROVED. Ignore any incoming status provided
+        # by external callers (CMS/API) so notices are never left pending.
+        # We intentionally do NOT modify `is_approved_by_department` or
+        # `is_approved_by_campus` here — only the status field is forced.
+        self.status = NoticeStatus.APPROVED.value
 
         # Regenerate slug from title on every save (so current records
         # are always normalized from the title). If title is empty, keep
