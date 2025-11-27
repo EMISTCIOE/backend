@@ -254,7 +254,12 @@ class CampusKeyOfficialListSerializer(serializers.ModelSerializer):
         ]
 
     def get_department(self, obj):
-        """Return department info if exists, otherwise return unit info."""
+        """Return department info if it exists.
+
+        NOTE: Do NOT return unit information from this field. Unit data is
+        available separately from the `unit` field. Keeping `department` reserved
+        for actual departments ensures a stable API contract for clients.
+        """
         if obj.department:
             return {
                 "id": obj.department.id,
@@ -262,18 +267,6 @@ class CampusKeyOfficialListSerializer(serializers.ModelSerializer):
                 "name": obj.department.name,
                 "short_name": obj.department.short_name,
                 "type": "department",
-            }
-        elif obj.unit:
-            # CampusUnit does not have `short_name` field. Use attribute safely and
-            # fall back to slug or None if not present. This prevents AttributeError
-            # when an official is associated with a CampusUnit.
-            short_name = getattr(obj.unit, "short_name", None) or getattr(obj.unit, "slug", None)
-            return {
-                "id": obj.unit.id,
-                "uuid": str(obj.unit.uuid),
-                "name": obj.unit.name,
-                "short_name": short_name,
-                "type": "unit",
             }
         return None
 
@@ -377,7 +370,10 @@ class CampusKeyOfficialRetrieveSerializer(AbstractInfoRetrieveSerializer):
         ]
 
     def get_department(self, obj):
-        """Return department info if exists, otherwise return unit info."""
+        """Return department info if it exists.
+
+        Do not return unit data here; use `get_unit` for unit information.
+        """
         if obj.department:
             return {
                 "id": obj.department.id,
@@ -386,17 +382,6 @@ class CampusKeyOfficialRetrieveSerializer(AbstractInfoRetrieveSerializer):
                 "short_name": obj.department.short_name,
                 "email": obj.department.email,
                 "type": "department",
-            }
-        elif obj.unit:
-            short_name = getattr(obj.unit, "short_name", None) or getattr(obj.unit, "slug", None)
-            email = getattr(obj.unit, "email", None) or getattr(obj.unit, "contact_email", None)
-            return {
-                "id": obj.unit.id,
-                "uuid": str(obj.unit.uuid),
-                "name": obj.unit.name,
-                "short_name": short_name,
-                "email": email,
-                "type": "unit",
             }
         return None
 

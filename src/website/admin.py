@@ -97,7 +97,7 @@ class GlobalEventAdmin(admin.ModelAdmin):
     search_fields = ("title", "location")
     list_filter = ("event_type", "is_active")
     fieldsets = (
-        ("Event Information", {"fields": ("title", "description", "event_type")}),
+        ("Event Information", {"fields": ("title", "description", "event_type")} ),
         (
             "Date & Location",
             {"fields": ("event_start_date", "event_end_date", "location")},
@@ -279,6 +279,14 @@ class CampusKeyOfficialAdmin(admin.ModelAdmin):
             },
         ),
     )
+
+    def save_model(self, request, obj, form, change):
+        # Ensure created_by is set when creating via admin and
+        # always set updated_by to the current user.
+        if not change:  # Only set created_by when creating a new object
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
 
 
 admin.site.register(CampusFeedback)
