@@ -8,7 +8,7 @@ def resolve_gallery_image_source(image):
             "global_event",
             str(image.global_event.uuid),
             image.global_event.title,
-            image.source_context or image.global_event.description or "Global Event",
+            image.source_context or "Global Event",  # Don't use event description
         )
 
     if image.union:
