@@ -456,9 +456,9 @@ class AdminAppointmentListView(generics.ListAPIView):
         date_from = self.request.query_params.get('date_from')
         date_to = self.request.query_params.get('date_to')
         if date_from:
-            queryset = queryset.filter(appointment_date__gte=date_from)
+            queryset = queryset.filter(appointment_datetime__date__gte=date_from)
         if date_to:
-            queryset = queryset.filter(appointment_date__lte=date_to)
+            queryset = queryset.filter(appointment_datetime__date__lte=date_to)
         
         return queryset.order_by('-created_at')
 

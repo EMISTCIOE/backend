@@ -1850,7 +1850,8 @@ class GlobalGalleryImageSerializer(serializers.ModelSerializer):
     source_type = serializers.SerializerMethodField()
     source_identifier = serializers.SerializerMethodField()
     source_name = serializers.SerializerMethodField()
-    source_context = serializers.SerializerMethodField()
+    # Use the actual model field for source_context instead of computed value
+    # source_context = serializers.SerializerMethodField()
 
     class Meta:
         model = GlobalGalleryImage
@@ -1865,7 +1866,7 @@ class GlobalGalleryImageSerializer(serializers.ModelSerializer):
             "source_type",
             "source_identifier",
             "source_name",
-            "source_context",
+            "source_context",  # This will now use the actual model field
             "source_title",
             "union",
             "club",
@@ -1887,8 +1888,9 @@ class GlobalGalleryImageSerializer(serializers.ModelSerializer):
     def get_source_name(self, obj):
         return self._source_values(obj)[2]
 
-    def get_source_context(self, obj):
-        return self._source_values(obj)[3]
+    # Remove the get_source_context method to use actual model field
+    # def get_source_context(self, obj):
+    #     return self._source_values(obj)[3]
 
 
 class GlobalGalleryImageUploadSerializer(serializers.Serializer):

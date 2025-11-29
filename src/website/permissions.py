@@ -331,8 +331,8 @@ class GlobalGalleryPermission(BasePermission):
 
 class GlobalGalleryImagePermission(BasePermission):
     def has_permission(self, request, view):
-        # EMIS staff has full access to gallery images
-        if user_has_roles(request.user, {EMIS_STAFF_ROLE}):
+        # Admin and EMIS staff have full access to gallery images
+        if user_has_roles(request.user, {ADMIN_ROLE, EMIS_STAFF_ROLE}):
             return True
 
         if getattr(request.user, "role", None) in {
@@ -356,8 +356,8 @@ class GlobalGalleryImagePermission(BasePermission):
         return validate_permissions(request, user_permissions_dict)
 
     def has_object_permission(self, request, view, obj):
-        # EMIS staff can manage any gallery image
-        if user_has_roles(request.user, {EMIS_STAFF_ROLE}):
+        # Admin and EMIS staff can manage any gallery image
+        if user_has_roles(request.user, {ADMIN_ROLE, EMIS_STAFF_ROLE}):
             return True
 
         if getattr(request.user, "role", None) in {
@@ -425,8 +425,8 @@ class GlobalEventPermission(BasePermission):
         return user_has_roles(user, {ADMIN_ROLE, EMIS_STAFF_ROLE, DEPARTMENT_ADMIN_ROLE})
     
     def has_permission(self, request, view):
-        # EMIS staff has full access to manage global events
-        if user_has_roles(request.user, {EMIS_STAFF_ROLE}):
+        # Admin and EMIS staff have full access to manage global events
+        if user_has_roles(request.user, {ADMIN_ROLE, EMIS_STAFF_ROLE}):
             return True
 
         # Special case: Admin/EMIS/DeptAdmin can always change approval status
