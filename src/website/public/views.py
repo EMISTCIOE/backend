@@ -288,9 +288,16 @@ class PublicGlobalGalleryListAPIView(GenericAPIView):
             ]
 
         items.sort(key=lambda item: item["created_at"], reverse=True)
-        page = self.paginate_queryset(items)
-        serializer = self.get_serializer(page, many=True)
-        return self.get_paginated_response(serializer.data)
+        
+        # Manual pagination for list of items
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(items, request, view=self)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+        
+        serializer = self.get_serializer(items, many=True)
+        return Response(serializer.data)
 
 
 class PublicGlobalEventPagination(LimitOffsetPagination):
