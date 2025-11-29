@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Appointment Confirmed</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      .header {
+        background-color: #28a745;
+        color: white;
+        padding: 20px;
+        text-align: center;
+        border-radius: 5px 5px 0 0;
+      }
+      .content {
+        background-color: #f8f9fa;
+        padding: 30px;
+        border-radius: 0 0 5px 5px;
+      }
+      .appointment-details {
+        background-color: white;
+        padding: 20px;
+        border-radius: 5px;
+        margin: 20px 0;
+      }
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+      }
+      .detail-label {
+        font-weight: bold;
+        color: #666;
+      }
+      .status-confirmed {
+        color: #28a745;
+        font-weight: bold;
+      }
+      .important-note {
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        padding: 15px;
+        border-radius: 5px;
+        margin: 20px 0;
+      }
+      .footer {
+        text-align: center;
+        margin-top: 30px;
+        font-size: 12px;
+        color: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>✓ Appointment Confirmed</h1>
+      <p>TCIOE Appointment System</p>
+    </div>
+
+    <div class="content">
+      <p>Dear {{ appointment.applicant_name }},</p>
+
+      <p>
+        Great news! Your appointment request has been
+        <strong>confirmed</strong>. Please find the details below:
+      </p>
+
+      <div class="appointment-details">
+        <h3>Confirmed Appointment Details</h3>
+        <div class="detail-row">
+          <span class="detail-label">Request ID:</span>
+          <span>#{{ appointment.id }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Category:</span>
+          <span>{{ appointment.category }}</span>
+        </div>
+        {% if appointment.department %}
+        <div class="detail-row">
+          <span class="detail-label">Department:</span>
+          <span>{{ appointment.department.name }}</span>
+        </div>
+        {% endif %} {% if appointment.official.designation %}
+        <div class="detail-row">
+          <span class="detail-label">Meeting with:</span>
+          <span>{{ appointment.official.designation.title }}</span>
+        </div>
+        {% endif %}
+        <div class="detail-row">
+          <span class="detail-label">Date:</span>
+          <span>{{ appointment.appointment_date|date:"F j, Y (l)" }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Time:</span>
+          <span>{{ appointment.appointment_time|time:"g:i A" }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Purpose:</span>
+          <span>{{ appointment.purpose }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Status:</span>
+          <span class="status-confirmed">CONFIRMED</span>
+        </div>
+        {% if appointment.admin_notes %}
+        <div class="detail-row">
+          <span class="detail-label">Additional Notes:</span>
+          <span>{{ appointment.admin_notes }}</span>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="important-note">
+        <h4>⚠️ Important Instructions:</h4>
+        <ul>
+          <li>
+            <strong>Arrive 10 minutes early</strong> to allow time for any
+            necessary procedures
+          </li>
+          <li>Bring a valid ID and any relevant documents</li>
+          <li>
+            If you cannot attend, please notify us
+            <strong>at least 24 hours in advance</strong>
+          </li>
+          <li>
+            For any changes or cancellations, contact our administration office
+            immediately
+          </li>
+        </ul>
+      </div>
+
+      <h4>Location Information:</h4>
+      <p>
+        Please report to the main administration office. Our staff will direct
+        you to the appropriate location for your meeting.
+      </p>
+
+      <p>
+        Thank you for choosing our appointment system. We look forward to
+        meeting with you.
+      </p>
+
+      <p>
+        Best regards,<br />
+        <strong>TCIOE Administration</strong>
+      </p>
+    </div>
+
+    <div class="footer">
+      <p>
+        This is an automated message from TCIOE Appointment System. Please do
+        not reply to this email.
+      </p>
+      <p>
+        © {{ "now"|date:"Y" }} Thakur College of Infrastructure and Engineering
+      </p>
+    </div>
+  </body>
+</html>

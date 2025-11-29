@@ -29,6 +29,7 @@ class CustomSpectacularSwaggerView(SpectacularSwaggerView):
 api_url_patterns = [
     path("v1/cms/", include("src.api.cms.urls")),
     path("v1/public/", include("src.api.public.urls")),
+    path("v1/appointments/", include("src.appointments.urls")),
 ]
 
 urlpatterns = [
