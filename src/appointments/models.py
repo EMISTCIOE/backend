@@ -324,6 +324,13 @@ class Appointment(models.Model):
         max_length=100,
         blank=True
     )
+    reference_id = models.CharField(
+        _('Reference ID'),
+        max_length=10,
+        unique=True,
+        blank=True,
+        help_text=_('Unique 5-character appointment reference ID')
+    )
     
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
@@ -363,6 +370,18 @@ class Appointment(models.Model):
             self.verification_token = ''.join(random.choices(
                 string.ascii_letters + string.digits, k=32
             ))
+        
+        # Generate unique reference ID if not exists
+        if not self.reference_id:
+            while True:
+                # Generate 5-character alphanumeric code (mixed case + numbers)
+                self.reference_id = ''.join(random.choices(
+                    string.ascii_lowercase + string.ascii_uppercase + string.digits, k=5
+                ))
+                # Check if this reference_id already exists
+                if not Appointment.objects.filter(reference_id=self.reference_id).exists():
+                    break
+        
         super().save(*args, **kwargs)
     
     @property

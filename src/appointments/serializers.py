@@ -238,9 +238,8 @@ class AppointmentCreateSerializer(serializers.ModelSerializer):
                 "Appointment datetime cannot be more than 30 days in advance"
             )
         
-        # Check for weekends (Saturday=5, Sunday=6)
-        if value.weekday() in [5, 6]:
-            raise serializers.ValidationError("Appointments are not available on weekends")
+        # Note: Weekend appointments are now allowed for flexibility
+        # Educational institutions may need weekend access for certain services
         
         return value
     

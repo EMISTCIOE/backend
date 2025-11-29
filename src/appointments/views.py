@@ -256,7 +256,7 @@ class AppointmentCreateView(generics.CreateAPIView):
             print(f"Failed to send confirmation email: {e}")
         
         return Response({
-            'id': appointment.id,
+            'id': appointment.reference_id,  # Use reference_id instead of database id
             'message': 'Appointment created successfully',
             'verification_token': appointment.verification_token,
             'status': appointment.status
@@ -267,7 +267,7 @@ class AppointmentCreateView(generics.CreateAPIView):
         pass
     
     def send_appointment_confirmation_email(self, appointment):
-        """Send appointment confirmation email"""
+        """Send appointment confirmation email using HTML template"""
         subject = f'Appointment Request Submitted - {appointment.category}'
         
         context = {
@@ -275,62 +275,23 @@ class AppointmentCreateView(generics.CreateAPIView):
             'applicant_name': appointment.applicant_name,
             'appointment_datetime': appointment.appointment_datetime,
             'purpose': appointment.purpose,
+            'current_year': timezone.now().year,
         }
         
-        # Send to applicant
-        appointment_datetime_str = appointment.appointment_datetime.strftime('%Y-%m-%d %I:%M %p')
+        # Render HTML email template
+        html_message = render_to_string('appointments/email/appointment_created.html', context)
         
-        applicant_message = f'''
-        Dear {appointment.applicant_name},
+        # Send HTML email to applicant
+        from django.core.mail import EmailMultiAlternatives
         
-        Your appointment request has been submitted successfully.
-        
-        Details:
-        - Category: {appointment.category}
-        - Date & Time: {appointment_datetime_str}
-        - Purpose: {appointment.purpose}
-        
-        Your appointment is currently pending approval. You will receive an email once it's confirmed.
-        
-        Best regards,
-        TCIOE Appointment System
-        '''
-        
-        send_mail(
+        email = EmailMultiAlternatives(
             subject=subject,
-            message=applicant_message,
+            body='',  # Plain text version can be empty since we're using HTML
             from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[appointment.applicant_email],
-            fail_silently=False
+            to=[appointment.applicant_email]
         )
-        
-        # Send to official
-        if appointment.official and appointment.official.email:
-            official_message = f'''
-            Dear {appointment.official.first_name or 'Official'},
-            
-            A new appointment request has been submitted for you.
-            
-            Details:
-            - Applicant: {appointment.applicant_name} ({appointment.applicant_email})
-            - Date: {appointment.appointment_date}
-            - Time: {appointment.appointment_time}
-            - Purpose: {appointment.purpose}
-            - Details: {appointment.details}
-            
-            Please review and respond to this appointment request in the admin panel.
-            
-            Best regards,
-            TCIOE Appointment System
-            '''
-            
-            send_mail(
-                subject=f'New Appointment Request from {appointment.applicant_name}',
-                message=official_message,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[appointment.official.email],
-                fail_silently=False
-            )
+        email.attach_alternative(html_message, "text/html")
+        email.send(fail_silently=False)
 
 
 class AppointmentDetailView(generics.RetrieveAPIView):
@@ -475,39 +436,39 @@ class AdminAppointmentDetailView(generics.RetrieveUpdateAPIView):
                 print(f"Failed to send status update email: {e}")
     
     def send_status_update_email(self, appointment, old_status):
-        """Send email notification for status update"""
-        status_messages = {
-            Appointment.STATUS_CONFIRMED: 'Your appointment has been confirmed!',
-            Appointment.STATUS_REJECTED: 'Your appointment request has been declined.',
-            Appointment.STATUS_CANCELLED: 'Your appointment has been cancelled.',
-            Appointment.STATUS_COMPLETED: 'Your appointment has been completed.',
+        """Send email notification for status update using HTML templates"""
+        
+        # Use appropriate template based on status
+        if appointment.status == Appointment.STATUS_CONFIRMED:
+            template = 'appointments/email/appointment_confirmed.html'
+        elif appointment.status == Appointment.STATUS_REJECTED:
+            template = 'appointments/email/appointment_rejected.html'
+        else:
+            # For other status updates, use a generic template or return
+            return
+        
+        context = {
+            'appointment': appointment,
+            'applicant_name': appointment.applicant_name,
+            'appointment_datetime': appointment.appointment_datetime,
+            'purpose': appointment.purpose,
+            'current_year': timezone.now().year,
         }
         
-        subject = f'Appointment Status Update - {appointment.category}'
-        message = f'''
-        Dear {appointment.applicant_name},
+        # Render HTML email template
+        html_message = render_to_string(template, context)
         
-        {status_messages.get(appointment.status, 'Your appointment status has been updated.')}
+        # Send HTML email
+        from django.core.mail import EmailMultiAlternatives
         
-        Appointment Details:
-        - Category: {appointment.category}
-        - Date: {appointment.appointment_date}
-        - Time: {appointment.appointment_time}
-        - Status: {appointment.get_status_display()}
-        
-        {f"Notes: {appointment.admin_notes}" if appointment.admin_notes else ""}
-        
-        Best regards,
-        TCIOE Appointment System
-        '''
-        
-        send_mail(
-            subject=subject,
-            message=message,
+        email = EmailMultiAlternatives(
+            subject=f'Appointment Status Update - {appointment.category}',
+            body='',  # Plain text version can be empty since we're using HTML
             from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[appointment.applicant_email],
-            fail_silently=False
+            to=[appointment.applicant_email]
         )
+        email.attach_alternative(html_message, "text/html")
+        email.send(fail_silently=False)
 
 
 class AppointmentHistoryView(generics.ListAPIView):

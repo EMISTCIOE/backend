@@ -24,11 +24,10 @@ def send_appointment_notification(appointment, notification_type='created'):
     context = {
         'appointment': appointment,
         'applicant_name': appointment.applicant_name,
-        'appointment_date': appointment.appointment_date,
-        'appointment_time': appointment.appointment_time,
+        'appointment_datetime': appointment.appointment_datetime,
         'purpose': appointment.purpose,
         'category': appointment.category,
-        'official': appointment.official
+        'current_year': timezone.now().year,
     }
     
     if notification_type == 'created':
@@ -56,8 +55,7 @@ def send_appointment_notification(appointment, notification_type='created'):
         
         Your appointment ({notification_type}) details:
         - Category: {appointment.category}
-        - Date: {appointment.appointment_date}
-        - Time: {appointment.appointment_time}
+        - Date & Time: {appointment.appointment_datetime.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_datetime else 'Not set'}
         - Purpose: {appointment.purpose}
         
         {f"Notes: {appointment.admin_notes}" if appointment.admin_notes else ""}
@@ -66,14 +64,17 @@ def send_appointment_notification(appointment, notification_type='created'):
         TCIOE Appointment System
         """
         
-        send_mail(
+        # Send HTML email
+        from django.core.mail import EmailMultiAlternatives
+        
+        email = EmailMultiAlternatives(
             subject=subject,
-            message=plain_message,
-            html_message=html_message,
+            body=plain_message,  # Plain text fallback
             from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[appointment.applicant_email],
-            fail_silently=False
+            to=[appointment.applicant_email]
         )
+        email.attach_alternative(html_message, "text/html")
+        email.send(fail_silently=False)
         return True
         
     except Exception as e:
