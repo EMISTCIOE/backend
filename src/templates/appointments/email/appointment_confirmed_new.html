@@ -1,297 +1,307 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Appointment Confirmation - TCIOE</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Appointment Confirmation - TCIOE EMIS</title>
     <style>
-      body {
-        margin: 0;
-        padding: 20px;
-        font-family: Arial, sans-serif;
-        background-color: #f5f5f5;
-        color: #333;
-      }
-      .container {
-        max-width: 600px;
-        margin: 0 auto;
-        background: white;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        overflow: hidden;
-      }
-      .header {
-        background: #2c3e50;
-        color: white;
-        padding: 20px;
-        text-align: center;
-      }
-      .logo {
-        width: 80px;
-        height: 80px;
-        margin: 0 auto 15px;
-        display: block;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-      }
-      .header h1 {
-        margin: 0;
-        font-size: 24px;
-        font-weight: 600;
-      }
-      .header p {
-        margin: 5px 0 0;
-        opacity: 0.9;
-        font-size: 14px;
-      }
-      .content {
-        padding: 30px;
-      }
-      .success-banner {
-        background: #d4edda;
-        border: 1px solid #c3e6cb;
-        color: #155724;
-        padding: 15px;
-        border-radius: 5px;
-        margin-bottom: 25px;
-        text-align: center;
-        font-weight: bold;
-      }
-      .appointment-details {
-        background: #f8f9fa;
-        border: 1px solid #e9ecef;
-        border-radius: 8px;
-        padding: 20px;
-        margin: 20px 0;
-      }
-      .detail-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 12px 0;
-        border-bottom: 1px solid #dee2e6;
-      }
-      .detail-row:last-child {
-        border-bottom: none;
-      }
-      .detail-label {
-        font-weight: bold;
-        color: #495057;
-        flex: 1;
-      }
-      .detail-value {
-        flex: 2;
-        text-align: right;
-        color: #2c3e50;
-        font-weight: 500;
-      }
-      .status-confirmed {
-        background: #28a745;
-        color: white;
-        padding: 4px 12px;
-        border-radius: 15px;
-        font-size: 12px;
-        font-weight: bold;
-        text-transform: uppercase;
-      }
-      .instructions-box {
-        background: #fff3cd;
-        border: 1px solid #ffeaa7;
-        border-radius: 5px;
-        padding: 20px;
-        margin: 20px 0;
-      }
-      .instructions-box h3 {
-        margin: 0 0 10px;
-        color: #856404;
-        font-size: 16px;
-      }
-      .instructions-box ul {
-        margin: 10px 0 0 20px;
-        color: #856404;
-      }
-      .contact-info {
-        background: #e8f4f8;
-        border: 1px solid #1abc9c;
-        border-radius: 5px;
-        padding: 15px;
-        margin: 20px 0;
-      }
-      .contact-info h3 {
-        margin: 0 0 10px;
-        color: #16a085;
-      }
-      .footer {
-        background: #2c3e50;
-        color: white;
-        padding: 25px;
-        text-align: center;
-        font-size: 12px;
-      }
-      .footer-logo-fallback {
-        width: 50px;
-        height: 50px;
-        margin: 0 auto 15px;
-        border-radius: 8px;
-        background: #34495e;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 16px;
-        font-weight: bold;
-      }
-      .footer p {
-        margin: 8px 0;
-        opacity: 0.9;
-      }
-      .footer strong {
-        color: white;
-      }
-      @media only screen and (max-width: 600px) {
         body {
-          padding: 10px;
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border: 1px solid #ddd;
+        }
+        .header {
+            background: #2c3e50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 15px;
+            display: block;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
         }
         .content {
-          padding: 20px;
+            padding: 25px;
         }
-        .detail-row {
-          flex-direction: column;
-          align-items: flex-start;
+        h1 {
+            font-size: 24px;
+            margin: 0 0 15px;
+            color: #2c3e50;
         }
-        .detail-value {
-          text-align: left;
-          margin-top: 5px;
+        p {
+            margin: 0 0 15px;
+            line-height: 1.5;
         }
-      }
+        .appointment-details {
+            background: #f8f9fa;
+            border-left: 3px solid #2c3e50;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .appointment-details p {
+            margin: 5px 0;
+        }
+        .status-badge {
+            background: #28a745;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 10px 0;
+        }
+        .status-badge.pending {
+            background: #ffc107;
+            color: #212529;
+        }
+        .status-badge.rejected {
+            background: #dc3545;
+        }
+        .alert {
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .alert-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .alert-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        .footer {
+            background: #2c3e50;
+            color: white !important;
+            padding: 20px;
+            text-align: center;
+        }
+        .footer * {
+            color: white !important;
+        }
+        .footer-logo-fallback {
+            background: #34495e;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            margin: 0 auto 15px;
+            text-align: center;
+            line-height: 60px;
+            font-size: 20px;
+            font-weight: bold;
+            color: white !important;
+        }
+        .footer-section {
+            color: white !important;
+            font-size: 13px;
+            line-height: 1.6;
+            margin: 10px 0;
+        }
+        .footer-section strong {
+            color: white !important;
+            font-size: 14px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        .footer-link {
+            color: #1abc9c !important;
+            text-decoration: none;
+        }
+        .footer-link:visited {
+            color: #1abc9c !important;
+        }
+        .social-icon {
+            display: inline-block;
+            margin: 0 8px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+        }
+        .copyright {
+            font-size: 12px;
+            color: white !important;
+            margin-top: 15px;
+            border-top: 1px solid #34495e;
+            padding-top: 15px;
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .content {
+                padding: 20px;
+            }
+            .header h2 {
+                font-size: 18px !important;
+            }
+            .logo {
+                width: 60px !important;
+                height: 60px !important;
+            }
+            .footer-logo-fallback {
+                width: 50px !important;
+                height: 50px !important;
+                line-height: 50px !important;
+                font-size: 18px !important;
+            }
+        }
     </style>
-  </head>
-  <body>
+</head>
+<body>
     <div class="container">
-      <!-- Header -->
-      <div class="header">
-        <img
-          src="https://tcioe.edu.in/static/media/tcioe_logo.png"
-          alt="TCIOE Logo"
-          class="logo"
-          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-        />
-        <div class="footer-logo-fallback" style="display: none">TCIOE</div>
-        <h1>Appointment Confirmed</h1>
-        <p>Thapar College of Engineering & Technology</p>
-      </div>
-
-      <!-- Content -->
-      <div class="content">
-        <div class="success-banner">
-          ✅ Your appointment has been confirmed successfully!
+        <div class="header">
+            <img
+                src="https://res.cloudinary.com/deibqsazd/image/upload/v1763796707/logo_kbfjba.png"
+                alt="TCIOE Logo"
+                class="logo"
+                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+            />
+            <div class="footer-logo-fallback" style="display: none">TC</div>
+            <h2 style="margin: 0; font-size: 22px; font-weight: 600; color: white">
+                TCIOE EMIS System
+            </h2>
+            <p style="margin: 8px 0 5px; font-size: 14px; opacity: 0.9; color: white">
+                Thapathali Campus, Institute of Engineering
+            </p>
+            <p style="margin: 0; font-size: 12px; opacity: 0.8; line-height: 1.4; color: white;">
+                Leading Technical Education Institution<br />
+                Excellence in Engineering & Technology
+            </p>
         </div>
 
-        <p>Dear <strong>{{ appointment.applicant_name }}</strong>,</p>
+        <div class="content">            <h1>📅 New Appointment Scheduled</h1>
+            <p>Dear {{ appointment.applicant_name }},</p>
+            <p>This is to confirm that your new appointment has been <strong>scheduled and approved</strong> by the administration.</p>
+            
+            <div class="status-badge">✨ Status: Newly Confirmed</div>
+            
+            <div class="appointment-details">
+                <h3 style="margin-top: 0; color: #007bff;">📅 New Appointment Details</h3>
+                <p><strong>Appointment ID:</strong> #{{ appointment.id }}</p>
+                <p><strong>Applicant Name:</strong> {{ appointment.applicant_name }}</p>
+                <p><strong>Email:</strong> {{ appointment.applicant_email }}</p>
+                <p><strong>Designation:</strong> {{ appointment.applicant_designation }}</p>
+                <p><strong>Official:</strong> {{ appointment.category.display_name }}</p>
+                {% if appointment.department %}
+                <p><strong>Department:</strong> {{ appointment.department.name }}</p>
+                {% endif %}
+                <p><strong>Date & Time:</strong> {{ appointment.appointment_datetime|date:"F j, Y g:i A" }}</p>
+                <p><strong>Purpose:</strong> {{ appointment.purpose }}</p>
+                {% if appointment.confirmed_by %}
+                <p><strong>Scheduled By:</strong> {{ appointment.confirmed_by.get_full_name|default:appointment.confirmed_by.email }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="alert alert-info">
+                <strong>📝 Important Reminders:</strong><br />
+                • <strong>Arrive 10 minutes early</strong> for your appointment<br />
+                • Bring a <strong>valid ID</strong> and any relevant documents<br />
+                • If you need to reschedule or cancel, please contact the office as soon as possible<br />
+                • Come prepared with your questions and required materials
+            </div>
+            
+            {% if appointment.admin_notes %}
+            <div class="alert alert-warning">
+                <strong>📌 Additional Notes from Office:</strong><br />
+                {{ appointment.admin_notes }}
+            </div>
+            {% endif %}
+            
+            <div class="alert alert-info">
+                <strong>🎯 This appointment was scheduled directly by the administration</strong><br />
+                This confirms that your request has been processed and approved. Please attend as scheduled.
+            </div>
+            
+            <p>We look forward to seeing you at your scheduled appointment!</p>        </div>
+        
+        <div class="footer">
+            <!-- Footer Logo - Gmail Compatible -->
+            <div style="margin-bottom: 20px; text-align: center">
+                <img
+                    src="https://res.cloudinary.com/deibqsazd/image/upload/v1763796707/logo_kbfjba.png"
+                    alt="TCIOE Logo"
+                    width="60"
+                    height="60"
+                    style="border-radius: 8px; margin: 0 auto 15px; display: block"
+                    onerror="this.style.display='none'; document.getElementById('footer-fallback-logo').style.display='block';"
+                />
+                <div id="footer-fallback-logo" class="footer-logo-fallback" style="display: none">
+                    TC
+                </div>
 
-        <p>
-          Your appointment request has been <strong>approved</strong>. Please
-          find the details below:
-        </p>
+                <div style="font-size: 18px; font-weight: bold; color: white !important; margin-bottom: 5px;">
+                    TCIOE EMIS System
+                </div>
+                <div style="font-size: 13px; color: #1abc9c !important; margin-bottom: 20px;">
+                    Thapathali Campus, Institute of Engineering<br />
+                    Educational Management Information System
+                </div>
+            </div>
 
-        <!-- Appointment Details -->
-        <div class="appointment-details">
-          <div class="detail-row">
-            <span class="detail-label">Reference ID:</span>
-            <span class="detail-value"
-              >#{{ appointment.id|stringformat:"06d" }}</span
-            >
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Appointment with:</span>
-            <span class="detail-value"
-              >{{ appointment.category.description }}</span
-            >
-          </div>
-          {% if appointment.department %}
-          <div class="detail-row">
-            <span class="detail-label">Department:</span>
-            <span class="detail-value">{{ appointment.department.name }}</span>
-          </div>
-          {% endif %}
-          <div class="detail-row">
-            <span class="detail-label">Date:</span>
-            <span class="detail-value"
-              >{{ appointment.appointment_date|date:"l, F d, Y" }}</span
-            >
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Time:</span>
-            <span class="detail-value"
-              >{{ appointment.appointment_time|time:"g:i A" }}</span
-            >
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Purpose:</span>
-            <span class="detail-value">{{ appointment.purpose }}</span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Status:</span>
-            <span class="detail-value"
-              ><span class="status-confirmed">Confirmed</span></span
-            >
-          </div>
-          {% if appointment.admin_notes %}
-          <div class="detail-row">
-            <span class="detail-label">Admin Notes:</span>
-            <span class="detail-value">{{ appointment.admin_notes }}</span>
-          </div>
-          {% endif %}
+            <!-- Footer Content - Using simple table layout for Gmail compatibility -->
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 20px 0">
+                <tr>
+                    <td width="33%" style="text-align: center; vertical-align: top; padding: 0 10px">
+                        <div class="footer-section">
+                            <strong style="color: white !important">Contact</strong>
+                            <div style="margin: 8px 0; color: white !important">
+                                📧 <a href="mailto:admin@tcioe.edu.np" class="footer-link">admin@tcioe.edu.np</a>
+                            </div>
+                            <div style="margin: 8px 0; color: white !important">
+                                📍 Thapathali, Kathmandu
+                            </div>
+                        </div>
+                    </td>
+
+                    <td width="33%" style="text-align: center; vertical-align: top; padding: 0 10px">
+                        <div class="footer-section">
+                            <strong style="color: white !important">Quick Links</strong>
+                            <div style="margin: 8px 0; color: white !important">
+                                🔗 <a href="https://tcioe.edu.np" class="footer-link">TCIOE</a>
+                            </div>
+                            <div style="margin: 8px 0; color: white !important">
+                                🏫 <a href="https://emis.tcioe.edu.np/volunteers" class="footer-link">EMIS System</a>
+                            </div>
+                        </div>
+                    </td>
+
+                    <td width="33%" style="text-align: center; vertical-align: top; padding: 0 10px">
+                        <div class="footer-section">
+                            <strong style="color: white !important">Connect</strong>
+                            <div style="margin: 15px 0">
+                                <a href="https://www.facebook.com/thapathali.ioe" target="_blank" style="text-decoration: none; margin: 0 8px">
+                                    <img src="https://app-rsrc.getbee.io/public/resources/social-networks-icon-sets/circle-color/facebook@2x.png" width="32" height="32" alt="Facebook" class="social-icon" style="border-radius: 50%; display: inline-block" />
+                                </a>
+                                <a href="https://www.linkedin.com/school/tcioe" target="_blank" style="text-decoration: none; margin: 0 8px">
+                                    <img src="https://app-rsrc.getbee.io/public/resources/social-networks-icon-sets/circle-color/linkedin@2x.png" width="32" height="32" alt="LinkedIn" class="social-icon" style="border-radius: 50%; display: inline-block" />
+                                </a>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+
+            <div class="copyright">
+                © {{{{ current_year|default:"2025" }}}} Thapathali Campus, Institute of Engineering. All rights reserved.<br />
+                This is an automated message. Please do not reply to this email.<br />
+            </div>
         </div>
-
-        <!-- Instructions -->
-        <div class="instructions-box">
-          <h3>Important Instructions:</h3>
-          <ul>
-            <li>
-              Please arrive <strong>5-10 minutes early</strong> for your
-              appointment
-            </li>
-            <li>
-              Bring any relevant documents or materials related to your purpose
-            </li>
-            <li>
-              If you need to reschedule or cancel, please contact us at least 24
-              hours in advance
-            </li>
-            <li>Keep this confirmation email for your records</li>
-          </ul>
-        </div>
-
-        <!-- Contact Information -->
-        <div class="contact-info">
-          <h3>Need Help?</h3>
-          <p><strong>Email:</strong> appointments@tcioe.edu.in</p>
-          <p><strong>Phone:</strong> +91 175 239 3000</p>
-          <p>
-            <strong>Website:</strong>
-            <a href="https://tcioe.edu.in">https://tcioe.edu.in</a>
-          </p>
-        </div>
-
-        <p>
-          Thank you for choosing TCIOE. We look forward to meeting with you.
-        </p>
-
-        <p>
-          Best regards,<br />
-          <strong>TCIOE Administration Team</strong>
-        </p>
-      </div>
-
-      <!-- Footer -->
-      <div class="footer">
-        <div class="footer-logo-fallback">TCIOE</div>
-        <p><strong>Thapar College of Engineering & Technology</strong></p>
-        <p>Patiala, Punjab 147004, India</p>
-        <p>Email: info@tcioe.edu.in | Phone: +91 175 239 3000</p>
-        <p>&copy; 2024 TCIOE. All rights reserved.</p>
-      </div>
     </div>
-  </body>
+</body>
 </html>

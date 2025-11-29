@@ -272,17 +272,8 @@ class Appointment(models.Model):
     )
     
     # Appointment timing
-    appointment_date = models.DateField(_('Appointment Date'))
-    appointment_time = models.CharField(
-        _('Preferred Time'),
-        max_length=100,
-        help_text=_('Preferred appointment time (e.g., "2:00 PM", "14:30", "Morning")')
-    )
-    # New datetime field - will replace the above fields
     appointment_datetime = models.DateTimeField(
         _('Appointment Date & Time'),
-        null=True,
-        blank=True,
         help_text=_('Requested appointment date and time')
     )
     
@@ -342,16 +333,10 @@ class Appointment(models.Model):
         verbose_name = _('Appointment')
         verbose_name_plural = _('Appointments')
         ordering = ['-created_at']
-        constraints = [
-            models.UniqueConstraint(
-                fields=['category', 'appointment_date', 'appointment_time'],
-                condition=models.Q(status__in=['PENDING', 'CONFIRMED']),
-                name='unique_category_datetime_active'
-            ),
-        ]
+        # No constraints for now to avoid conflicts during migration
     
     def __str__(self):
-        return f"{self.applicant_name} - {self.category} - {self.appointment_date}"
+        return f"{self.applicant_name} - {self.category} - {self.appointment_datetime.strftime('%Y-%m-%d %H:%M')}"
     
     def clean(self):
         super().clean()
@@ -360,9 +345,9 @@ class Appointment(models.Model):
         if not self.applicant_email.endswith('@tcioe.edu.np'):
             raise ValidationError(_('Email must be from @tcioe.edu.np domain'))
         
-        # Validate appointment date (not in past)
-        if self.appointment_date and self.appointment_date < timezone.now().date():
-            raise ValidationError(_('Appointment date cannot be in the past'))
+        # Validate appointment datetime (not in past)
+        if self.appointment_datetime and self.appointment_datetime < timezone.now():
+            raise ValidationError(_('Appointment datetime cannot be in the past'))
         
         # Validate department for department head appointments
         if (self.category.name == AppointmentCategory.DEPARTMENT_HEAD and 

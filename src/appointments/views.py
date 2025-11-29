@@ -164,21 +164,29 @@ class OTPRequestView(APIView):
     
     def send_otp_email(self, email, otp_code):
         """Send OTP verification email"""
-        subject = 'Appointment Booking - OTP Verification'
-        message = f'Your OTP for appointment booking is: {otp_code}. This OTP will expire in 10 minutes.'
+        from django.template.loader import render_to_string
         
-        # You can create an HTML template for better formatting
-        html_message = f'''
-        <html>
-        <body>
-            <h2>Appointment Booking OTP</h2>
-            <p>Your OTP for appointment booking is:</p>
-            <h3 style="color: #007bff; font-size: 24px; letter-spacing: 3px;">{otp_code}</h3>
-            <p>This OTP will expire in 10 minutes.</p>
-            <p>If you did not request this OTP, please ignore this email.</p>
-        </body>
-        </html>
-        '''
+        subject = 'TCIOE EMIS - Appointment Booking OTP'
+        
+        # Use the HTML template
+        html_message = render_to_string('appointments/email/otp_verification.html', {
+            'otp_code': otp_code,
+        })
+        
+        # Fallback plain text message
+        message = f'''
+TCIOE EMIS - Appointment Booking OTP
+
+Your OTP for appointment booking is: {otp_code}
+
+This OTP will expire in 10 minutes.
+
+If you did not request this OTP, please ignore this email.
+
+--
+TCIOE EMIS
+Tribhuvan University, Central Campus Institute of Engineering
+        '''.strip()
         
         send_mail(
             subject=subject,
@@ -251,12 +259,12 @@ class AppointmentCreateView(generics.CreateAPIView):
         context = {
             'appointment': appointment,
             'applicant_name': appointment.applicant_name,
-            'appointment_datetime': appointment.appointment_datetime or f"{appointment.appointment_date} {appointment.appointment_time}",
+            'appointment_datetime': appointment.appointment_datetime,
             'purpose': appointment.purpose,
         }
         
         # Send to applicant
-        appointment_datetime_str = appointment.appointment_datetime.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_datetime else f"{appointment.appointment_date} {appointment.appointment_time}"
+        appointment_datetime_str = appointment.appointment_datetime.strftime('%Y-%m-%d %I:%M %p')
         
         applicant_message = f'''
         Dear {appointment.applicant_name},
