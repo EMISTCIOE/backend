@@ -318,7 +318,10 @@ class PublicGlobalGalleryListAPIView(GenericAPIView):
             "results": serializer.data
         }
         
-        return Response(response_data)
+        response = Response(response_data)
+        # Set minimal cache headers for real-time updates
+        response['Cache-Control'] = 'public, max-age=30, s-maxage=60'
+        return response
 
 
 class PublicGlobalEventPagination(LimitOffsetPagination):
