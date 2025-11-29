@@ -261,7 +261,6 @@ class PublicGlobalGalleryPagination(LimitOffsetPagination):
 class PublicGlobalGalleryListAPIView(GenericAPIView):
     permission_classes = [AllowAny]
     serializer_class = PublicGlobalGallerySerializer
-    pagination_class = PublicGlobalGalleryPagination
 
     def get(self, request, *args, **kwargs):
         items = build_global_gallery_items()
@@ -289,15 +288,35 @@ class PublicGlobalGalleryListAPIView(GenericAPIView):
 
         items.sort(key=lambda item: item["created_at"], reverse=True)
         
-        # Manual pagination for list of items
-        paginator = self.pagination_class()
-        page = paginator.paginate_queryset(items, request, view=self)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return paginator.get_paginated_response(serializer.data)
+        # Manual pagination implementation
+        try:
+            limit = int(request.query_params.get("limit", 24))
+            offset = int(request.query_params.get("offset", 0))
+        except (ValueError, TypeError):
+            limit = 24
+            offset = 0
+            
+        # Ensure reasonable limits
+        limit = min(limit, 120)  # max_limit
         
-        serializer = self.get_serializer(items, many=True)
-        return Response(serializer.data)
+        # Apply pagination
+        total_count = len(items)
+        paginated_items = items[offset:offset + limit]
+        
+        serializer = self.get_serializer(paginated_items, many=True)
+        
+        # Return paginated response format
+        next_offset = offset + limit if offset + limit < total_count else None
+        prev_offset = max(offset - limit, 0) if offset > 0 else None
+        
+        response_data = {
+            "count": total_count,
+            "next": f"?limit={limit}&offset={next_offset}" if next_offset is not None else None,
+            "previous": f"?limit={limit}&offset={prev_offset}" if prev_offset is not None else None,
+            "results": serializer.data
+        }
+        
+        return Response(response_data)
 
 
 class PublicGlobalEventPagination(LimitOffsetPagination):
