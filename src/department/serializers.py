@@ -259,6 +259,7 @@ class AcademicProgramCreateSerializer(serializers.ModelSerializer):
     thumbnail = serializers.ImageField(
         validators=[validate_photo_thumbnail],
         allow_null=True,
+        required=False,
     )
 
     class Meta:
@@ -271,6 +272,11 @@ class AcademicProgramCreateSerializer(serializers.ModelSerializer):
             "department",
             "thumbnail",
         ]
+        extra_kwargs = {
+            'short_name': {'required': False, 'allow_blank': True},
+            'description': {'required': False, 'allow_blank': True},
+            'thumbnail': {'required': False, 'allow_null': True},
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -284,6 +290,34 @@ class AcademicProgramCreateSerializer(serializers.ModelSerializer):
                 )
             else:
                 self.fields['department'].queryset = Department.objects.none()
+
+    def validate_name(self, value):
+        """Ensure program name is unique within the department"""
+        if not value or not value.strip():
+            raise serializers.ValidationError("Program name is required.")
+        
+        # Check for existing program with same name in the same department
+        department_id = self.initial_data.get('department')
+        if department_id:
+            existing = AcademicProgram.objects.filter(
+                name__iexact=value.strip(),
+                department_id=department_id,
+                is_archived=False
+            ).exists()
+            if existing:
+                raise serializers.ValidationError(
+                    "A program with this name already exists in this department."
+                )
+        
+        return value.strip().title()
+
+    def validate(self, attrs):
+        """Custom validation for the entire serializer"""
+        # Debug print to see what data we're receiving
+        print(f"DEBUG: Validating data: {attrs}")
+        print(f"DEBUG: Initial data: {self.initial_data}")
+        
+        return super().validate(attrs)
 
     def validate_department(self, value):
         """Custom validation for department field"""
@@ -302,7 +336,8 @@ class AcademicProgramCreateSerializer(serializers.ModelSerializer):
 
         # sanitize
         validated_data["name"] = validated_data["name"].strip().title()
-        validated_data["short_name"] = validated_data["short_name"].strip()
+        if validated_data.get("short_name"):
+            validated_data["short_name"] = validated_data["short_name"].strip()
         validated_data["created_by"] = current_user
 
         return AcademicProgram.objects.create(**validated_data)
