@@ -272,6 +272,31 @@ class AcademicProgramCreateSerializer(serializers.ModelSerializer):
             "thumbnail",
         ]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Filter department queryset based on user role
+        user = get_user_by_context(self.context)
+        if user and hasattr(user, 'role') and user.role == 'DEPARTMENT-ADMIN':
+            if hasattr(user, 'department_id') and user.department_id:
+                self.fields['department'].queryset = Department.objects.filter(
+                    id=user.department_id, is_active=True
+                )
+            else:
+                self.fields['department'].queryset = Department.objects.none()
+
+    def validate_department(self, value):
+        """Custom validation for department field"""
+        user = get_user_by_context(self.context)
+        
+        if user and hasattr(user, 'role') and user.role == 'DEPARTMENT-ADMIN':
+            if not hasattr(user, 'department_id') or user.department_id != value.id:
+                raise serializers.ValidationError(
+                    "Department admins can only create programs for their own department."
+                )
+        
+        return value
+
     def create(self, validated_data):
         current_user = get_user_by_context(self.context)
 
