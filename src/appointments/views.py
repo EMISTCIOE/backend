@@ -312,9 +312,9 @@ class AdminAppointmentListView(generics.ListAPIView):
             'category', 'slot', 'slot__official', 'department', 'confirmed_by'
         )
         
-        # Filter based on user role
+        # Filter based on user role and position
         if user.has_role(ADMIN_ROLE):
-            # Admin can see all appointments
+            # System admin can see all appointments
             pass
         elif user.has_role(DEPARTMENT_ADMIN_ROLE):
             # Department admin can see their department's appointments
@@ -322,13 +322,44 @@ class AdminAppointmentListView(generics.ListAPIView):
                 Q(slot__official=user) | Q(department=user.department)
             )
         else:
-            # Regular users can only see their own appointments (if any)
+            # Check if user is an official who can receive appointments
+            # Filter to show only appointments for this specific official
             queryset = queryset.filter(slot__official=user)
+            
+            # Additional filtering based on designation/category
+            if hasattr(user, 'designation') and user.designation:
+                designation_title = user.designation.title.lower()
+                
+                if 'campus chief' in designation_title and 'assistant' not in designation_title:
+                    # Campus Chief - see only Campus Chief appointments
+                    queryset = queryset.filter(category__name='CAMPUS_CHIEF')
+                elif 'assistant campus chief' in designation_title:
+                    # Assistant Campus Chief - filter by specific area
+                    if 'admin' in designation_title.lower():
+                        queryset = queryset.filter(category__name='ASSISTANT_CAMPUS_CHIEF_ADMIN')
+                    elif 'academic' in designation_title.lower():
+                        queryset = queryset.filter(category__name='ASSISTANT_CAMPUS_CHIEF_ACADEMIC')
+                    elif 'planning' in designation_title.lower() or 'resource' in designation_title.lower():
+                        queryset = queryset.filter(category__name='ASSISTANT_CAMPUS_CHIEF_PLANNING')
+                    else:
+                        # Default to admin if no specific area found
+                        queryset = queryset.filter(category__name='ASSISTANT_CAMPUS_CHIEF_ADMIN')
+                elif 'head' in designation_title and user.department:
+                    # Department Head - see only their department's appointments
+                    queryset = queryset.filter(
+                        category__name='DEPARTMENT_HEAD',
+                        department=user.department
+                    )
         
         # Filter by status
         status_filter = self.request.query_params.get('status')
         if status_filter:
             queryset = queryset.filter(status=status_filter)
+        
+        # Filter by department (additional filtering for system admins)
+        department_filter = self.request.query_params.get('department')
+        if department_filter and user.has_role(ADMIN_ROLE):
+            queryset = queryset.filter(department_id=department_filter)
         
         # Filter by date range
         date_from = self.request.query_params.get('date_from')
