@@ -228,8 +228,13 @@ class AppointmentCreateSerializer(serializers.ModelSerializer):
     
     def validate_appointment_datetime(self, value):
         """Validate appointment datetime"""
-        if value < timezone.now():
-            raise serializers.ValidationError("Appointment datetime cannot be in the past")
+        # Allow appointments to be scheduled at least 5 minutes from now
+        # This accounts for timezone differences and processing time
+        min_datetime = timezone.now() + timedelta(minutes=5)
+        if value < min_datetime:
+            raise serializers.ValidationError(
+                "Appointment must be scheduled at least 5 minutes in advance"
+            )
         
         # Check if datetime is too far in advance (e.g., max 30 days)
         max_advance_datetime = timezone.now() + timedelta(days=30)
@@ -461,6 +466,7 @@ class AvailableSlotsSerializer(serializers.Serializer):
     
     def validate_date(self, value):
         """Validate date is not in past"""
+        # Allow today and future dates
         if value < timezone.now().date():
             raise serializers.ValidationError("Date cannot be in the past")
         return value

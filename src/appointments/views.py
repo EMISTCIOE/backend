@@ -251,9 +251,13 @@ class AppointmentCreateView(generics.CreateAPIView):
         
         try:
             self.send_appointment_confirmation_email(appointment)
+            # Temporary logging for debugging
+            print(f"📧 Email sending attempted for appointment {appointment.reference_id}")
         except Exception as e:
             # Log the error but don't fail the appointment creation
-            print(f"Failed to send confirmation email: {e}")
+            print(f"❌ Email error for {appointment.reference_id}: {str(e)}")
+            import traceback
+            traceback.print_exc()
         
         return Response({
             'id': appointment.reference_id,  # Use reference_id instead of database id
@@ -268,7 +272,9 @@ class AppointmentCreateView(generics.CreateAPIView):
     
     def send_appointment_confirmation_email(self, appointment):
         """Send appointment confirmation email using HTML template"""
-        subject = f'Appointment Request Submitted - {appointment.category}'
+        print(f"🔄 Starting email send for {appointment.reference_id}")
+        
+        subject = f'New Appointment Request - {appointment.category}'
         
         context = {
             'appointment': appointment,
@@ -278,28 +284,84 @@ class AppointmentCreateView(generics.CreateAPIView):
             'current_year': timezone.now().year,
         }
         
-        # Render HTML email template
-        html_message = render_to_string('appointments/email/appointment_created.html', context)
+        # Render HTML email templates
+        print("🔄 Rendering templates...")
+        confirmation_html = render_to_string('appointments/email/appointment_created.html', context)
+        notification_html = render_to_string('appointments/email/appointment_notification.html', context)
+        print("✅ Templates rendered successfully")
         
         # Send HTML email to applicant
         from django.core.mail import EmailMultiAlternatives
         
-        email = EmailMultiAlternatives(
-            subject=subject,
-            body='',  # Plain text version can be empty since we're using HTML
+        # Email to applicant
+        print(f"📧 Sending confirmation email to: {appointment.applicant_email}")
+        applicant_email = EmailMultiAlternatives(
+            subject=f'Appointment Request Submitted - {appointment.category}',
+            body='',
             from_email=settings.DEFAULT_FROM_EMAIL,
             to=[appointment.applicant_email]
         )
-        email.attach_alternative(html_message, "text/html")
-        email.send(fail_silently=False)
+        applicant_email.attach_alternative(confirmation_html, "text/html")
+        applicant_email.send(fail_silently=False)
+        print("✅ Confirmation email sent to applicant")
+        
+        # Email to officials
+        officials = appointment.category.get_officials()
+        print(f"👥 Found {officials.count()} officials for category: {appointment.category}")
+        
+        if officials.exists():
+            official_emails = [official.email for official in officials if official.email]
+            print(f"📧 Official emails: {official_emails}")
+            
+            if official_emails:
+                notification_email = EmailMultiAlternatives(
+                    subject=f'New Appointment Request - {appointment.category}',
+                    body='',
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=official_emails
+                )
+                notification_email.attach_alternative(notification_html, "text/html")
+                notification_email.send(fail_silently=False)
+                print("✅ Notification email sent to officials")
+            else:
+                print("⚠️ No valid official emails found")
+        else:
+            print("⚠️ No officials found for this category")
+        
+        print(f"🎉 Email process completed for {appointment.reference_id}")
 
 
 class AppointmentDetailView(generics.RetrieveAPIView):
-    """Get appointment details by verification token"""
+    """Get appointment details by verification token or reference ID"""
     
     serializer_class = AppointmentSerializer
     permission_classes = [permissions.AllowAny]
-    lookup_field = 'verification_token'
+    
+    def get_object(self):
+        """
+        Override to support lookup by both verification_token and reference_id
+        """
+        token = self.kwargs['verification_token']
+        
+        # First try to find by verification_token
+        try:
+            return Appointment.objects.select_related(
+                'category', 'slot', 'slot__official', 'department'
+            ).get(verification_token=token)
+        except Appointment.DoesNotExist:
+            pass
+        
+        # If not found, try to find by reference_id
+        try:
+            return Appointment.objects.select_related(
+                'category', 'slot', 'slot__official', 'department'
+            ).get(reference_id=token)
+        except Appointment.DoesNotExist:
+            pass
+        
+        # If neither worked, raise 404
+        from django.http import Http404
+        raise Http404("Appointment not found")
     
     def get_queryset(self):
         return Appointment.objects.select_related(
@@ -433,7 +495,8 @@ class AdminAppointmentDetailView(generics.RetrieveUpdateAPIView):
             try:
                 self.send_status_update_email(appointment, old_status)
             except Exception as e:
-                print(f"Failed to send status update email: {e}")
+                # Silent failure - don't block the status update
+                pass
     
     def send_status_update_email(self, appointment, old_status):
         """Send email notification for status update using HTML templates"""

@@ -352,9 +352,11 @@ class Appointment(models.Model):
         if not self.applicant_email.endswith('@tcioe.edu.np'):
             raise ValidationError(_('Email must be from @tcioe.edu.np domain'))
         
-        # Validate appointment datetime (not in past)
-        if self.appointment_datetime and self.appointment_datetime < timezone.now():
-            raise ValidationError(_('Appointment datetime cannot be in the past'))
+        # Validate appointment datetime (allow 5 minute buffer)
+        if self.appointment_datetime:
+            min_datetime = timezone.now() + timedelta(minutes=5)
+            if self.appointment_datetime < min_datetime:
+                raise ValidationError(_('Appointment must be scheduled at least 5 minutes in advance'))
         
         # Validate department for department head appointments
         if (self.category.name == AppointmentCategory.DEPARTMENT_HEAD and 

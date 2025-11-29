@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New Appointment Request - {{ appointment.category }}</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 0;
+        background-color: #f9f9f9;
+      }
+      .container {
+        background-color: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin: 20px;
+      }
+      .header {
+        text-align: center;
+        padding-bottom: 30px;
+        border-bottom: 3px solid #1e40af;
+        margin-bottom: 30px;
+      }
+      .logo {
+        max-width: 200px;
+        height: auto;
+        margin-bottom: 20px;
+      }
+      .header h1 {
+        color: #1e40af;
+        margin: 0;
+        font-size: 28px;
+        font-weight: bold;
+      }
+      .header p {
+        color: #6b7280;
+        margin: 10px 0 0 0;
+        font-size: 16px;
+      }
+      .content {
+        margin: 30px 0;
+      }
+      .appointment-details {
+        background-color: #f8fafc;
+        padding: 25px;
+        border-radius: 8px;
+        border-left: 4px solid #10b981;
+        margin: 25px 0;
+      }
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #e5e7eb;
+      }
+      .detail-row:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+      }
+      .detail-label {
+        font-weight: bold;
+        color: #374151;
+        flex: 1;
+      }
+      .detail-value {
+        flex: 2;
+        color: #6b7280;
+      }
+      .priority-notice {
+        background-color: #fef3c7;
+        border: 1px solid #f59e0b;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 25px 0;
+      }
+      .priority-notice h3 {
+        color: #92400e;
+        margin: 0 0 10px 0;
+        font-size: 18px;
+      }
+      .priority-notice p {
+        color: #92400e;
+        margin: 0;
+      }
+      .action-buttons {
+        text-align: center;
+        margin: 30px 0;
+      }
+      .btn {
+        display: inline-block;
+        padding: 12px 30px;
+        margin: 0 10px;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: bold;
+        font-size: 16px;
+        text-align: center;
+      }
+      .btn-primary {
+        background-color: #1e40af;
+        color: white;
+      }
+      .btn-secondary {
+        background-color: #6b7280;
+        color: white;
+      }
+      .footer {
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 2px solid #e5e7eb;
+        text-align: center;
+        color: #6b7280;
+        font-size: 14px;
+      }
+      .contact-info {
+        margin: 20px 0;
+      }
+      .social-links {
+        margin: 20px 0;
+      }
+      .social-links a {
+        margin: 0 10px;
+        text-decoration: none;
+        color: #1e40af;
+      }
+      @media (max-width: 600px) {
+        .container {
+          margin: 10px;
+          padding: 20px;
+        }
+        .detail-row {
+          flex-direction: column;
+        }
+        .detail-label {
+          margin-bottom: 5px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <img
+          src="https://res.cloudinary.com/dwb5vbjjw/image/upload/v1733072866/tcioe-logo_bkffdi.png"
+          alt="TCIOE Logo"
+          class="logo"
+        />
+        <h1>New Appointment Request</h1>
+        <p>Thapathali Campus, Institute of Engineering</p>
+      </div>
+
+      <div class="content">
+        <p>Dear Official,</p>
+
+        <p>
+          A new appointment request has been submitted in your category. Please
+          review the details below and take appropriate action.
+        </p>
+
+        <div class="appointment-details">
+          <h3 style="color: #1e40af; margin-top: 0">Appointment Details</h3>
+
+          <div class="detail-row">
+            <div class="detail-label">Reference ID:</div>
+            <div class="detail-value">
+              <strong>{{ appointment.reference_id }}</strong>
+            </div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-label">Applicant Name:</div>
+            <div class="detail-value">{{ appointment.applicant_name }}</div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-label">Email:</div>
+            <div class="detail-value">{{ appointment.applicant_email }}</div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-label">Phone:</div>
+            <div class="detail-value">
+              {{ appointment.applicant_phone|default:"Not provided" }}
+            </div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-label">Designation:</div>
+            <div class="detail-value">
+              {{ appointment.applicant_designation }}
+            </div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-label">Category:</div>
+            <div class="detail-value">{{ appointment.category }}</div>
+          </div>
+
+          {% if appointment.department %}
+          <div class="detail-row">
+            <div class="detail-label">Department:</div>
+            <div class="detail-value">{{ appointment.department.name }}</div>
+          </div>
+          {% endif %}
+
+          <div class="detail-row">
+            <div class="detail-label">Requested Date & Time:</div>
+            <div class="detail-value">
+              {{ appointment_datetime|date:"F j, Y \a\t g:i A" }}
+            </div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-label">Purpose:</div>
+            <div class="detail-value">{{ appointment.purpose }}</div>
+          </div>
+
+          {% if appointment.details %}
+          <div class="detail-row">
+            <div class="detail-label">Additional Details:</div>
+            <div class="detail-value">{{ appointment.details }}</div>
+          </div>
+          {% endif %}
+
+          <div class="detail-row">
+            <div class="detail-label">Status:</div>
+            <div class="detail-value">{{ appointment.get_status_display }}</div>
+          </div>
+
+          <div class="detail-row">
+            <div class="detail-label">Submitted:</div>
+            <div class="detail-value">
+              {{ appointment.created_at|date:"F j, Y \a\t g:i A" }}
+            </div>
+          </div>
+        </div>
+
+        <div class="priority-notice">
+          <h3>Action Required</h3>
+          <p>
+            Please log in to the admin portal to review and respond to this
+            appointment request. The applicant is waiting for your response.
+          </p>
+        </div>
+
+        <div class="action-buttons">
+          <a href="https://cdn.tcioe.edu.np/" class="btn btn-primary"
+            >Review Appointment</a
+          >
+          <a
+            href="mailto:{{ appointment.applicant_email }}"
+            class="btn btn-secondary"
+            >Contact Applicant</a
+          >
+        </div>
+
+        <p>
+          If you have any questions about this appointment request, please
+          contact the applicant directly or reach out to the TCIOE
+          administration.
+        </p>
+      </div>
+
+      <div class="footer">
+        <div class="contact-info">
+          <p><strong>Thapathali Campus, Institute of Engineering</strong></p>
+          <p>Thapathali, Kathmandu, Nepal</p>
+          <p>Phone: +977-1-5520066 | Email: info@tcioe.edu.np</p>
+          <p>
+            Website:
+            <a href="https://tcioe.edu.np" style="color: #1e40af"
+              >www.tcioe.edu.np</a
+            >
+          </p>
+        </div>
+
+        <div class="social-links">
+          <a href="https://facebook.com/tcioe.edu.np">Facebook</a> |
+          <a href="https://twitter.com/tcioe_edu_np">Twitter</a> |
+          <a href="https://linkedin.com/company/tcioe">LinkedIn</a>
+        </div>
+
+        <p>
+          &copy; {{ current_year }} Thapathali Campus, Institute of Engineering.
+          All rights reserved.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
