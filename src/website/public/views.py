@@ -26,6 +26,7 @@ from src.website.models import (
     CampusUnion,
     CampusUnit,
     GlobalEvent,
+    GlobalGalleryImage,
     ResearchFacility,
     StudentClub,
 )
@@ -261,6 +262,7 @@ class PublicGlobalGalleryPagination(LimitOffsetPagination):
 class PublicGlobalGalleryListAPIView(GenericAPIView):
     permission_classes = [AllowAny]
     serializer_class = PublicGlobalGallerySerializer
+    queryset = GlobalGalleryImage.objects.none()  # Add dummy queryset to fix DRF assertion
 
     def get(self, request, *args, **kwargs):
         items = build_global_gallery_items()
