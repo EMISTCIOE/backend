@@ -242,8 +242,11 @@ class AppointmentCreateView(generics.CreateAPIView):
     serializer_class = AppointmentCreateSerializer
     permission_classes = [permissions.AllowAny]  # Public access
     
-    def perform_create(self, serializer):
-        """Send confirmation email after creating appointment"""
+    def create(self, request, *args, **kwargs):
+        """Create appointment and return success response with ID"""
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
         appointment = serializer.save()
         
         try:
@@ -251,6 +254,17 @@ class AppointmentCreateView(generics.CreateAPIView):
         except Exception as e:
             # Log the error but don't fail the appointment creation
             print(f"Failed to send confirmation email: {e}")
+        
+        return Response({
+            'id': appointment.id,
+            'message': 'Appointment created successfully',
+            'verification_token': appointment.verification_token,
+            'status': appointment.status
+        }, status=status.HTTP_201_CREATED)
+    
+    def perform_create(self, serializer):
+        """This method is no longer used since we override create"""
+        pass
     
     def send_appointment_confirmation_email(self, appointment):
         """Send appointment confirmation email"""
