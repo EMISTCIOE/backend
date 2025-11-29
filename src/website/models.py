@@ -117,6 +117,17 @@ class CampusStaffDesignation(AuditInfoModel):
         default=True,
         help_text=_("Inactive designations will be hidden from selection lists."),
     )
+    allow_appointments = models.BooleanField(
+        _("Allow Appointments"),
+        default=False,
+        help_text=_("Whether this designation should have appointment booking functionality"),
+    )
+    appointment_priority = models.PositiveIntegerField(
+        _("Appointment Priority"),
+        null=True,
+        blank=True,
+        help_text=_("Priority order for appointment categories (lower number = higher priority)"),
+    )
 
     class Meta:
         verbose_name = _("Campus Designation")

@@ -34,11 +34,18 @@ from src.user.constants import ADMIN_ROLE, DEPARTMENT_ADMIN_ROLE
 
 
 class AppointmentCategoryListView(generics.ListAPIView):
-    """List all active appointment categories"""
+    """List all active appointment categories ordered by priority"""
     
-    queryset = AppointmentCategory.objects.filter(is_active=True)
     serializer_class = AppointmentCategorySerializer
     permission_classes = [permissions.AllowAny]  # Public access
+    
+    def get_queryset(self):
+        return AppointmentCategory.objects.filter(
+            is_active=True
+        ).select_related('linked_designation').order_by(
+            'linked_designation__appointment_priority', 
+            'name'
+        )
 
 
 class AppointmentSlotListView(generics.ListAPIView):
@@ -326,30 +333,15 @@ class AdminAppointmentListView(generics.ListAPIView):
             # Filter to show only appointments for this specific official
             queryset = queryset.filter(slot__official=user)
             
-            # Additional filtering based on designation/category
+            # Additional filtering based on user's designation
             if hasattr(user, 'designation') and user.designation:
-                designation_title = user.designation.title.lower()
-                
-                if 'campus chief' in designation_title and 'assistant' not in designation_title:
-                    # Campus Chief - see only Campus Chief appointments
-                    queryset = queryset.filter(category__name='CAMPUS_CHIEF')
-                elif 'assistant campus chief' in designation_title:
-                    # Assistant Campus Chief - filter by specific area
-                    if 'admin' in designation_title.lower():
-                        queryset = queryset.filter(category__name='ASSISTANT_CAMPUS_CHIEF_ADMIN')
-                    elif 'academic' in designation_title.lower():
-                        queryset = queryset.filter(category__name='ASSISTANT_CAMPUS_CHIEF_ACADEMIC')
-                    elif 'planning' in designation_title.lower() or 'resource' in designation_title.lower():
-                        queryset = queryset.filter(category__name='ASSISTANT_CAMPUS_CHIEF_PLANNING')
-                    else:
-                        # Default to admin if no specific area found
-                        queryset = queryset.filter(category__name='ASSISTANT_CAMPUS_CHIEF_ADMIN')
-                elif 'head' in designation_title and user.department:
-                    # Department Head - see only their department's appointments
-                    queryset = queryset.filter(
-                        category__name='DEPARTMENT_HEAD',
-                        department=user.department
-                    )
+                # Filter appointments to categories linked to user's designation
+                queryset = queryset.filter(
+                    category__linked_designation=user.designation
+                )
+            else:
+                # If no designation, show only appointments where user is explicitly assigned
+                queryset = queryset.filter(slot__official=user)
         
         # Filter by status
         status_filter = self.request.query_params.get('status')

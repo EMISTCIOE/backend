@@ -2,14 +2,28 @@
 Management command to automatically reject appointments that are overdue.
 This command should be run daily via cron to automatically reject appointments
 that haven't been approved within 2 days after their scheduled date.
+
+Role-based filtering:
+- ADMIN: Can see all appointments
+- DEPARTMENT_ADMIN: Can see appointments for their department
+- Campus officials (based on designation): See appointments for their specific role
+- Others: See appointments where they are the assigned official
 """
 
 from datetime import date, timedelta
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
+from django.db.models import Q
 
 from src.appointments.models import Appointment
+from src.user.constants import (
+    ADMIN_ROLE, 
+    DEPARTMENT_ADMIN_ROLE, 
+    CAMPUS_UNIT_ROLE, 
+    CAMPUS_SECTION_ROLE,
+    EMIS_STAFF_ROLE
+)
 
 
 class Command(BaseCommand):

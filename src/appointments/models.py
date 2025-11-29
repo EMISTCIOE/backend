@@ -13,32 +13,27 @@ from src.website.models import CampusStaffDesignation
 
 
 class AppointmentCategory(models.Model):
-    """Categories for different types of appointments"""
-    
-    CAMPUS_CHIEF = 'CAMPUS_CHIEF'
-    ASSISTANT_CAMPUS_CHIEF_ADMIN = 'ASSISTANT_CAMPUS_CHIEF_ADMIN'
-    ASSISTANT_CAMPUS_CHIEF_ACADEMIC = 'ASSISTANT_CAMPUS_CHIEF_ACADEMIC' 
-    ASSISTANT_CAMPUS_CHIEF_PLANNING = 'ASSISTANT_CAMPUS_CHIEF_PLANNING'
-    DEPARTMENT_HEAD = 'DEPARTMENT_HEAD'
-    
-    CATEGORY_CHOICES = [
-        (CAMPUS_CHIEF, _('Campus Chief')),
-        (ASSISTANT_CAMPUS_CHIEF_ADMIN, _('Assistant Campus Chief (Administration)')),
-        (ASSISTANT_CAMPUS_CHIEF_ACADEMIC, _('Assistant Campus Chief (Academic)')),
-        (ASSISTANT_CAMPUS_CHIEF_PLANNING, _('Assistant Campus Chief (Planning & Resource)')),
-        (DEPARTMENT_HEAD, _('Department Head')),
-    ]
+    """Categories for different types of appointments - dynamically linked to campus designations"""
     
     name = models.CharField(
         _('Category Name'),
-        max_length=100,
-        choices=CATEGORY_CHOICES,
-        unique=True
+        max_length=150,  # Increased to match CampusStaffDesignation code field
+        unique=True,
+        help_text=_('Category name that maps to campus designation codes')
     )
     description = models.TextField(
         _('Description'),
         blank=True,
         help_text=_('Description of this appointment category')
+    )
+    linked_designation = models.ForeignKey(
+        CampusStaffDesignation,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='appointment_categories',
+        verbose_name=_('Linked Designation'),
+        help_text=_('Campus designation this category is linked to (optional)')
     )
     is_active = models.BooleanField(
         _('Is Active'),
@@ -50,6 +45,21 @@ class AppointmentCategory(models.Model):
         default=5,
         help_text=_('Maximum appointments allowed per day for this category')
     )
+    default_duration_minutes = models.PositiveIntegerField(
+        _('Default Duration (minutes)'),
+        default=30,
+        help_text=_('Default duration for appointments in this category')
+    )
+    advance_booking_days = models.PositiveIntegerField(
+        _('Advance Booking Days'),
+        default=7,
+        help_text=_('How many days in advance appointments can be booked')
+    )
+    requires_approval = models.BooleanField(
+        _('Requires Approval'),
+        default=True,
+        help_text=_('Whether appointments in this category require admin approval')
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -59,7 +69,22 @@ class AppointmentCategory(models.Model):
         ordering = ['name']
     
     def __str__(self):
-        return self.get_name_display()
+        if self.linked_designation:
+            return f"{self.linked_designation.title} - {self.description}"
+        return f"{self.name} - {self.description}"
+    
+    @property
+    def display_name(self):
+        """Human-friendly display name"""
+        if self.linked_designation:
+            return self.linked_designation.title
+        return self.description or self.name
+    
+    def get_officials(self):
+        """Get users who can handle appointments for this category"""
+        if self.linked_designation:
+            return self.linked_designation.users.filter(is_active=True)
+        return User.objects.none()
 
 
 class AppointmentSlot(models.Model):

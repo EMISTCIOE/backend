@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Appointment Confirmation - TCIOE</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        color: #333;
+      }
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .header {
+        background: #2c3e50;
+        color: white;
+        padding: 20px;
+        text-align: center;
+      }
+      .logo {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 15px;
+        display: block;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      }
+      .header h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+      }
+      .header p {
+        margin: 5px 0 0;
+        opacity: 0.9;
+        font-size: 14px;
+      }
+      .content {
+        padding: 30px;
+      }
+      .success-banner {
+        background: #d4edda;
+        border: 1px solid #c3e6cb;
+        color: #155724;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 25px;
+        text-align: center;
+        font-weight: bold;
+      }
+      .appointment-details {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 20px;
+        margin: 20px 0;
+      }
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #dee2e6;
+      }
+      .detail-row:last-child {
+        border-bottom: none;
+      }
+      .detail-label {
+        font-weight: bold;
+        color: #495057;
+        flex: 1;
+      }
+      .detail-value {
+        flex: 2;
+        text-align: right;
+        color: #2c3e50;
+        font-weight: 500;
+      }
+      .status-confirmed {
+        background: #28a745;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 12px;
+        font-weight: bold;
+        text-transform: uppercase;
+      }
+      .instructions-box {
+        background: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 5px;
+        padding: 20px;
+        margin: 20px 0;
+      }
+      .instructions-box h3 {
+        margin: 0 0 10px;
+        color: #856404;
+        font-size: 16px;
+      }
+      .instructions-box ul {
+        margin: 10px 0 0 20px;
+        color: #856404;
+      }
+      .contact-info {
+        background: #e8f4f8;
+        border: 1px solid #1abc9c;
+        border-radius: 5px;
+        padding: 15px;
+        margin: 20px 0;
+      }
+      .contact-info h3 {
+        margin: 0 0 10px;
+        color: #16a085;
+      }
+      .footer {
+        background: #2c3e50;
+        color: white;
+        padding: 25px;
+        text-align: center;
+        font-size: 12px;
+      }
+      .footer-logo-fallback {
+        width: 50px;
+        height: 50px;
+        margin: 0 auto 15px;
+        border-radius: 8px;
+        background: #34495e;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 16px;
+        font-weight: bold;
+      }
+      .footer p {
+        margin: 8px 0;
+        opacity: 0.9;
+      }
+      .footer strong {
+        color: white;
+      }
+      @media only screen and (max-width: 600px) {
+        body {
+          padding: 10px;
+        }
+        .content {
+          padding: 20px;
+        }
+        .detail-row {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .detail-value {
+          text-align: left;
+          margin-top: 5px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <div class="header">
+        <img
+          src="https://tcioe.edu.in/static/media/tcioe_logo.png"
+          alt="TCIOE Logo"
+          class="logo"
+          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+        />
+        <div class="footer-logo-fallback" style="display: none">TCIOE</div>
+        <h1>Appointment Confirmed</h1>
+        <p>Thapar College of Engineering & Technology</p>
+      </div>
+
+      <!-- Content -->
+      <div class="content">
+        <div class="success-banner">
+          ✅ Your appointment has been confirmed successfully!
+        </div>
+
+        <p>Dear <strong>{{ appointment.applicant_name }}</strong>,</p>
+
+        <p>
+          Your appointment request has been <strong>approved</strong>. Please
+          find the details below:
+        </p>
+
+        <!-- Appointment Details -->
+        <div class="appointment-details">
+          <div class="detail-row">
+            <span class="detail-label">Reference ID:</span>
+            <span class="detail-value"
+              >#{{ appointment.id|stringformat:"06d" }}</span
+            >
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Appointment with:</span>
+            <span class="detail-value"
+              >{{ appointment.category.description }}</span
+            >
+          </div>
+          {% if appointment.department %}
+          <div class="detail-row">
+            <span class="detail-label">Department:</span>
+            <span class="detail-value">{{ appointment.department.name }}</span>
+          </div>
+          {% endif %}
+          <div class="detail-row">
+            <span class="detail-label">Date:</span>
+            <span class="detail-value"
+              >{{ appointment.appointment_date|date:"l, F d, Y" }}</span
+            >
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Time:</span>
+            <span class="detail-value"
+              >{{ appointment.appointment_time|time:"g:i A" }}</span
+            >
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Purpose:</span>
+            <span class="detail-value">{{ appointment.purpose }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Status:</span>
+            <span class="detail-value"
+              ><span class="status-confirmed">Confirmed</span></span
+            >
+          </div>
+          {% if appointment.admin_notes %}
+          <div class="detail-row">
+            <span class="detail-label">Admin Notes:</span>
+            <span class="detail-value">{{ appointment.admin_notes }}</span>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Instructions -->
+        <div class="instructions-box">
+          <h3>Important Instructions:</h3>
+          <ul>
+            <li>
+              Please arrive <strong>5-10 minutes early</strong> for your
+              appointment
+            </li>
+            <li>
+              Bring any relevant documents or materials related to your purpose
+            </li>
+            <li>
+              If you need to reschedule or cancel, please contact us at least 24
+              hours in advance
+            </li>
+            <li>Keep this confirmation email for your records</li>
+          </ul>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="contact-info">
+          <h3>Need Help?</h3>
+          <p><strong>Email:</strong> appointments@tcioe.edu.in</p>
+          <p><strong>Phone:</strong> +91 175 239 3000</p>
+          <p>
+            <strong>Website:</strong>
+            <a href="https://tcioe.edu.in">https://tcioe.edu.in</a>
+          </p>
+        </div>
+
+        <p>
+          Thank you for choosing TCIOE. We look forward to meeting with you.
+        </p>
+
+        <p>
+          Best regards,<br />
+          <strong>TCIOE Administration Team</strong>
+        </p>
+      </div>
+
+      <!-- Footer -->
+      <div class="footer">
+        <div class="footer-logo-fallback">TCIOE</div>
+        <p><strong>Thapar College of Engineering & Technology</strong></p>
+        <p>Patiala, Punjab 147004, India</p>
+        <p>Email: info@tcioe.edu.in | Phone: +91 175 239 3000</p>
+        <p>&copy; 2024 TCIOE. All rights reserved.</p>
+      </div>
+    </div>
+  </body>
+</html>

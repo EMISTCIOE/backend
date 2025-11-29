@@ -18,11 +18,15 @@ from src.department.models import Department
 class AppointmentCategorySerializer(serializers.ModelSerializer):
     """Serializer for appointment categories"""
     
+    display_name = serializers.ReadOnlyField()
+    priority = serializers.IntegerField(source='linked_designation.appointment_priority', read_only=True)
+    
     class Meta:
         model = AppointmentCategory
         fields = [
-            'id', 'name', 'description', 'is_active', 
-            'max_appointments_per_day'
+            'id', 'name', 'description', 'display_name', 'is_active', 
+            'max_appointments_per_day', 'priority', 'requires_approval',
+            'default_duration_minutes', 'advance_booking_days'
         ]
 
 
