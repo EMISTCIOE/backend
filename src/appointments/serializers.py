@@ -331,14 +331,28 @@ class AppointmentSerializer(serializers.ModelSerializer):
     official = serializers.SerializerMethodField()
     status_display = serializers.CharField(source='get_status_display', read_only=True)
     
+    # Add camelCase field mappings for frontend compatibility
+    applicantName = serializers.CharField(source='applicant_name', read_only=True)
+    applicantEmail = serializers.CharField(source='applicant_email', read_only=True)
+    applicantPhone = serializers.CharField(source='applicant_phone', read_only=True)
+    applicantDesignation = serializers.CharField(source='applicant_designation', read_only=True)
+    appointmentDatetime = serializers.DateTimeField(source='appointment_datetime', read_only=True)
+    statusDisplay = serializers.CharField(source='get_status_display', read_only=True)
+    adminNotes = serializers.CharField(source='admin_notes', read_only=True)
+    emailVerified = serializers.BooleanField(source='email_verified', read_only=True)
+    createdAt = serializers.DateTimeField(source='created_at', read_only=True)
+    
     class Meta:
         model = Appointment
         fields = [
-            'id', 'applicant_name', 'applicant_email', 'applicant_phone',
+            'id', 'reference_id', 'applicant_name', 'applicant_email', 'applicant_phone',
             'applicant_designation', 'category', 'slot', 'department',
-            'appointment_date', 'appointment_time', 'purpose', 'details',
+            'appointment_datetime', 'purpose', 'details',
             'status', 'status_display', 'admin_notes', 'email_verified',
-            'official', 'created_at'
+            'official', 'created_at',
+            # Add camelCase versions for frontend compatibility
+            'applicantName', 'applicantEmail', 'applicantPhone', 'applicantDesignation',
+            'appointmentDatetime', 'statusDisplay', 'adminNotes', 'emailVerified', 'createdAt'
         ]
     
     def get_official(self, obj):
