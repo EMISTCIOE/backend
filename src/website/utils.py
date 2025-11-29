@@ -8,7 +8,7 @@ def resolve_gallery_image_source(image):
             "global_event",
             str(image.global_event.uuid),
             image.global_event.title,
-            image.global_event.description or "Global Event",
+            image.source_context or image.global_event.description or "Global Event",
         )
 
     if image.union:
@@ -16,7 +16,7 @@ def resolve_gallery_image_source(image):
             "union_gallery",
             str(image.union.uuid),
             image.union.name,
-            image.source_title or "Union Gallery",
+            image.source_context or "Union Gallery",
         )
 
     if image.club:
@@ -24,7 +24,7 @@ def resolve_gallery_image_source(image):
             "club_gallery",
             str(image.club.uuid),
             image.club.name,
-            image.source_title or "Club Gallery",
+            image.source_context or "Club Gallery",
         )
 
     if image.department:
@@ -32,7 +32,7 @@ def resolve_gallery_image_source(image):
             "department_gallery",
             str(image.department.uuid),
             image.department.name,
-            image.source_title or "Department Gallery",
+            image.source_context or "Department Gallery",
         )
 
     if image.unit:
@@ -40,7 +40,7 @@ def resolve_gallery_image_source(image):
             "unit_gallery",
             str(image.unit.uuid),
             image.unit.name,
-            image.source_title or "Campus Unit Gallery",
+            image.source_context or "Campus Unit Gallery",
         )
 
     if image.section:
@@ -48,7 +48,7 @@ def resolve_gallery_image_source(image):
             "section_gallery",
             str(image.section.uuid),
             image.section.name,
-            image.source_title or "Campus Section Gallery",
+            image.source_context or "Campus Section Gallery",
         )
 
     return (

@@ -1002,6 +1002,14 @@ class GlobalGalleryImageViewSet(viewsets.ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
+        
+        # Debug: Log the incoming data
+        print(f"=== DEBUG: Update request for image {instance.uuid} ===")
+        print(f"Request data: {request.data}")
+        print(f"Request files: {request.FILES}")
+        print(f"Content type: {request.content_type}")
+        print("=== END DEBUG ===")
+        
         serializer = self.get_serializer(
             instance,
             data=request.data,
