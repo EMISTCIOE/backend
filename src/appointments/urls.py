@@ -9,6 +9,9 @@ public_urls = [
     path('departments/', views.departments_list, name='departments-list'),
     path('available-slots/', views.AvailableSlotsView.as_view(), name='available-slots'),
     
+    # Conflict checking
+    path('check-conflict/', views.AppointmentConflictCheckView.as_view(), name='appointment-conflict-check'),
+    
     # OTP verification
     path('otp/request/', views.OTPRequestView.as_view(), name='otp-request'),
     path('otp/verify/', views.OTPVerifyView.as_view(), name='otp-verify'),

@@ -261,12 +261,6 @@ class Appointment(models.Model):
         related_name='appointments',
         verbose_name=_('Category')
     )
-    slot = models.ForeignKey(
-        AppointmentSlot,
-        on_delete=models.CASCADE,
-        related_name='appointments',
-        verbose_name=_('Slot')
-    )
     department = models.ForeignKey(
         Department,
         on_delete=models.CASCADE,
@@ -279,7 +273,18 @@ class Appointment(models.Model):
     
     # Appointment timing
     appointment_date = models.DateField(_('Appointment Date'))
-    appointment_time = models.TimeField(_('Appointment Time'))
+    appointment_time = models.CharField(
+        _('Preferred Time'),
+        max_length=100,
+        help_text=_('Preferred appointment time (e.g., "2:00 PM", "14:30", "Morning")')
+    )
+    # New datetime field - will replace the above fields
+    appointment_datetime = models.DateTimeField(
+        _('Appointment Date & Time'),
+        null=True,
+        blank=True,
+        help_text=_('Requested appointment date and time')
+    )
     
     # Purpose and details
     purpose = models.CharField(
@@ -339,9 +344,9 @@ class Appointment(models.Model):
         ordering = ['-created_at']
         constraints = [
             models.UniqueConstraint(
-                fields=['slot', 'appointment_date', 'appointment_time'],
+                fields=['category', 'appointment_date', 'appointment_time'],
                 condition=models.Q(status__in=['PENDING', 'CONFIRMED']),
-                name='unique_slot_datetime_active'
+                name='unique_category_datetime_active'
             ),
         ]
     

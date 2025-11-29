@@ -59,16 +59,15 @@ class AppointmentHistoryInline(admin.TabularInline):
 @admin.register(Appointment)
 class AppointmentAdmin(admin.ModelAdmin):
     list_display = [
-        'applicant_name', 'applicant_email', 'category', 'appointment_date',
-        'appointment_time', 'status', 'email_verified', 'created_at'
+        'applicant_name', 'applicant_email', 'category', 'appointment_datetime',
+        'status', 'email_verified', 'created_at'
     ]
     list_filter = [
-        'status', 'category', 'email_verified', 'appointment_date',
-        'created_at', 'slot__department'
+        'status', 'category', 'email_verified', 'appointment_datetime',
+        'created_at', 'department'
     ]
     search_fields = [
-        'applicant_name', 'applicant_email', 'purpose', 
-        'slot__official__email', 'slot__official__first_name', 'slot__official__last_name'
+        'applicant_name', 'applicant_email', 'purpose'
     ]
     readonly_fields = [
         'verification_token', 'created_at', 'updated_at', 'confirmed_at'
@@ -78,7 +77,7 @@ class AppointmentAdmin(admin.ModelAdmin):
             'fields': ('applicant_name', 'applicant_email', 'applicant_phone', 'applicant_designation')
         }),
         (_('Appointment Details'), {
-            'fields': ('category', 'slot', 'department', 'appointment_date', 'appointment_time')
+            'fields': ('category', 'department', 'appointment_datetime')
         }),
         (_('Purpose & Details'), {
             'fields': ('purpose', 'details')
@@ -99,7 +98,7 @@ class AppointmentAdmin(admin.ModelAdmin):
     
     def get_queryset(self, request):
         return super().get_queryset(request).select_related(
-            'category', 'slot', 'slot__official', 'department', 'confirmed_by'
+            'category', 'department', 'confirmed_by'
         )
     
     def confirm_appointments(self, request, queryset):

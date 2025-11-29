@@ -213,8 +213,8 @@ class AppointmentCreateSerializer(serializers.ModelSerializer):
         model = Appointment
         fields = [
             'applicant_name', 'applicant_email', 'applicant_phone',
-            'applicant_designation', 'category', 'slot', 'department',
-            'appointment_date', 'appointment_time', 'purpose', 'details',
+            'applicant_designation', 'category', 'department',
+            'appointment_datetime', 'purpose', 'details',
             'otp_code'
         ]
     
@@ -226,25 +226,27 @@ class AppointmentCreateSerializer(serializers.ModelSerializer):
             )
         return value
     
-    def validate_appointment_date(self, value):
-        """Validate appointment date"""
-        if value < timezone.now().date():
-            raise serializers.ValidationError("Appointment date cannot be in the past")
+    def validate_appointment_datetime(self, value):
+        """Validate appointment datetime"""
+        if value < timezone.now():
+            raise serializers.ValidationError("Appointment datetime cannot be in the past")
         
-        # Check if date is too far in advance (e.g., max 30 days)
-        max_advance_date = timezone.now().date() + timedelta(days=30)
-        if value > max_advance_date:
+        # Check if datetime is too far in advance (e.g., max 30 days)
+        max_advance_datetime = timezone.now() + timedelta(days=30)
+        if value > max_advance_datetime:
             raise serializers.ValidationError(
-                "Appointment date cannot be more than 30 days in advance"
+                "Appointment datetime cannot be more than 30 days in advance"
             )
+        
+        # Check for weekends (Saturday=5, Sunday=6)
+        if value.weekday() in [5, 6]:
+            raise serializers.ValidationError("Appointments are not available on weekends")
         
         return value
     
     def validate(self, attrs):
         """Cross-field validation"""
-        slot = attrs.get('slot')
-        appointment_date = attrs.get('appointment_date')
-        appointment_time = attrs.get('appointment_time')
+        appointment_datetime = attrs.get('appointment_datetime')
         category = attrs.get('category')
         department = attrs.get('department')
         otp_code = attrs.get('otp_code')
@@ -267,46 +269,27 @@ class AppointmentCreateSerializer(serializers.ModelSerializer):
                     {"otp_code": "Invalid OTP code"}
                 )
         
-        # Validate slot category matches appointment category
-        if slot and category and slot.category != category:
-            raise serializers.ValidationError(
-                {"slot": "Slot category must match appointment category"}
-            )
-        
-        # Validate department requirement for department head appointments
-        if (category and category.name == AppointmentCategory.DEPARTMENT_HEAD and 
-            not department):
+        # Validate department requirement for department head appointments  
+        if (category and hasattr(category, 'display_name') and 
+            "Head of Department" in category.display_name and not department):
             raise serializers.ValidationError(
                 {"department": "Department is required for department head appointments"}
             )
         
-        # Validate appointment date/time matches slot weekday
-        if slot and appointment_date:
-            if appointment_date.weekday() != slot.weekday:
-                raise serializers.ValidationError(
-                    {"appointment_date": "Appointment date must match slot weekday"}
-                )
-        
-        # Check if time slot is available
-        if slot and appointment_date and appointment_time:
-            existing_appointment = Appointment.objects.filter(
-                slot=slot,
-                appointment_date=appointment_date,
-                appointment_time=appointment_time,
-                status__in=[Appointment.STATUS_PENDING, Appointment.STATUS_CONFIRMED]
-            ).exists()
+        # Check for approved appointment conflicts
+        if appointment_datetime and category:
+            from django.db.models import Q
+            conflict_query = Q(appointment_datetime=appointment_datetime)
+            conflict_query &= Q(category=category)
+            conflict_query &= Q(status='CONFIRMED')  # Only check approved appointments
             
-            if existing_appointment:
-                raise serializers.ValidationError(
-                    {"appointment_time": "This time slot is already booked"}
-                )
-        
-        # Validate appointment time is within slot hours
-        if slot and appointment_time:
-            if not (slot.start_time <= appointment_time <= slot.end_time):
-                raise serializers.ValidationError(
-                    {"appointment_time": "Appointment time must be within slot hours"}
-                )
+            if department:
+                conflict_query &= Q(department=department)
+            
+            if Appointment.objects.filter(conflict_query).exists():
+                raise serializers.ValidationError({
+                    "appointment_datetime": "There is already an approved appointment at this time. Please select a different date and time."
+                })
         
         return attrs
     

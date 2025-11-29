@@ -31,6 +31,61 @@ from .serializers import (
 )
 from .constants import ALLOWED_EMAIL_DOMAIN
 from src.user.constants import ADMIN_ROLE, DEPARTMENT_ADMIN_ROLE
+from dateutil import parser
+
+
+class AppointmentConflictCheckView(APIView):
+    """Check for appointment conflicts at a specific datetime"""
+    
+    permission_classes = [permissions.AllowAny]  # Public access
+    
+    def get(self, request):
+        appointment_datetime_str = request.GET.get('appointment_datetime')
+        category_id = request.GET.get('category')
+        department_id = request.GET.get('department')
+        status_filter = request.GET.get('status', 'approved')
+        
+        if not appointment_datetime_str or not category_id:
+            return Response({
+                'hasConflict': False,
+                'message': 'Missing required parameters'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Parse the datetime string
+            appointment_datetime = parser.isoparse(appointment_datetime_str)
+        except ValueError:
+            return Response({
+                'hasConflict': False,
+                'message': 'Invalid datetime format'
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Build query for conflicting appointments
+        conflict_query = Q(appointment_datetime=appointment_datetime)
+        conflict_query &= Q(category_id=category_id)
+        
+        # Only check approved appointments if status filter is set
+        if status_filter == 'approved':
+            conflict_query &= Q(status='CONFIRMED')
+        
+        # Add department filter if provided
+        if department_id:
+            conflict_query &= Q(department_id=department_id)
+        
+        # Check for conflicts
+        conflicting_appointments = Appointment.objects.filter(conflict_query)
+        
+        has_conflict = conflicting_appointments.exists()
+        
+        response_data = {
+            'hasConflict': has_conflict,
+            'conflictCount': conflicting_appointments.count()
+        }
+        
+        if has_conflict:
+            response_data['message'] = 'There is already an approved appointment at this time. Please select a different date and time.'
+        
+        return Response(response_data)
 
 
 class AppointmentCategoryListView(generics.ListAPIView):
@@ -196,13 +251,13 @@ class AppointmentCreateView(generics.CreateAPIView):
         context = {
             'appointment': appointment,
             'applicant_name': appointment.applicant_name,
-            'appointment_date': appointment.appointment_date,
-            'appointment_time': appointment.appointment_time,
+            'appointment_datetime': appointment.appointment_datetime or f"{appointment.appointment_date} {appointment.appointment_time}",
             'purpose': appointment.purpose,
-            'official': appointment.official
         }
         
         # Send to applicant
+        appointment_datetime_str = appointment.appointment_datetime.strftime('%Y-%m-%d %I:%M %p') if appointment.appointment_datetime else f"{appointment.appointment_date} {appointment.appointment_time}"
+        
         applicant_message = f'''
         Dear {appointment.applicant_name},
         
@@ -210,8 +265,7 @@ class AppointmentCreateView(generics.CreateAPIView):
         
         Details:
         - Category: {appointment.category}
-        - Date: {appointment.appointment_date}
-        - Time: {appointment.appointment_time}
+        - Date & Time: {appointment_datetime_str}
         - Purpose: {appointment.purpose}
         
         Your appointment is currently pending approval. You will receive an email once it's confirmed.
